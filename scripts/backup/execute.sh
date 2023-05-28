@@ -1,0 +1,11 @@
+#!/bin/sh
+
+log -i "Creating backup snapshot of '${RESTIC_SOURCE}' ..."
+restic backup ${RESTIC_SOURCE}
+
+if [ $? -ne 0 ]; then
+  log -e "Could not create backup snapshot."
+  exit 1
+else
+  log -s "Created backup snapshot."
+fi

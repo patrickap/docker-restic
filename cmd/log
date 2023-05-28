@@ -1,0 +1,43 @@
+#!/bin/sh
+
+blue="\033[34m"
+green="\033[32m"
+yellow="\033[33m"
+red="\033[31m"
+reset="\033[0m"
+
+log() {
+  local timestamp="$(date +'%Y-%m-%d %H:%M:%S')"
+  echo -e "[$timestamp] $1: $2"
+}
+
+if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+  echo "Usage: log [TYPE] [MESSAGE]"
+  echo "  -h, --help    Display help"
+  echo "  -i, --info    Log info message"
+  echo "  -s, --success Log success message"
+  echo "  -w, --warning Log warn message"
+  echo "  -e, --error   Log error message"
+  exit 0
+fi
+
+if [ -z "$1" ] || [ -z "$2" ]; then
+  echo "Invalid arguments. Please see usage by using -h or --help."
+  exit 1
+fi
+
+if [ "$1" == "-i" ] || [ "$1" == "--info" ]; then
+  log "${blue}INFO${reset}" "$2"
+fi
+
+if [ "$1" == "-s" ] || [ "$1" == "--success" ]; then
+  log "${green}SUCCESS${reset}" "$2"
+fi
+
+if [ "$1" == "-w" ] || [ "$1" == "--warning" ]; then
+  log "${yellow}WARNING${reset}" "$2"
+fi
+
+if [ "$1" == "-e" ] || [ "$1" == "--error" ]; then
+  log "${red}ERROR${reset}" "$2"
+fi

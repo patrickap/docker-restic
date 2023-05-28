@@ -1,0 +1,8 @@
+#!/bin/sh
+
+log -i "Attempting to acquire lock for task BACKUP with timeout of ${RESTIC_COMMAND_LOCK_TIMEOUT} seconds ..."
+
+flock \
+  -w ${RESTIC_COMMAND_LOCK_TIMEOUT} \
+  -x ${RESTIC_COMMAND_LOCK_FILE} \
+  -c "/usr/local/sbin/restic/backup.sh"
