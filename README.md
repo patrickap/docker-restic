@@ -7,6 +7,7 @@ Docker-Restic is a Docker image that provides an easy way to use restic for cont
 - **Easy Setup:** All data mounted at `/source` within Docker-Restic is backed up to `/target`. This flexible setup allows you to define the specific directories and volumes you wish to include in your backups.
 - **Incremental Backups:** Docker-Restic performs daily snapshots using restic, allowing you to capture changes in your data efficiently.
 - **Full Backups:** Docker-Restic automatically exports a weekly tar archive file, providing a full backup of your data.
+- **Manual Backups**: Docker-Restic empowers you with the ability to perform manual backups and checks as needed. This feature allows you to take immediate backups of your container volumes or manually verify the integrity of existing backups.
 - **Remote Sync (Optional):** You have the option to enable a remote synchronization using rclone, which ensures that your backups are securely transferred to a remote location.
 - **Container Management:** Containers labeled with `restic-stop=true` are gracefully stopped before the backup process and restarted afterward, ensuring data consistency during the backup operation.
 - **File Locking:** To prevent concurrent access to backup resources, Docker-Restic utilizes a lockfile mechanism that effectively manages access and avoids conflicts.
