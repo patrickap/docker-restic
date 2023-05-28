@@ -37,6 +37,35 @@ docker run -d --name docker-restic \
     patrickap/docker-restic:latest
 ```
 
+## Docker Compose
+
+```yml
+version: '3.7'
+
+services:
+  restic:
+    image: patrickap/docker-restic:latest
+    environment:
+      - RESTIC_PASSWORD=$BACKUP_PASSWORD
+    init: true
+    restart: always
+    volumes:
+      # backup destination
+      - /path/to/backup:/target
+      # volumes to backup
+      - volume-1:/source/volume-1:ro
+      - volume-2:/source/volume-2:ro
+      # remote backup config
+      - rclone-config:/etc/rclone
+      # provide host information
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  volumes:
+    volume-1:
+    volume-2:
+```
+
 ## Backup Volumes
 
 By default mounted volumes inside `/source` are getting backed up to `/target`. If you add custom volumes make sure to add them as read-only `:ro` for safety reasons. Also bind mount the backups to a custom location to be able to access them at any time.
