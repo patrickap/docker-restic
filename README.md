@@ -39,6 +39,8 @@ docker run -d --name docker-restic \
 
 ## Docker Compose
 
+Here is a basic example how Docker-Restic can be used with docker compose.
+
 ```yml
 version: '3.7'
 
