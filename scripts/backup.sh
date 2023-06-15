@@ -12,7 +12,7 @@ ${script_dir}/backup/check.sh
 
 if [ $? -ne 0 ]; then
   ${script_dir}/container/start.sh
-  log -w "Completed task BACKUP with errors. Check log output above."
+  log -e "Completed task BACKUP with errors. Check log output above."
   exit 1
 else
   log -i "Completed task BACKUP. Check log output above."

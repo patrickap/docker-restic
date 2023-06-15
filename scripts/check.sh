@@ -10,7 +10,7 @@ ${script_dir}/extract/check.sh || error=1
 ${script_dir}/sync/check.sh || error=1
 
 if [ $? -ne 0 ] || [ $error == 1 ]; then
-  log -w "Completed task CHECK with errors. Check log output above."
+  log -e "Completed task CHECK with errors. Check log output above."
   exit 1
 else
   log -i "Completed task CHECK. Check log output above."
