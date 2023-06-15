@@ -4,7 +4,7 @@ Docker-Restic is a Docker image that provides an easy way to use restic with add
 
 ## Features
 
-- **Easy Setup:** All data mounted at `/source` within Docker-Restic is backed up to `/target`. This flexible setup allows you to define the specific directories and volumes you wish to include in your backups.
+- **Easy Setup:** All data mounted at `/source` within Docker-Restic is backed up automatically to `/target`. This flexible setup allows you to define the specific directories and volumes you wish to include in your backups.
 - **Backup Snapshots:** Docker-Restic performs daily snapshots using restic, allowing you to capture changes in your data efficiently.
 - **Backup Archives:** Docker-Restic automatically exports a weekly tar archive file, providing a full backup of your data.
 - **Remote Synchronization:** You have the option to enable a remote synchronization using rclone, which ensures that your backups are securely transferred to a remote location.
@@ -70,7 +70,7 @@ services:
 
 ## Backup Volumes
 
-By default mounted volumes inside `/source` are getting backed up to `/target`. If you add custom volumes make sure to add them as read-only `:ro` for safety reasons. Also bind mount the backups to a custom location to be able to access them at any time.
+By default mounted volumes inside `/source` are getting automatically backed up to `/target`. If you add custom volumes make sure to add them as read-only `:ro` for safety reasons. Also bind mount the backups to a custom location to be able to access them at any time.
 
 ```yml
 docker-restic:
