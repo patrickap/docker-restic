@@ -7,5 +7,5 @@ if [ $? -ne 0 ]; then
   log -e "Could not sync repository to remote."
   exit 1
 else
-  log -s "Synced repository to remote."
+  log -i "Synced repository to remote."
 fi

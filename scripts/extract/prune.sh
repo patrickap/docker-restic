@@ -9,5 +9,5 @@ ls -t ${RESTIC_ARCHIVE}/archive_* | tail +$((RESTIC_EXTRACT_KEEP_LAST+1)) | xarg
 if [ $? -ne 0 ]; then
   log -w "Could not prune backup archives."
 else
-  log -s "Pruned backup archives."
+  log -i "Pruned backup archives."
 fi

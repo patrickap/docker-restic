@@ -10,7 +10,7 @@ if [ -n "${containers}" ]; then
   if [ $? -ne 0 ]; then
     log -w "Could not stop containers."
   else
-    log -s "Stopped containers."
+    log -i "Stopped containers."
   fi
 else
   log -w "No containers found. Possibly already stopped."

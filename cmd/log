@@ -1,9 +1,8 @@
 #!/bin/sh
 
-blue="\033[34m"
-green="\033[32m"
-yellow="\033[33m"
-red="\033[31m"
+blue="\033[1;34m"
+yellow="\033[1;33m"
+red="\033[1;31m"
 reset="\033[0m"
 
 log() {
@@ -15,7 +14,6 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
   echo "Usage: log [TYPE] [MESSAGE]"
   echo "  -h, --help    Display help"
   echo "  -i, --info    Log info message"
-  echo "  -s, --success Log success message"
   echo "  -w, --warning Log warn message"
   echo "  -e, --error   Log error message"
   exit 0
@@ -27,17 +25,13 @@ if [ -z "$1" ] || [ -z "$2" ]; then
 fi
 
 if [ "$1" == "-i" ] || [ "$1" == "--info" ]; then
-  log "${blue}INFO${reset}" "$2"
-fi
-
-if [ "$1" == "-s" ] || [ "$1" == "--success" ]; then
-  log "${green}SUCCESS${reset}" "$2"
+  log "${blue}INF${reset}" "$2"
 fi
 
 if [ "$1" == "-w" ] || [ "$1" == "--warning" ]; then
-  log "${yellow}WARNING${reset}" "$2"
+  log "${yellow}WRN${reset}" "$2"
 fi
 
 if [ "$1" == "-e" ] || [ "$1" == "--error" ]; then
-  log "${red}ERROR${reset}" "$2"
+  log "${red}ERR${reset}" "$2"
 fi

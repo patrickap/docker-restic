@@ -9,5 +9,5 @@ if [ $? -ne 0 ]; then
   exit 1
 else
   log -i "The repository seems fine."
-  log -s "Checked integrity of repository."
+  log -i "Checked integrity of repository."
 fi

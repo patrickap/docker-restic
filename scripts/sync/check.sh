@@ -9,5 +9,5 @@ if [ $? -ne 0 ]; then
   exit 1
 else
   log -i "The remote data seems fine."
-  log -s "Checked integrity of remote data."
+  log -i "Checked integrity of remote data."
 fi

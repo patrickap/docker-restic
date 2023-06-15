@@ -11,7 +11,7 @@ else
   if [ $? -ne 0 ]; then
     log -w "Could not initialize restic repository."
   else
-    log -s "Initialized restic repository."
+    log -i "Initialized restic repository."
   fi
 fi
 
@@ -19,7 +19,7 @@ fi
 remote_name=$(echo ${RESTIC_REMOTE} | awk -F: '{print $1}')
 
 if rclone listremotes | grep -q "$remote_name"; then
-  log -s "The rclone remote '$remote_name' is configured."
+  log -i "The rclone remote '$remote_name' is configured."
 else
   log -w "The rclone remote $remote_name is not configured. Run 'rclone config'."
 fi

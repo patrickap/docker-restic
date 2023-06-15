@@ -7,5 +7,5 @@ if [ $? -ne 0 ]; then
   log -e "Could not create backup snapshot."
   exit 1
 else
-  log -s "Created backup snapshot."
+  log -i "Created backup snapshot."
 fi

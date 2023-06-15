@@ -13,7 +13,7 @@ if [ -n "${archive}" ]; then
     exit 1
   else
     log -i "The backup archive seems fine."
-    log -s "Checked integrity of latest backup archive."
+    log -i "Checked integrity of latest backup archive."
   fi
 else
   log -w "No archive found. Folder may be empty."

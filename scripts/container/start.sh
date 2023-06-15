@@ -10,7 +10,7 @@ if [ -n "${containers}" ]; then
   if [ $? -ne 0 ]; then
     log -w "Could not start containers."
   else
-    log -s "Started containers."
+    log -i "Started containers."
   fi
 else
   log -w "No containers found. Possibly already started."

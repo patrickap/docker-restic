@@ -7,5 +7,5 @@ if [ $? -ne 0 ]; then
   log -e "Could not create backup archive."
   exit 1
 else
-  log -s "Created backup archive."
+  log -i "Created backup archive."
 fi
