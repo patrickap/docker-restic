@@ -121,8 +121,8 @@ tar -xvf backup.tar -C /tmp/backup
 docker stop <container_name>
 
 # use a temporary container to create the volume and copy the backup
-docker volume create <volume-name>
-docker run --rm -it -v <volume-name>:/to -v <path-to-backup>:/from alpine ash -c 'cp -av /from/. /to'
+docker volume create <volume_name>
+docker run --rm -it -v <volume_name>:/to -v <path_to_backup>:/from alpine ash -c 'cp -av /from/. /to'
 
 # restart the containers
 docker restart <container_name>
