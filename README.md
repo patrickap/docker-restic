@@ -42,7 +42,7 @@ docker run -d --name docker-restic \
 Here is a basic example how Docker-Restic can be used with docker compose.
 
 ```yml
-version: '3.7'
+version: "3.7"
 
 services:
   restic:
@@ -120,11 +120,9 @@ tar -xvf backup.tar -C /tmp/backup
 # stop the containers
 docker stop <container_name>
 
-# use a temporary once-off container to create the volume and copy the backup
-docker run -d --name <tmp_container_name> -v <volume_name>:/path/inside/container alpine
-docker cp /tmp/backup/<volume_name> <tmp_container_name>:/path/inside/container
-docker stop <tmp_container_name>
-docker rm <tmp_container_name>
+# use a temporary container to create the volume and copy the backup
+docker volume create <volume-name>
+docker run --rm -it -v <volume-name>:/to -v <path-to-backup>:/from alpine ash -c 'cp -av /from/. /to'
 
 # restart the containers
 docker restart <container_name>
