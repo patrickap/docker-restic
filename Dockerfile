@@ -1,4 +1,4 @@
-FROM restic/restic:0.15.2
+FROM restic/restic:0.16.0
 
 ARG RESTIC_PASSWORD
 
