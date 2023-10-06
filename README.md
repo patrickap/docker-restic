@@ -5,9 +5,9 @@ Docker-Restic is a Docker image that provides an easy way to use restic with add
 ## Features
 
 - **Easy Setup:** All data mounted at `/source` within Docker-Restic is backed up automatically to `/target`. This flexible setup allows you to define the specific directories and volumes you wish to include in your backups.
-- **Backup Snapshots:** Docker-Restic performs daily snapshots using restic, allowing you to capture changes in your data efficiently.
-- **Backup Archives:** Docker-Restic automatically exports a weekly tar archive, providing a full backup of your data.
-- **Remote Synchronization:** You have the option to enable a remote synchronization using rclone, which ensures that your backups are securely transferred to a remote location.
+- **Backup Snapshots:** Docker-Restic performs daily snapshots, allowing you to capture changes in your data efficiently.
+- **Backup Archives:** Docker-Restic automatically exports a weekly archive, providing a full dump of your data.
+- **Rclone Integration:** You have the option to enable a remote synchronization using rclone, which ensures that your backups are securely transferred to a remote location.
 - **Integrity Checks**: Docker-Restic prioritizes the integrity of your backup data. It performs data integrity checks for all backup methods. These checks ensure that your backup data remains consistent and reliable, giving you peace of mind knowing that your valuable data is protected.
 - **Fully Customizable:** Docker-Restic offers a high level of customization through various `ARG`s and `ENV`s that can be easily set or overwritten according to your requirements. These customization options provide the flexibility to adapt the backup process to your specific needs.
 - **Various Extras:** Containers labeled with `restic-stop=true` are gracefully stopped before the backup process and restarted afterward, ensuring data consistency during the backup operation. To prevent concurrent access to backup resources, Docker-Restic utilizes a lockfile mechanism that effectively manages access and avoids conflicts.
