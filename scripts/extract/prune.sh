@@ -3,8 +3,8 @@
 set -o pipefail
 
 log -i "Pruning backup archives ..."
-log -i "Keeping last ${RESTIC_EXTRACT_KEEP_LAST} backup archives."
-ls -t ${RESTIC_ARCHIVE}/archive_* | tail +$((RESTIC_EXTRACT_KEEP_LAST+1)) | xargs -r rm
+log -i "Keeping last ${RESTIC_DUMP_KEEP_LAST} backup archives."
+ls -t ${RESTIC_ARCHIVE}/archive_* | tail +$((RESTIC_DUMP_KEEP_LAST+1)) | xargs -r rm
 
 if [ $? -ne 0 ]; then
   log -w "Could not prune backup archives."
