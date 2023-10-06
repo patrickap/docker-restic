@@ -1,11 +1,11 @@
 #!/bin/sh
 
 log -i "Searching for latest backup archive ..."
-archive=$(ls -t ${RESTIC_EXPORT}/archive_* | head -1)
+backup=$(ls -t ${RESTIC_EXPORT}/backup_* | head -1)
 
-if [ -n "${archive}" ]; then
-  log -i "Checking integrity of latest backup archive '${archive}' ..."
-  echo ${archive} | xargs -r tar -tf > /dev/null
+if [ -n "${backup}" ]; then
+  log -i "Checking integrity of latest backup archive '${backup}' ..."
+  echo ${backup} | xargs -r tar -tf > /dev/null
 
   if [ $? -ne 0 ]; then
     log -w "The backup archive may be corrupt."
