@@ -1,7 +1,7 @@
 #!/bin/sh
 
 log -i "Searching for latest backup archive ..."
-archive=$(ls -t ${RESTIC_ARCHIVE}/archive_* | head -1)
+archive=$(ls -t ${RESTIC_EXPORT}/archive_* | head -1)
 
 if [ -n "${archive}" ]; then
   log -i "Checking integrity of latest backup archive '${archive}' ..."

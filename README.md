@@ -6,7 +6,7 @@ Docker-Restic is a Docker image that provides an easy way to use restic with add
 
 - **Easy Setup:** All data mounted at `/source` within Docker-Restic is backed up automatically to `/target`. This flexible setup allows you to define the specific directories and volumes you wish to include in your backups.
 - **Backup Snapshots:** Docker-Restic performs daily snapshots using restic, allowing you to capture changes in your data efficiently.
-- **Backup Archives:** Docker-Restic automatically exports a weekly tar archive file, providing a full backup of your data.
+- **Backup Archives:** Docker-Restic automatically exports a weekly tar archive, providing a full backup of your data.
 - **Remote Synchronization:** You have the option to enable a remote synchronization using rclone, which ensures that your backups are securely transferred to a remote location.
 - **Integrity Checks**: Docker-Restic prioritizes the integrity of your backup data. It performs data integrity checks for all backup methods. These checks ensure that your backup data remains consistent and reliable, giving you peace of mind knowing that your valuable data is protected.
 - **Fully Customizable:** Docker-Restic offers a high level of customization through various `ARG`s and `ENV`s that can be easily set or overwritten according to your requirements. These customization options provide the flexibility to adapt the backup process to your specific needs.
@@ -105,13 +105,13 @@ scp username@<host_ip>:/path/to/source /path/to/target
 To restore a backup it may be possible to use the official `restic restore` command with some additional setup. Otherwise a new Docker volume with the correct name must be created including the contents of the backup. After restarting the containers the data should be mounted and restored.
 
 **Warning:**
-If you're using Google Drive they may add back file extensions to encrypted files during the download or compression process which can result in a corrupted `restic` repository. To avoid this ensure to remove any added extensions inside the `repository/data` directory. An example of this would be a file at `respository/data/3f/3f0e4a8c5b71a0b9c7d38e29a87d5a1b23f69b08a5c06f1d2b539c846ee2a070b` being downloaded as `respository/data/3f/3f0e4a8c5b71a0b9c7d38e29a87d5a1b23f69b08a5c06f1d2b539c846ee2a070b.mp3`. In this example it is required to remove the automatically added extension `.mp3` to avoid repository corruption and be able to extract the backup.
+If you're using Google Drive they may add back file extensions to encrypted files during the download or compression process which can result in a corrupted `restic` repository. To avoid this ensure to remove any added extensions inside the `repository/data` directory. An example of this would be a file at `respository/data/3f/3f0e4a8c5b71a0b9c7d38e29a87d5a1b23f69b08a5c06f1d2b539c846ee2a070b` being downloaded as `respository/data/3f/3f0e4a8c5b71a0b9c7d38e29a87d5a1b23f69b08a5c06f1d2b539c846ee2a070b.mp3`. In this example it is required to remove the automatically added extension `.mp3` to avoid repository corruption and be able to read the backup.
 
 ```bash
 # check restic repository
 restic -r /path/to/repository check --read-data
 
-# extract restic backup
+# dump restic backup
 restic -r /path/to/repository dump latest / > backup.tar
 
 # untar the backup
@@ -130,7 +130,7 @@ docker restart <container_name>
 
 ## Schedule Backups
 
-Snapshots and remote syncing is scheduled daily, the full backup archive creation weekly. The default cron configuration can be changed by editing the `/etc/restic/restic.cron` file and restarting the `docker-restic` container with `docker restart <container_name>` or providing a custom cron file using bind mount.
+Snapshots and remote syncing is scheduled daily, the backup archive creation weekly. The default cron configuration can be changed by editing the `/etc/restic/restic.cron` file and restarting the `docker-restic` container with `docker restart <container_name>` or providing a custom cron file using bind mount.
 
 ```yml
 docker-restic:
@@ -148,7 +148,7 @@ The following commands are available inside the `docker-restic` container:
   - start containers
   - prune snapshots
   - check integrity
-- `extract`:
+- `dump`:
   - create archive
   - prune archives
   - check integrity
@@ -156,9 +156,9 @@ The following commands are available inside the `docker-restic` container:
   - sync remote
   - check integrity
 - `check`:
-  - check snapshot integrity
-  - check archive integrity
-  - check remote integrity
+  - check backup data integrity
+  - check dump data integrity
+  - check sync data integrity
 
 Additionally all official Restic CLI commands are available. [Restic Man Page](https://www.mankier.com/1/restic)
 
