@@ -42,7 +42,10 @@ COPY --chmod=0755 ./scripts/ /usr/local/sbin/restic/
 COPY --chmod=0755 ./cmd/ /usr/local/bin/restic/
 COPY --chmod=0755 ./entrypoint.sh /root/entrypoint.sh
 
-RUN apk update && apk add docker rclone flock
+RUN apk update && apk add \
+    docker=23.0.6-r5 \
+    rclone=1.62.2-r4 \
+    flock=2.38.1-r8
 
 RUN mkdir -p $RESTIC_REPOSITORY && \
     mkdir -p $RESTIC_ARCHIVE && \
