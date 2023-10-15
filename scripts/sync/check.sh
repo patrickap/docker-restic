@@ -1,7 +1,9 @@
 #!/bin/sh
 
-log -i "Checking integrity of remote '${RESTIC_REMOTE}' ..."
-rclone check ${RESTIC_REPOSITORY} ${RESTIC_REMOTE}
+repository="${RESTIC_ROOT}/target/repository"
+
+log -i "Checking integrity of repository '${repository}' against remote '${RESTIC_REMOTE}' ..."
+rclone check ${repository} ${RESTIC_REMOTE}
 
 if [ $? -ne 0 ]; then
   log -w "The remote data may be out of sync."
