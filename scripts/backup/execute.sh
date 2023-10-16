@@ -1,10 +1,7 @@
 #!/bin/sh
 
-source="${RESTIC_ROOT}/source"
-repository="${RESTIC_ROOT}/target/repository"
-
-log -i "Creating backup snapshot for '${repository}' of '${source}' ..."
-restic -r ${repository} backup ${source}
+log -i "Creating backup snapshot of '${RESTIC_SOURCE}' ..."
+restic -r ${RESTIC_REPOSITORY} backup ${RESTIC_SOURCE}
 
 if [ $? -ne 0 ]; then
   log -e "Could not create backup snapshot."

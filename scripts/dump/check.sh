@@ -1,9 +1,7 @@
 #!/bin/sh
 
-export="${RESTIC_ROOT}/target/export"
-
-log -i "Searching for latest backup archive at '${export}' ..."
-backup=$(ls -t ${export}/backup_* | head -1)
+log -i "Searching for latest backup archive at '${RESTIC_EXPORT}' ..."
+backup=$(ls -t ${RESTIC_EXPORT}/backup_* | head -1)
 
 if [ -n "${backup}" ]; then
   log -i "Checking integrity of latest backup archive '${backup}' ..."
