@@ -6,7 +6,7 @@ echo "$(restic version)"
 if restic cat config &> /dev/null; then
   log -i "Skipping restic initialization. Repository already exists."
 else
-  restic -r "${RESTIC_ROOT}/target/repository" init 2>&1
+  restic -r ${RESTIC_REPOSITORY} init 2>&1
 
   if [ $? -ne 0 ]; then
     log -w "Could not initialize restic repository."
@@ -25,6 +25,7 @@ else
 fi
 
 log -i "Running cron in foreground ..."
-cat "$RESTIC_ROOT/restic.cron"
-supercronic -test "$RESTIC_ROOT/restic.cron"
-supercronic -passthrough-logs "$RESTIC_ROOT/restic.cron"
+cron="$RESTIC_ROOT/restic.cron"
+cat "$cron"
+supercronic -test "$cron"
+supercronic -passthrough-logs "$cron"
