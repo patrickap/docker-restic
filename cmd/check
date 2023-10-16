@@ -1,8 +1,0 @@
-#!/bin/sh
-
-log -i "Attempting to acquire lock for task CHECK with timeout of ${RESTIC_CMD_LOCK_TIMEOUT} seconds ..."
-
-flock \
-  -w ${RESTIC_CMD_LOCK_TIMEOUT} \
-  -x "${RESTIC_ROOT}/restic.lock" \
-  -c "${RESTIC_ROOT}/scripts/check.sh"
