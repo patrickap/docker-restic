@@ -4,11 +4,9 @@
   script_dir=$(dirname "$0")
 
   log -i "Attempting to acquire lock for task SYNC with timeout of ${RESTIC_LOCK_TIMEOUT} seconds ..."
-
   flock --timeout ${RESTIC_LOCK_TIMEOUT} --exclusive 200
 
   log -i "Starting task SYNC ..."
-
   ${script_dir}/_sync/execute.sh && \
   ${script_dir}/_sync/check.sh
 
