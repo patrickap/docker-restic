@@ -3,7 +3,7 @@
 log -i "Searching for containers labeled '${RESTIC_STOP_CONTAINER_LABEL}' and 'status=exited' ..."
 containers=$(docker ps -q --filter label=${RESTIC_STOP_CONTAINER_LABEL} --filter "status=exited")
 
-if [ -n "${containers}" ]; then
+if [ -n "$containers" ]; then
   log -i "Starting containers: ${containers} ..."
   docker restart ${containers} > /dev/null
 

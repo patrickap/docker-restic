@@ -3,7 +3,7 @@
 log -i "Searching for containers labeled '${RESTIC_STOP_CONTAINER_LABEL}' ..."
 containers=$(docker ps -q --filter label=${RESTIC_STOP_CONTAINER_LABEL})
 
-if [ -n "${containers}" ]; then
+if [ -n "$containers" ]; then
   log -i "Stopping containers: ${containers} ..."
   docker stop ${containers} > /dev/null
 
