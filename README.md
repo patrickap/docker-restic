@@ -4,7 +4,7 @@ Docker-Restic is a Docker image that provides an easy way to use restic with add
 
 ## Features
 
-- **Easy Setup:** All data mounted at `/source` within Docker-Restic is backed up automatically to `/target`. This flexible setup allows you to define the specific directories and volumes you wish to include in your backups.
+- **Easy Setup:** All data mounted at `/srv/restic/source` within Docker-Restic is backed up automatically to `/srv/restic/target`. This flexible setup allows you to define the specific directories and volumes you wish to include in your backups.
 - **Backup Snapshots:** Docker-Restic performs daily snapshots, allowing you to capture changes in your data efficiently.
 - **Backup Archives:** Docker-Restic automatically exports a weekly archive, providing a full dump of your data.
 - **Rclone Integration:** Besides restic you have the option to enable a remote synchronization using rclone, which ensures that your backups are securely transferred to a remote location.
@@ -32,8 +32,8 @@ docker pull patrickap/docker-restic:latest
 
 ```bash
 docker run -d --name docker-restic \
-    -v /path/to/source:/source \
-    -v /path/to/target:/target \
+    -v /path/to/source:/srv/restic/source \
+    -v /path/to/target:/srv/restic/target \
     -e RESTIC_PASSWORD=your-password \
     patrickap/docker-restic:latest
 ```
@@ -54,10 +54,10 @@ services:
     restart: always
     volumes:
       # backup destination
-      - /path/to/backup:/target
+      - /path/to/backup:/srv/restic/target
       # volumes to backup
-      - volume-1:/source/volume-1:ro
-      - volume-2:/source/volume-2:ro
+      - volume-1:/srv/restic/source/volume-1:ro
+      - volume-2:/srv/restic/source/volume-2:ro
       # persist restic data and config
       - restic-data:/srv/restic
       # provide host information
@@ -71,15 +71,15 @@ services:
 
 ## Backup Volumes
 
-By default mounted volumes inside `/source` are getting automatically backed up to `/target`. If you add custom volumes make sure to add them as read-only `:ro` for safety reasons. Also bind mount the backups to a custom location to be able to access them at any time.
+By default mounted volumes inside `/srv/restic/source` are getting automatically backed up to `/srv/restic/target`. If you add custom volumes make sure to add them as read-only `:ro` for safety reasons. Also bind mount the backups to a custom location to be able to access them at any time.
 
 ```yml
 docker-restic:
   volumes:
-    - /path/to/backup:/target
-    - volume-1:/source/volume-1:ro
-    - volume-2:/source/volume-2:ro
-    - volume-3:/source/volume-3:ro
+    - /path/to/backup:/srv/restic/target
+    - volume-1:/srv/restic/source/volume-1:ro
+    - volume-2:/srv/restic/source/volume-2:ro
+    - volume-3:/srv/restic/source/volume-3:ro
 ```
 
 ## Remote Sync
