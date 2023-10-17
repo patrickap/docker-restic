@@ -41,7 +41,7 @@ COPY . $RESTIC_ROOT
 
 RUN apk update \
     && apk add \
-        docker~=23.0.6 \
+        docker-cli~=23.0.6 \
         rclone~=1.62.2 \
         flock~=2.38.1 \
         supercronic~=0.2.24 \
