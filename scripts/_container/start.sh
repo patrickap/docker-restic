@@ -5,7 +5,7 @@ containers=$(docker ps -q --filter label=${RESTIC_STOP_CONTAINER_LABEL} --filter
 
 if [ -n "$containers" ]; then
   log -i "Starting containers ..."
-  for container in $containers; do echo "'$container'"; done
+  for container in $containers; do log -i "Starting '$container' ..."; done
   docker restart ${containers} > /dev/null
 
   if [ $? -ne 0 ]; then
