@@ -1,57 +1,62 @@
 FROM restic/restic:0.16.0
 
-ARG RESTIC_PASSWORD
+# user arg
+ARG UID=1000 \
+    GID=1000 \
+    RESTIC_PASSWORD \
+    RESTIC_ROOT="/srv/restic" \
+    RESTIC_REMOTE="remote:restic" \
+    RESTIC_BACKUP_KEEP_DAILY="7" \
+    RESTIC_BACKUP_KEEP_WEEKLY="4" \
+    RESTIC_BACKUP_KEEP_MONTHLY="12" \
+    RESTIC_BACKUP_KEEP_YEARLY="2" \
+    RESTIC_DUMP_KEEP_LAST="8" \
+    RESTIC_LOCK_TIMEOUT="21600" \
+    RESTIC_STOP_CONTAINER_LABEL="restic-stop=true"
 
-ARG RESTIC_SOURCE="/source"
-ARG RESTIC_REPOSITORY="/target/repository"
-ARG RESTIC_EXPORT="/target/export"
-ARG RESTIC_REMOTE="remote:repository"
+# user env
+ENV UID=$UID \
+    GID=$GID \
+    RESTIC_PASSWORD=$RESTIC_PASSWORD \
+    RESTIC_ROOT=$RESTIC_ROOT \
+    RESTIC_REMOTE=$RESTIC_REMOTE \
+    RESTIC_BACKUP_KEEP_DAILY=$RESTIC_BACKUP_KEEP_DAILY \
+    RESTIC_BACKUP_KEEP_WEEKLY=$RESTIC_BACKUP_KEEP_WEEKLY \
+    RESTIC_BACKUP_KEEP_MONTHLY=$RESTIC_BACKUP_KEEP_MONTHLY \
+    RESTIC_BACKUP_KEEP_YEARLY=$RESTIC_BACKUP_KEEP_YEARLY \
+    RESTIC_DUMP_KEEP_LAST=$RESTIC_DUMP_KEEP_LAST \
+    RESTIC_LOCK_TIMEOUT=$RESTIC_LOCK_TIMEOUT \
+    RESTIC_STOP_CONTAINER_LABEL=$RESTIC_STOP_CONTAINER_LABEL \
+    # internal env
+    RESTIC_SOURCE="$RESTIC_ROOT/source" \
+    RESTIC_TARGET="$RESTIC_ROOT/target" \
+    RESTIC_REPOSITORY="$RESTIC_ROOT/target/repository" \
+    RESTIC_EXPORT="$RESTIC_ROOT/target/export" \
+    # add commands to PATH for convenient execution
+    PATH="$RESTIC_ROOT/scripts:$PATH" \
+    # change rclone config path
+    RCLONE_CONFIG="$RESTIC_ROOT/config/rclone.conf"
 
-ARG RESTIC_BACKUP_KEEP_DAILY="7"
-ARG RESTIC_BACKUP_KEEP_WEEKLY="4"
-ARG RESTIC_BACKUP_KEEP_MONTHLY="12"
-ARG RESTIC_BACKUP_KEEP_YEARLY="2"
+COPY . $RESTIC_ROOT
 
-ARG RESTIC_DUMP_KEEP_LAST="8"
+RUN apk update \
+    && apk add \
+        docker-cli~=23.0.6 \
+        rclone~=1.62.2 \
+        flock~=2.38.1 \
+        supercronic~=0.2.24 \
+    && addgroup -g $GID restic \
+    && adduser -D -u $UID -G restic restic \
+    && chmod -R 755 \
+        $RESTIC_ROOT/scripts \
+        $RESTIC_ROOT/entrypoint.sh \
+    && mkdir -p \
+        $RESTIC_SOURCE \
+        $RESTIC_TARGET \
+        $RESTIC_REPOSITORY \
+        $RESTIC_EXPORT \
+    && chown -R restic:restic $RESTIC_ROOT
 
-ARG RESTIC_LOCK_FILE="/var/restic/cmd.lock"
-ARG RESTIC_LOCK_TIMEOUT="21600"
-ARG RESTIC_STOP_CONTAINER_LABEL="restic-stop=true"
+USER restic
 
-ENV RESTIC_PASSWORD=$RESTIC_PASSWORD
-ENV RESTIC_SOURCE=$RESTIC_SOURCE
-ENV RESTIC_REPOSITORY=$RESTIC_REPOSITORY
-ENV RESTIC_EXPORT=$RESTIC_EXPORT
-ENV RESTIC_REMOTE=$RESTIC_REMOTE
-ENV RESTIC_BACKUP_KEEP_DAILY=$RESTIC_BACKUP_KEEP_DAILY
-ENV RESTIC_BACKUP_KEEP_WEEKLY=$RESTIC_BACKUP_KEEP_WEEKLY
-ENV RESTIC_BACKUP_KEEP_MONTHLY=$RESTIC_BACKUP_KEEP_MONTHLY
-ENV RESTIC_BACKUP_KEEP_YEARLY=$RESTIC_BACKUP_KEEP_YEARLY
-ENV RESTIC_DUMP_KEEP_LAST=$RESTIC_DUMP_KEEP_LAST
-ENV RESTIC_LOCK_FILE=$RESTIC_LOCK_FILE
-ENV RESTIC_LOCK_TIMEOUT=$RESTIC_LOCK_TIMEOUT
-ENV RESTIC_STOP_CONTAINER_LABEL=$RESTIC_STOP_CONTAINER_LABEL
-
-# add commands to PATH for convenient execution
-ENV PATH="/usr/local/bin/restic:$PATH"
-# change rclone config path
-ENV RCLONE_CONFIG="/etc/rclone/rclone.conf"
-
-COPY ./restic.cron /etc/restic/restic.cron
-COPY --chmod=0755 ./scripts/ /usr/local/sbin/restic/
-COPY --chmod=0755 ./cmd/ /usr/local/bin/restic/
-COPY --chmod=0755 ./entrypoint.sh /root/entrypoint.sh
-
-RUN apk update && apk add \
-    docker~=23.0.6 \
-    rclone~=1.62.2 \
-    flock~=2.38.1
-
-RUN mkdir -p $RESTIC_REPOSITORY && \
-    mkdir -p $RESTIC_EXPORT && \
-    mkdir -p $(dirname $RESTIC_LOCK_FILE) && \
-    mkdir -p $(dirname $RCLONE_CONFIG) && \
-    touch $RESTIC_LOCK_FILE && \
-    touch $RCLONE_CONFIG
-
-ENTRYPOINT ["/root/entrypoint.sh"]
+ENTRYPOINT ["/bin/sh", "-c", "$RESTIC_ROOT/entrypoint.sh"]

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 log -i "Checking integrity of repository '${RESTIC_REPOSITORY}' ..."
-restic check --read-data
+restic -r ${RESTIC_REPOSITORY} check --read-data
 
 if [ $? -ne 0 ]; then
   log -w "The repository may be corrupt."

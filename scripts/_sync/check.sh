@@ -1,6 +1,6 @@
 #!/bin/sh
 
-log -i "Checking integrity of remote '${RESTIC_REMOTE}' ..."
+log -i "Checking integrity of repository '${RESTIC_REPOSITORY}' against remote '${RESTIC_REMOTE}' ..."
 rclone check ${RESTIC_REPOSITORY} ${RESTIC_REMOTE}
 
 if [ $? -ne 0 ]; then
