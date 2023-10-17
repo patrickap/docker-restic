@@ -8,11 +8,7 @@ backups=$(ls -t ${RESTIC_EXPORT}/backup_* | tail +$((RESTIC_DUMP_KEEP_LAST+1)) |
 
 if [ -n "$backups" ]; then
   log -i "Pruning backup archives ..."
-  for backup in $backups
-  do
-    echo "'$(basename $backup)'"
-  done
-
+  for backup in $backups; do echo "'$(basename $backup)'"; done
   rm -rf ${backups}
   
   if [ $? -ne 0 ]; then
