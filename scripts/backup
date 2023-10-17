@@ -1,8 +1,8 @@
 #!/bin/sh
 
-(
-  script_dir=$(dirname "$0")
+script_dir=$(dirname "$0")
 
+(
   log -i "Attempting to acquire lock for task BACKUP with timeout of ${RESTIC_LOCK_TIMEOUT} seconds ..."
   flock --timeout ${RESTIC_LOCK_TIMEOUT} --exclusive 200
 
