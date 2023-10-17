@@ -40,7 +40,7 @@ docker run -d --name docker-restic \
 
 ## Docker Compose
 
-Here is a basic example how Docker-Restic can be used with docker compose.
+Here is a basic example how Docker-Restic can be used with docker compose. Ensure that the UID and GID of the user in the container match those on the host system. Otherwise permission errors may occur preventing the bind mount of backups. The default user in the container is `restic` with GID `1000` and UID `1000`. These values can be modified by setting the `UID` and `GID`.
 
 ```yml
 version: "3.7"
@@ -49,6 +49,8 @@ services:
   restic:
     image: patrickap/docker-restic:latest
     environment:
+      - UID=1000
+      - GID=1000
       - RESTIC_PASSWORD=$BACKUP_PASSWORD
     init: true
     restart: always
