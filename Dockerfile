@@ -35,7 +35,7 @@ ENV UID=$UID \
     # add commands to PATH for convenient execution
     PATH="$RESTIC_ROOT/scripts:$PATH" \
     # change rclone config path
-    RCLONE_CONFIG="$RESTIC_ROOT/rclone.conf"
+    RCLONE_CONFIG="$RESTIC_ROOT/config/rclone.conf"
 
 COPY . $RESTIC_ROOT
 
@@ -55,7 +55,6 @@ RUN apk update \
         $RESTIC_TARGET \
         $RESTIC_REPOSITORY \
         $RESTIC_EXPORT \
-    && touch $RESTIC_ROOT/rclone.conf $RESTIC_ROOT/restic.lock \
     && chown -R restic:restic $RESTIC_ROOT
 
 USER restic

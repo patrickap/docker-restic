@@ -58,8 +58,8 @@ services:
       # volumes to backup
       - volume-1:/srv/restic/source/volume-1:ro
       - volume-2:/srv/restic/source/volume-2:ro
-      # persist restic data and config
-      - restic-data:/srv/restic
+      # persist restic config
+      - restic-config:/srv/restic/config
       # provide host information
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -89,7 +89,7 @@ Remote syncing of backups can be configured with `rclone`. Either bind mound the
 ```yml
 docker-restic:
   volumes:
-    - /path/to/rclone-config:/srv/restic/rclone.conf
+    - /path/to/rclone-config:/srv/restic/config/rclone.conf
 ```
 
 **Note:**
@@ -131,12 +131,12 @@ docker restart <container_name>
 
 ## Schedule Backups
 
-Snapshots and remote syncing is scheduled daily, the backup archive creation weekly. The default cron configuration can be changed by editing the `/srv/restic/restic.cron` file and restarting the `docker-restic` container with `docker restart <container_name>` or providing a custom cron file using bind mount.
+Snapshots and remote syncing is scheduled daily, the backup archive creation weekly. The default cron configuration can be changed by editing the `/srv/restic/config/restic.cron` file and restarting the `docker-restic` container with `docker restart <container_name>` or providing a custom cron file using bind mount.
 
 ```yml
 docker-restic:
   volumes:
-    - /path/to/custom.cron:/srv/restic/restic.cron
+    - /path/to/custom.cron:/srv/restic/config/restic.cron
 ```
 
 ## Available Commands

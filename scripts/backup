@@ -20,4 +20,4 @@
   else
     log -i "Completed task BACKUP. Check log output above."
   fi
-) 200> "${RESTIC_ROOT}/restic.lock"
+) 200> "${script_dir}/restic.lock"
