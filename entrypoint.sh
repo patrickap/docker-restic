@@ -1,7 +1,6 @@
 #!/bin/sh
 
-log -i "Initializing restic ..."
-echo "$(restic version)"
+log -i "Initializing container ..."
 
 if restic cat config &> /dev/null; then
   log -i "Skipping restic initialization. Repository already exists."
@@ -26,6 +25,5 @@ fi
 
 log -i "Running cron in foreground ..."
 cron="$RESTIC_ROOT/config/restic.cron"
-cat "$cron"
 supercronic -test "$cron"
 supercronic -passthrough-logs "$cron"
