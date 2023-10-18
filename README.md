@@ -11,7 +11,6 @@ Docker-Restic is a Docker image that provides an easy way to use restic with add
 - **Integrity Checks**: Docker-Restic prioritizes the integrity of your backup data. It performs data integrity checks for all backup methods. These checks ensure that your backup data remains consistent and reliable, giving you peace of mind knowing that your valuable data is protected.
 - **Fully Customizable:** Docker-Restic offers a high level of customization through various `ARG`s and `ENV`s that can be easily set or overwritten according to your requirements. These customization options provide the flexibility to adapt the backup process to your specific needs.
 - **Various Extras:** Containers labeled with `restic-stop=true` are gracefully stopped before the backup process and restarted afterward, ensuring data consistency during the backup operation. To prevent concurrent access to backup resources, Docker-Restic utilizes a lockfile mechanism that effectively manages access and avoids conflicts.
-- **Non Root Default**: Docker-Restic operates as a non-root user by default, offering an extra layer of security. Your data stays protected.
 - **Informative Logs**: Docker-Restic provides clear and easily comprehensible logs, making it effortless to monitor and troubleshoot the backup process. The logs are designed to present relevant information in a user-friendly format, enabling you to quickly identify any issues or track the progress of your backups.
 - **Utility Commands**: Docker-Restic empowers you with the ability to perform manual backups and checks as needed. This feature allows you to take immediate backups of your container volumes or manually verify the integrity of existing backups.
 - **All Restic Goodies**: Docker-Restic incorporates all the powerful features and capabilities of the restic backup tool. You can leverage restic's advanced functionalities, such as deduplication, encryption and data integrity checks to ensure robust and secure backups for your container volumes.
@@ -40,7 +39,7 @@ docker run -d --name docker-restic \
 
 ## Docker Compose
 
-Here is a basic example how Docker-Restic can be used with docker compose. Ensure that the UID and GID of the user in the container match those on the host system. Otherwise permission errors may occur preventing the bind mount of backups. The default user in the container is `restic` with GID `1000` and UID `1000`. These values can be modified by setting the `UID` and `GID`.
+Here is a basic example how Docker-Restic can be used with docker compose.
 
 ```yml
 version: "3.7"
@@ -49,8 +48,6 @@ services:
   restic:
     image: patrickap/docker-restic:latest
     environment:
-      - UID=1000
-      - GID=1000
       - RESTIC_PASSWORD=$BACKUP_PASSWORD
     init: true
     restart: always
