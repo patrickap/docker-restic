@@ -102,6 +102,12 @@ To access or copy backups available on the remote host from another machine the 
 scp username@<host_ip>:/path/to/source /path/to/target
 ```
 
+To copy and untar in one command use this:
+
+```bash
+ssh username@<host_ip> "cat /path/to/source" | tar -xvf - -C /path/to/target
+```
+
 To restore a backup it may be possible to use the official `restic restore` command with some additional setup. Otherwise a new Docker volume with the correct name must be created including the contents of the backup. After restarting the containers the data should be mounted and restored.
 
 **Warning:**
