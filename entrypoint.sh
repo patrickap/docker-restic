@@ -2,18 +2,23 @@
 
 log -i "Initializing container ..."
 
-if [ ! "$UID" = "$(id restic -u)" ] || [ ! "$GID" = "$(id restic -g)" ]; then
+defaut_uid=$(id restic -u)
+default_gid=$(id restic -g)
+
+if [ ! "$UID" = "$defaut_uid" ] || [ ! "$GID" = "$default_gid" ]; then
   if [ -n "$UID" ]; then
-    log -i "Changing UID from $(id restic -u) to $UID."
+    log -i "Changing UID from $defaut_uid to $UID."
     usermod -o -u "$UID" restic
   fi
 
   if [ -n "$GID" ]; then
-    log -i "Updating GID from $(id restic -g) to $GID."
+    log -i "Updating GID from $default_gid to $GID."
     groupmod -o -g "$GID" restic
   fi
+fi
 
-  # change owner of restic root but exclude source directory
+if [ ! "$UID" = "$defaut_uid" ] || [ ! "$GID" = "$default_gid" ] || [ "$RESTIC_CHOWN_ROOT" = "true" ]; then
+  log -i "Changing ownership for $RESTIC_ROOT, excluding the 'source' directory."
   find $RESTIC_ROOT -mindepth 1 -maxdepth 1 ! -name source -exec chown -R restic:restic {} \;
 fi
 
