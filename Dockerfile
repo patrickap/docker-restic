@@ -1,6 +1,8 @@
 FROM restic/restic:0.16.0
 
-ARG RESTIC_PASSWORD="" \
+ARG UID="1000" \
+    GID="1000" \
+    RESTIC_PASSWORD="" \
     RESTIC_ROOT="/srv/restic" \
     RESTIC_REMOTE="remote:restic" \
     RESTIC_BACKUP_KEEP_DAILY="7" \
@@ -11,7 +13,9 @@ ARG RESTIC_PASSWORD="" \
     RESTIC_LOCK_TIMEOUT="21600" \
     RESTIC_STOP_CONTAINER_LABEL="restic-stop=true"
 
-ENV RESTIC_PASSWORD=$RESTIC_PASSWORD \
+ENV UID=$UID \
+    GID=$GID \
+    RESTIC_PASSWORD=$RESTIC_PASSWORD \
     RESTIC_ROOT=$RESTIC_ROOT \
     RESTIC_REMOTE=$RESTIC_REMOTE \
     RESTIC_BACKUP_KEEP_DAILY=$RESTIC_BACKUP_KEEP_DAILY \
@@ -39,6 +43,8 @@ RUN apk update \
         rclone~=1.62.2 \
         flock~=2.38.1 \
         supercronic~=0.2.24 \
+        shadow~=4.13 \
+        su-exec~=0.2 \
     && chmod -R 755 \
         $RESTIC_ROOT/scripts \
         $RESTIC_ROOT/entrypoint.sh \
@@ -46,6 +52,10 @@ RUN apk update \
         $RESTIC_SOURCE \
         $RESTIC_TARGET \
         $RESTIC_REPOSITORY \
-        $RESTIC_EXPORT
+        $RESTIC_EXPORT \
+    && addgroup -S -g $GID restic \
+    && adduser -S -H -D -s /bin/sh -u $UID -G restic restic \
+    && chown -R restic:restic $RESTIC_ROOT
 
-ENTRYPOINT ["/bin/sh", "-c", "$RESTIC_ROOT/entrypoint.sh"]
+ENTRYPOINT ["/srv/restic/entrypoint.sh"]
+CMD ["supercronic", "-passthrough-logs", "/srv/restic/config/restic.cron"]

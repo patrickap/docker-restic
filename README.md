@@ -10,6 +10,7 @@ Docker-Restic is a Docker image that provides an easy way to use restic with add
 - **Rclone Integration:** Besides restic you have the option to enable a remote synchronization using rclone, which ensures that your backups are securely transferred to a remote location.
 - **Integrity Checks**: Docker-Restic prioritizes the integrity of your backup data. It performs data integrity checks for all backup methods. These checks ensure that your backup data remains consistent and reliable, giving you peace of mind knowing that your valuable data is protected.
 - **Fully Customizable:** Docker-Restic offers a high level of customization through various `ARG`s and `ENV`s that can be easily set or overwritten according to your requirements. These customization options provide the flexibility to adapt the backup process to your specific needs.
+- **Non-Root Default**: Docker Restic runs as non-root by default, which increases security by limiting potential unauthorised access. It adheres to the principle of least privilege, ensuring that a module only has access to the information it needs.
 - **Various Extras:** Containers labeled with `restic-stop=true` are gracefully stopped before the backup process and restarted afterward, ensuring data consistency during the backup operation. To prevent concurrent access to backup resources, Docker-Restic utilizes a lockfile mechanism that effectively manages access and avoids conflicts.
 - **Informative Logs**: Docker-Restic provides clear and easily comprehensible logs, making it effortless to monitor and troubleshoot the backup process. The logs are designed to present relevant information in a user-friendly format, enabling you to quickly identify any issues or track the progress of your backups.
 - **Utility Commands**: Docker-Restic empowers you with the ability to perform manual backups and checks as needed. This feature allows you to take immediate backups of your container volumes or manually verify the integrity of existing backups.
@@ -146,7 +147,7 @@ docker-restic:
 
 ## Available Commands
 
-The following commands are available inside the `docker-restic` container:
+The following commands are available inside the `docker-restic` container. It is important to specify the correct user `restic` so that the commands can be executed with the correct permissions. To access the container run `docker exec -it -u restic <container_name> /bin/sh`.
 
 - `backup`:
   - stop containers

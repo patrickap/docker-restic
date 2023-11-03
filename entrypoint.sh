@@ -2,6 +2,21 @@
 
 log -i "Initializing container ..."
 
+if [ ! "$UID" = "$(id restic -u)" ] || [ ! "$GID" = "$(id restic -g)" ]; then
+  if [ -n "$UID" ]; then
+    log -i "Changing UID from $(id restic -u) to $UID."
+    usermod -o -u "$UID" restic
+  fi
+
+  if [ -n "$GID" ]; then
+    log -i "Updating GID from $(id restic -g) to $GID."
+    groupmod -o -g "$GID" restic
+  fi
+
+  # change owner of restic root but exclude source directory
+  find $RESTIC_ROOT -mindepth 1 -maxdepth 1 ! -name source -exec chown -R restic:restic {} \;
+fi
+
 if restic cat config &> /dev/null; then
   log -i "Skipping restic initialization. Repository already exists."
 else
@@ -23,7 +38,5 @@ else
   log -w "The rclone remote '$remote_name' is not configured. Run 'rclone config'."
 fi
 
-log -i "Running cron in foreground ..."
-cron="$RESTIC_ROOT/config/restic.cron"
-supercronic -test "$cron"
-supercronic -passthrough-logs "$cron"
+log -i "Running container as uid=$UID(restic) gid=$GID(restic)"
+exec su-exec restic "$@"
