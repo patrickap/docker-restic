@@ -1,8 +1,8 @@
 #!/bin/sh
 
-log -i "Creating backup archive at '${RESTIC_EXPORT}' ..."
-backup=${RESTIC_EXPORT}/backup_$(date +'%Y-%m-%d_%H.%M.%S').tar
-restic -r ${RESTIC_REPOSITORY} dump latest / > ${backup}
+log -i "Creating backup archive at '${RESTIC_EXPORT_DIR}' ..."
+backup=${RESTIC_EXPORT_DIR}/backup_$(date +'%Y-%m-%d_%H.%M.%S').tar
+restic -r ${RESTIC_REPOSITORY_DIR} dump latest / > ${backup}
 
 if [ $? -ne 0 ]; then
   log -e "Could not create backup archive."

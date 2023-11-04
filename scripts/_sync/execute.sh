@@ -1,7 +1,7 @@
 #!/bin/sh
 
-log -i "Syncing repository '${RESTIC_REPOSITORY}' to remote '${RESTIC_REMOTE}' ..."
-rclone sync ${RESTIC_REPOSITORY} ${RESTIC_REMOTE} --progress --stats 15m
+log -i "Syncing repository '${RESTIC_REPOSITORY_DIR}' to remote '${RESTIC_RCLONE_REMOTE}' ..."
+rclone sync ${RESTIC_REPOSITORY_DIR} ${RESTIC_RCLONE_REMOTE} --progress --stats 15m
 
 if [ $? -ne 0 ]; then
   log -e "Could not sync repository to remote."

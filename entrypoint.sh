@@ -1,47 +1,23 @@
 #!/bin/sh
 
-log -i "Initializing container ..."
+log -i "Starting container ..."
 
 default_uid=$(id restic -u)
 default_gid=$(id restic -g)
 
-if [ ! "$UID" = "$default_uid" ] || [ ! "$GID" = "$default_gid" ]; then
-  if [ -n "$UID" ]; then
-    log -i "Changing UID from $default_uid to $UID."
-    usermod -o -u "$UID" restic
-  fi
-
-  if [ -n "$GID" ]; then
-    log -i "Changing GID from $default_gid to $GID."
-    groupmod -o -g "$GID" restic
-  fi
+if [ ! "$UID" = "$default_uid" ] && [ -n "$UID" ]; then
+  log -i "Changing UID from '$default_uid' to '$UID'."
+  usermod -o -u "$UID" restic
 fi
 
-if [ ! "$UID" = "$default_uid" ] || [ ! "$GID" = "$default_gid" ] || [ "$RESTIC_CHOWN_ROOT" = "true" ]; then
-  log -i "Changing ownership for $RESTIC_ROOT, excluding the 'source' directory."
-  find $RESTIC_ROOT -mindepth 1 -maxdepth 1 ! -name source -exec chown -R restic:restic {} \;
+if [ ! "$GID" = "$default_gid" ] && [ -n "$GID" ]; then
+  log -i "Changing GID from '$default_gid' to '$GID'."
+  groupmod -o -g "$GID" restic
 fi
 
-if restic cat config &> /dev/null; then
-  log -i "Skipping restic initialization. Repository already exists."
-else
-  restic -r ${RESTIC_REPOSITORY} init 2>&1
-
-  if [ $? -ne 0 ]; then
-    log -w "Could not initialize restic repository."
-  else
-    log -i "Initialized restic repository."
-  fi
+if [ ! "$UID" = "$default_uid" ] || [ ! "$GID" = "$default_gid" ] || [ "$RESTIC_CHOWN_ALL" = "true" ]; then
+  log -i "Changing ownership for '$RESTIC_ROOT_DIR' to '$UID:$GID'."
+  chown -R restic:restic $RESTIC_ROOT_DIR
 fi
 
-# check rclone status
-remote_name=$(echo ${RESTIC_REMOTE} | awk -F: '{print $1}')
-
-if { rclone listremotes | grep -q "$remote_name"; } 2>&1; then
-  log -i "The rclone remote '$remote_name' is configured."
-else
-  log -w "The rclone remote '$remote_name' is not configured. Run 'rclone config'."
-fi
-
-log -i "Running container as uid=$UID(restic) gid=$GID(restic)"
 exec su-exec restic "$@"

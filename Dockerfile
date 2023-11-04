@@ -3,8 +3,8 @@ FROM restic/restic:0.16.0
 ARG UID="1000" \
     GID="1000" \
     RESTIC_PASSWORD="" \
-    RESTIC_ROOT="/srv/restic" \
-    RESTIC_REMOTE="remote:restic" \
+    RESTIC_ROOT_DIR="/srv/restic" \
+    RESTIC_RCLONE_REMOTE="remote:restic" \
     RESTIC_BACKUP_KEEP_DAILY="7" \
     RESTIC_BACKUP_KEEP_WEEKLY="4" \
     RESTIC_BACKUP_KEEP_MONTHLY="12" \
@@ -12,13 +12,13 @@ ARG UID="1000" \
     RESTIC_DUMP_KEEP_LAST="8" \
     RESTIC_LOCK_TIMEOUT="21600" \
     RESTIC_STOP_CONTAINER_LABEL="restic-stop=true" \
-    RESTIC_CHOWN_ROOT="false"
+    RESTIC_CHOWN_ALL="false"
 
 ENV UID=$UID \
     GID=$GID \
     RESTIC_PASSWORD=$RESTIC_PASSWORD \
-    RESTIC_ROOT=$RESTIC_ROOT \
-    RESTIC_REMOTE=$RESTIC_REMOTE \
+    RESTIC_ROOT_DIR=$RESTIC_ROOT_DIR \
+    RESTIC_RCLONE_REMOTE=$RESTIC_RCLONE_REMOTE \
     RESTIC_BACKUP_KEEP_DAILY=$RESTIC_BACKUP_KEEP_DAILY \
     RESTIC_BACKUP_KEEP_WEEKLY=$RESTIC_BACKUP_KEEP_WEEKLY \
     RESTIC_BACKUP_KEEP_MONTHLY=$RESTIC_BACKUP_KEEP_MONTHLY \
@@ -26,18 +26,20 @@ ENV UID=$UID \
     RESTIC_DUMP_KEEP_LAST=$RESTIC_DUMP_KEEP_LAST \
     RESTIC_LOCK_TIMEOUT=$RESTIC_LOCK_TIMEOUT \
     RESTIC_STOP_CONTAINER_LABEL=$RESTIC_STOP_CONTAINER_LABEL \
-    RESTIC_CHOWN_ROOT=$RESTIC_CHOWN_ROOT \
+    RESTIC_CHOWN_ALL=$RESTIC_CHOWN_ALL \
     # internal only: do not change
-    RESTIC_SOURCE="$RESTIC_ROOT/source" \
-    RESTIC_TARGET="$RESTIC_ROOT/target" \
-    RESTIC_REPOSITORY="$RESTIC_ROOT/target/repository" \
-    RESTIC_EXPORT="$RESTIC_ROOT/target/export" \
-    # add commands to PATH: do not change
-    PATH="$RESTIC_ROOT/scripts:$PATH" \
+    RESTIC_SOURCE_DIR="/source" \
+    RESTIC_BACKUP_DIR="$RESTIC_ROOT_DIR/backup" \
+    RESTIC_REPOSITORY_DIR="$RESTIC_ROOT_DIR/backup/repository" \
+    RESTIC_EXPORT_DIR="$RESTIC_ROOT_DIR/backup/export" \
+    # set restic cache directory: do not change
+    RESTIC_CACHE_DIR="$RESTIC_ROOT_DIR/cache" \
     # set rclone config path: do not change
-    RCLONE_CONFIG="$RESTIC_ROOT/config/rclone.conf"
+    RCLONE_CONFIG="$RESTIC_ROOT_DIR/config/rclone.conf" \
+    # add commands to PATH: do not change
+    PATH="$RESTIC_ROOT_DIR:$RESTIC_ROOT_DIR/scripts:$PATH"
 
-COPY . $RESTIC_ROOT
+COPY . $RESTIC_ROOT_DIR
 
 RUN apk update \
     && apk add \
@@ -48,16 +50,16 @@ RUN apk update \
         shadow~=4.13 \
         su-exec~=0.2 \
     && chmod -R 755 \
-        $RESTIC_ROOT/scripts \
-        $RESTIC_ROOT/entrypoint.sh \
+        $RESTIC_ROOT_DIR/scripts \
+        $RESTIC_ROOT_DIR/entrypoint.sh \
+        $RESTIC_ROOT_DIR/init.sh \
     && mkdir -p \
-        $RESTIC_SOURCE \
-        $RESTIC_TARGET \
-        $RESTIC_REPOSITORY \
-        $RESTIC_EXPORT \
+        $RESTIC_BACKUP_DIR \
+        $RESTIC_REPOSITORY_DIR \
+        $RESTIC_EXPORT_DIR \
     && addgroup -S -g $GID restic \
     && adduser -S -H -D -s /bin/sh -u $UID -G restic restic \
-    && chown -R restic:restic $RESTIC_ROOT
+    && chown -R restic:restic $RESTIC_ROOT_DIR
 
-ENTRYPOINT ["/srv/restic/entrypoint.sh"]
-CMD ["supercronic", "-passthrough-logs", "/srv/restic/config/restic.cron"]
+ENTRYPOINT ["entrypoint.sh"]
+CMD ["init.sh"]
