@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if restic cat config &> /dev/null; then
+if restic -r ${RESTIC_REPOSITORY_DIR} cat config &> /dev/null; then
   log -i "Skipping restic initialization. Repository already exists."
 else
   restic -r ${RESTIC_REPOSITORY_DIR} init 2>&1
