@@ -1,4 +1,4 @@
 # every day at 02:00
-0 2 * * * backup && sync >> /proc/1/fd/1
+0 2 * * * backup && sync
 # every week on sunday at 04:00
-0 4 * * 0 dump >> /proc/1/fd/1
+0 4 * * 0 dump
