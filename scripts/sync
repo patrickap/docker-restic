@@ -2,6 +2,11 @@
 
 script_dir=$(dirname "$0")
 
+if [ "$(id -u)" != "$(id restic -u)" ]; then
+  log -e "This script can only be executed by user 'restic'."
+  exit 1
+fi
+
 (
   log -i "Attempting to acquire lock for task SYNC with timeout of ${RESTIC_LOCK_TIMEOUT} seconds ..."
   flock --timeout ${RESTIC_LOCK_TIMEOUT} --exclusive 200
