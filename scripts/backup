@@ -12,6 +12,7 @@ fi
   flock --timeout ${RESTIC_LOCK_TIMEOUT} --exclusive 200
 
   log -i "Starting task BACKUP ..."
+  ${script_dir}/_container/exec.sh && \
   ${script_dir}/_container/stop.sh && \
   ${script_dir}/_backup/execute.sh && \
   ${script_dir}/_container/start.sh && \
