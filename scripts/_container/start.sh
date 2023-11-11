@@ -9,7 +9,8 @@ if [ -n "$containers" ]; then
   docker restart ${containers} > /dev/null
 
   if [ $? -ne 0 ]; then
-    log -w "Could not start containers."
+    log -e "Could not start containers."
+    exit 1
   else
     log -i "Started containers."
   fi

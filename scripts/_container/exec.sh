@@ -10,7 +10,8 @@ if [ -n "$containers" ]; then
   docker exec ${container} /bin/sh -c "${command}" > /dev/null
 
   if [ $? -ne 0 ]; then
-    log -w "Could not execute container commands."
+    log -e "Could not execute container commands."
+    exit 1
   else
     log -i "Executed container commands."
   fi

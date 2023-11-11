@@ -9,7 +9,8 @@ if [ -n "$containers" ]; then
   docker stop ${containers} > /dev/null
 
   if [ $? -ne 0 ]; then
-    log -w "Could not stop containers."
+    log -e "Could not stop containers."
+    exit 1
   else
     log -i "Stopped containers."
   fi
