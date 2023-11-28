@@ -1,7 +1,7 @@
 #!/bin/sh
 
 log -i "Checking integrity of repository ..."
-restic -r ${RESTIC_ROOT_DIR}/backup/repository check --read-data
+restic -r ${RESTIC_REPOSITORY_DIR} check --read-data
 
 if [ $? -ne 0 ]; then
   log -w "The repository may be corrupt."

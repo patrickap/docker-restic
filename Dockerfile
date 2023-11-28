@@ -10,10 +10,11 @@ ARG UID="1000" \
     RESTIC_BACKUP_KEEP_MONTHLY="12" \
     RESTIC_BACKUP_KEEP_YEARLY="2" \
     RESTIC_DUMP_KEEP_LAST="8" \
+    RESTIC_SYNC_REMOTE_MATCH="^restic-.*" \
+    RESTIC_SYNC_REMOTE_DIR="restic" \
     RESTIC_LOCK_TIMEOUT="21600" \
     RESTIC_CONTAINER_STOP_LABEL="restic.container.stop" \
     RESTIC_CONTAINER_EXEC_LABEL="restic.container.exec" \
-    RESTIC_RCLONE_REMOTE_PREFIX="restic-" \
     RESTIC_CHOWN_ALL="false"
 
 ENV UID=$UID \
@@ -26,11 +27,17 @@ ENV UID=$UID \
     RESTIC_BACKUP_KEEP_MONTHLY=$RESTIC_BACKUP_KEEP_MONTHLY \
     RESTIC_BACKUP_KEEP_YEARLY=$RESTIC_BACKUP_KEEP_YEARLY \
     RESTIC_DUMP_KEEP_LAST=$RESTIC_DUMP_KEEP_LAST \
+    RESTIC_SYNC_REMOTE_MATCH=$RESTIC_SYNC_REMOTE_MATCH \
+    RESTIC_SYNC_REMOTE_DIR=$RESTIC_SYNC_REMOTE_DIR \
     RESTIC_LOCK_TIMEOUT=$RESTIC_LOCK_TIMEOUT \
     RESTIC_CONTAINER_STOP_LABEL=$RESTIC_CONTAINER_STOP_LABEL \
     RESTIC_CONTAINER_EXEC_LABEL=$RESTIC_CONTAINER_EXEC_LABEL \
-    RESTIC_RCLONE_REMOTE_PREFIX=$RESTIC_RCLONE_REMOTE_PREFIX \
     RESTIC_CHOWN_ALL=$RESTIC_CHOWN_ALL \
+    # set internal variables
+    RESTIC_REPOSITORY_DIR="$RESTIC_ROOT_DIR/backup/repository" \
+    RESTIC_EXPORT_DIR="$RESTIC_ROOT_DIR/backup/export" \
+    RESTIC_CONFIG_DIR="$RESTIC_ROOT_DIR/config" \
+    RESTIC_SCRIPT_DIR="$RESTIC_ROOT_DIR/scripts" \
     # set restic cache directory
     RESTIC_CACHE_DIR="$RESTIC_ROOT_DIR/cache" \
     # set rclone config path
@@ -50,14 +57,13 @@ RUN apk update \
         su-exec~=0.2 \
     && mkdir -p \
         $RESTIC_ROOT_DIR \
-        $RESTIC_ROOT_DIR/backup \
-        $RESTIC_ROOT_DIR/backup/export \
-        $RESTIC_ROOT_DIR/backup/repository \
-        $RESTIC_ROOT_DIR/cache \
-        $RESTIC_ROOT_DIR/config \
-        $RESTIC_ROOT_DIR/scripts \
+        $RESTIC_REPOSITORY_DIR \
+        $RESTIC_EXPORT_DIR \
+        $RESTIC_CONFIG_DIR \
+        $RESTIC_SCRIPT_DIR \
+        $RESTIC_CACHE_DIR \
     && chmod -R 755 \
-        $RESTIC_ROOT_DIR/scripts \
+        $RESTIC_SCRIPT_DIR \
         $RESTIC_ROOT_DIR/entrypoint.sh \
         $RESTIC_ROOT_DIR/init.sh \
     && addgroup -S -g $GID restic \

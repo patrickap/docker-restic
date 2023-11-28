@@ -1,13 +1,13 @@
 #!/bin/sh
 
 log -i "Checking integrity of repository against remotes ..."
-remotes=$(rclone listremotes | grep "^${RESTIC_RCLONE_REMOTE_PREFIX}") | tr -d :
+remotes=$(rclone listremotes | grep "${RESTIC_SYNC_REMOTE_MATCH}") | tr -d :
 error=0
 
 if [ -n "${remotes}" ]; then
   for remote in ${remotes}; do
     log -i "Checking against '${remote}' ..."
-    rclone check ${RESTIC_ROOT_DIR}/backup/repository ${remote}:restic
+    rclone check ${RESTIC_REPOSITORY_DIR} ${remote}:${RESTIC_SYNC_REMOTE_DIR}
 
     if [ $? -ne 0 ]; then
       log -w "The remote data may be out of sync."

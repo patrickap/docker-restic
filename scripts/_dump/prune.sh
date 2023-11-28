@@ -4,7 +4,7 @@ set -o pipefail
 
 log -i "Searching for backup archives to prune ..."
 log -i "Keeping last ${RESTIC_DUMP_KEEP_LAST} backup archives."
-backups=$(ls -t ${RESTIC_ROOT_DIR}/backup/export/backup_* | tail +$((RESTIC_DUMP_KEEP_LAST+1)) | xargs -r echo)
+backups=$(ls -t ${RESTIC_EXPORT_DIR}/backup_* | tail +$((RESTIC_DUMP_KEEP_LAST+1)) | xargs -r echo)
 
 if [ -n "${backups}" ]; then
   log -i "Pruning backup archives ..."

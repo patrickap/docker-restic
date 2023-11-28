@@ -1,13 +1,13 @@
 #!/bin/sh
 
 log -i "Syncing repository to remotes ..."
-remotes=$(rclone listremotes | grep "^${RESTIC_RCLONE_REMOTE_PREFIX}") | tr -d :
+remotes=$(rclone listremotes | grep "${RESTIC_SYNC_REMOTE_MATCH}") | tr -d :
 error=0
 
 if [ -n "${remotes}" ]; then
   for remote in ${remotes}; do
     log -i "Syncing to '${remote}' ..."
-    rclone sync ${RESTIC_ROOT_DIR}/backup/repository ${remote}:restic --progress --stats 15m
+    rclone sync ${RESTIC_REPOSITORY_DIR} ${remote}:${RESTIC_SYNC_REMOTE_DIR} --progress --stats 15m
 
     if [ $? -ne 0 ]; then
       log -e "Could not sync to '${remote}'."
