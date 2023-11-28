@@ -1,13 +1,23 @@
 #!/bin/sh
 
-log -i "Checking integrity of repository '${RESTIC_REPOSITORY_DIR}' against remote '${RESTIC_RCLONE_REMOTE}' ..."
-rclone check ${RESTIC_REPOSITORY_DIR} ${RESTIC_RCLONE_REMOTE}
+log -i "Checking integrity of repository against remotes ..."
 
-if [ $? -ne 0 ]; then
-  log -w "The remote data may be out of sync."
-  log -e "Could not check integrity of remote data."
-  exit 1
+if [ -n "$RESTIC_RCLONE_REMOTES" ]; then
+  IFS=','
+  for remote in $RESTIC_RCLONE_REMOTES; do
+    log -i "Checking against '${remote}' ..."
+    rclone check ${RESTIC_ROOT_DIR}/backup/repository ${remote}
+
+    if [ $? -ne 0 ]; then
+      log -w "The remote data may be out of sync."
+      log -e "Could not check integrity of '${remote}'."
+      exit 1
+    else
+      log -i "The remote data seems fine."
+      log -i "Checked integrity of '${remote}'."
+    fi
+  done
+  unset IFS
 else
-  log -i "The remote data seems fine."
-  log -i "Checked integrity of remote data."
+  log -w "No remotes specified."
 fi

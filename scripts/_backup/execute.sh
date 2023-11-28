@@ -1,7 +1,7 @@
 #!/bin/sh
 
-log -i "Creating backup snapshot of '${RESTIC_SOURCE_DIR}' ..."
-restic -r ${RESTIC_REPOSITORY_DIR} backup ${RESTIC_SOURCE_DIR}
+log -i "Creating backup snapshot ..."
+restic -r ${RESTIC_ROOT_DIR}/backup/repository backup /source
 
 if [ $? -ne 0 ]; then
   log -e "Could not create backup snapshot."
