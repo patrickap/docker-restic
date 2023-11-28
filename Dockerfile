@@ -36,6 +36,7 @@ ENV UID=$UID \
     RESTIC_BACKUP_DIR="$RESTIC_ROOT_DIR/backup" \
     RESTIC_REPOSITORY_DIR="$RESTIC_ROOT_DIR/backup/repository" \
     RESTIC_EXPORT_DIR="$RESTIC_ROOT_DIR/backup/export" \
+    RESTIC_CONFIG_DIR="$RESTIC_ROOT_DIR/config" \
     # set restic cache directory: do not change
     RESTIC_CACHE_DIR="$RESTIC_ROOT_DIR/cache" \
     # set rclone config path: do not change
@@ -61,6 +62,8 @@ RUN apk update \
         $RESTIC_BACKUP_DIR \
         $RESTIC_REPOSITORY_DIR \
         $RESTIC_EXPORT_DIR \
+        $RESTIC_CONFIG_DIR \
+        $RESTIC_CACHE_DIR \
     && addgroup -S -g $GID restic \
     && adduser -S -H -D -s /bin/sh -u $UID -G restic restic \
     && chown -R restic:restic $RESTIC_ROOT_DIR
