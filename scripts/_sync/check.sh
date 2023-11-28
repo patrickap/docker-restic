@@ -1,7 +1,7 @@
 #!/bin/sh
 
 log -i "Checking integrity of repository against remotes ..."
-remotes=$(rclone listremotes | grep "${RESTIC_SYNC_REMOTE_MATCH}") | tr -d :
+remotes=$(rclone listremotes | grep "${RESTIC_SYNC_REMOTE_MATCH}" | tr -d :)
 error=0
 
 if [ -n "${remotes}" ]; then
@@ -11,11 +11,11 @@ if [ -n "${remotes}" ]; then
 
     if [ $? -ne 0 ]; then
       log -w "The remote data may be out of sync."
-      log -e "Could not check integrity of '${remote}'."
+      log -e "Could not check integrity of remote."
       error=1
     else
       log -i "The remote data seems fine."
-      log -i "Checked integrity of '${remote}'."
+      log -i "Checked integrity of remote."
     fi
   done
 else

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 log -i "Syncing repository to remotes ..."
-remotes=$(rclone listremotes | grep "${RESTIC_SYNC_REMOTE_MATCH}") | tr -d :
+remotes=$(rclone listremotes | grep "${RESTIC_SYNC_REMOTE_MATCH}" | tr -d :)
 error=0
 
 if [ -n "${remotes}" ]; then
@@ -10,10 +10,10 @@ if [ -n "${remotes}" ]; then
     rclone sync ${RESTIC_REPOSITORY_DIR} ${remote}:${RESTIC_SYNC_REMOTE_DIR} --progress --stats 15m
 
     if [ $? -ne 0 ]; then
-      log -e "Could not sync to '${remote}'."
+      log -e "Could not sync to remote."
       error=1
     else
-      log -i "Synced to '${remote}'."
+      log -i "Synced to remote."
     fi
   done
 else
