@@ -1,21 +1,25 @@
 #!/bin/sh
 
 log -i "Syncing repository to remotes ..."
+remotes=$(rclone listremotes | grep "^$RESTIC_RCLONE_REMOTE_PREFIX") | tr -d :
+error=0
 
-if [ -n "$RESTIC_RCLONE_REMOTES" ]; then
-  IFS=','
-  for remote in $RESTIC_RCLONE_REMOTES; do
+if [ -n "$remotes" ]; then
+  for remote in $remotes; do
     log -i "Syncing to '${remote}' ..."
-    rclone sync ${RESTIC_ROOT_DIR}/backup/repository ${remote} --progress --stats 15m
+    rclone sync ${RESTIC_ROOT_DIR}/backup/repository ${remote}:restic --progress --stats 15m
 
     if [ $? -ne 0 ]; then
-      log -e "Could not sync repository to '${remote}'."
-      exit 1
+      log -e "Could not sync to '${remote}'."
+      error=1
     else
-      log -i "Synced repository to '${remote}'."
+      log -i "Synced to '${remote}'."
     fi
   done
-  unset IFS
 else
-  log -w "No remotes specified."
+  log -w "No matching remotes found. Rclone may not be configured."
+fi
+
+if [ $error == 1 ]; then
+  exit 1
 fi

@@ -92,6 +92,20 @@ docker-restic:
     - /path/to/rclone-config:/srv/restic/config/rclone.conf
 ```
 
+By default, Docker-Restic automatically synchronizes with all rclone remotes that start with the prefix `restic-``. This feature can be particularly useful when you have preconfigured settings in rclone and are utilizing aliases for the synchronization.
+
+```bash
+# rclone.conf
+[b2]
+type = b2
+account = <account_id>
+key = <application_key>
+
+[restic-b2]
+type = alias
+remote = b2:<bucket_name>
+```
+
 **Note:**
 If using Google Drive it is also recommended to create a [custom client-id](https://rclone.org/drive/#making-your-own-client-id) for better performance.
 

@@ -1,23 +1,27 @@
 #!/bin/sh
 
 log -i "Checking integrity of repository against remotes ..."
+remotes=$(rclone listremotes | grep "^$RESTIC_RCLONE_REMOTE_PREFIX") | tr -d :
+error=0
 
-if [ -n "$RESTIC_RCLONE_REMOTES" ]; then
-  IFS=','
-  for remote in $RESTIC_RCLONE_REMOTES; do
+if [ -n "$remotes" ]; then
+  for remote in $remotes; do
     log -i "Checking against '${remote}' ..."
-    rclone check ${RESTIC_ROOT_DIR}/backup/repository ${remote}
+    rclone check ${RESTIC_ROOT_DIR}/backup/repository ${remote}:restic
 
     if [ $? -ne 0 ]; then
       log -w "The remote data may be out of sync."
       log -e "Could not check integrity of '${remote}'."
-      exit 1
+      error=1
     else
       log -i "The remote data seems fine."
       log -i "Checked integrity of '${remote}'."
     fi
   done
-  unset IFS
 else
-  log -w "No remotes specified."
+  log -w "No matching remotes found. Rclone may not be configured."
+fi
+
+if [ $error == 1 ]; then
+  exit 1
 fi
