@@ -6,9 +6,9 @@ log -i "Searching for backup archives to prune ..."
 log -i "Keeping last ${RESTIC_DUMP_KEEP_LAST} backup archives."
 backups=$(ls -t ${RESTIC_ROOT_DIR}/backup/export/backup_* | tail +$((RESTIC_DUMP_KEEP_LAST+1)) | xargs -r echo)
 
-if [ -n "$backups" ]; then
+if [ -n "${backups}" ]; then
   log -i "Pruning backup archives ..."
-  for backup in $backups; do log -i "Pruning '$(basename $backup)' ..."; done
+  for backup in ${backups}; do log -i "Pruning '$(basename ${backup})' ..."; done
   rm -rf ${backups}
   
   if [ $? -ne 0 ]; then

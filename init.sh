@@ -14,13 +14,13 @@ fi
 
 rclone_remotes=$(rclone listremotes)
 
-if [ -z "$rclone_remotes" ]; then
+if [ -z "${rclone_remotes}" ]; then
   log -w "Rclone is not configured. Run 'rclone config'."
 else
   log -i "Rclone is configured."
 fi
 
-restic_cron="$RESTIC_ROOT_DIR/config/restic.cron"
+restic_cron="${RESTIC_ROOT_DIR}/config/restic.cron"
 
 log -i "Running container as $(id restic)."
-supercronic -passthrough-logs "$restic_cron"
+supercronic -passthrough-logs "${restic_cron}"

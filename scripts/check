@@ -17,7 +17,7 @@ fi
   ${script_dir}/_dump/check.sh || error=1
   ${script_dir}/_sync/check.sh || error=1
 
-  if [ $? -ne 0 ] || [ $error == 1 ]; then
+  if [ $? -ne 0 ] || [ ${error} == 1 ]; then
     log -e "Completed task CHECK with errors. Check log output above."
     exit 1
   else

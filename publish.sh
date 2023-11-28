@@ -9,10 +9,10 @@ read -p "Enter the version tag for the Docker image: " version_tag
 docker login
 
 # Build the Docker image
-docker build . -t "$image_name:$version_tag"
+docker build . -t "${image_name}:${version_tag}"
 
 # Push the image to Docker Hub
-docker push "$image_name:$version_tag"
+docker push "${image_name}:${version_tag}"
 
 # Remove the locally built image
-docker rmi "$image_name:$version_tag"
+docker rmi "${image_name}:${version_tag}"

@@ -3,8 +3,8 @@
 log -i "Searching for latest backup archive ..."
 backup=$(ls -t ${RESTIC_ROOT_DIR}/backup/export/backup_* | head -1)
 
-if [ -n "$backup" ]; then
-  log -i "Checking integrity of latest backup archive '$(basename "$backup")' ..."
+if [ -n "${backup}" ]; then
+  log -i "Checking integrity of latest backup archive '$(basename "${backup}")' ..."
   echo ${backup} | xargs -r tar -tf > /dev/null
 
   if [ $? -ne 0 ]; then

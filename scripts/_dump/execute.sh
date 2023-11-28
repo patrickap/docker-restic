@@ -8,5 +8,5 @@ if [ $? -ne 0 ]; then
   log -e "Could not create backup archive."
   exit 1
 else
-  log -i "Created backup archive '$(basename "$backup")'."
+  log -i "Created backup archive '$(basename "${backup}")'."
 fi

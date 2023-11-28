@@ -3,9 +3,9 @@
 log -i "Searching for containers labeled '${RESTIC_CONTAINER_STOP_LABEL}=true' ..."
 containers=$(docker ps -q --filter label="${RESTIC_CONTAINER_STOP_LABEL}=true")
 
-if [ -n "$containers" ]; then
+if [ -n "${containers}" ]; then
   log -i "Stopping containers ..."
-  for container in $containers; do log -i "Stopping '$container' ..."; done
+  for container in ${containers}; do log -i "Stopping '${container}' ..."; done
   docker stop ${containers} > /dev/null
 
   if [ $? -ne 0 ]; then
