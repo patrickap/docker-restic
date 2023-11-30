@@ -7,7 +7,7 @@ error=0
 if [ -n "${remotes}" ]; then
   for remote in ${remotes}; do
     log -i "Checking against '${remote}' ..."
-    rclone check ${RESTIC_REPOSITORY_DIR} ${remote}:${RESTIC_SYNC_REMOTE_DIR} --fast-list --progress --stats 15m
+    rclone check ${RESTIC_REPOSITORY_DIR} ${remote}:${RESTIC_SYNC_REMOTE_DIR} --fast-list --log-level INFO
 
     if [ $? -ne 0 ]; then
       log -w "The remote data may be out of sync."

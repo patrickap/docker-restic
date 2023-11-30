@@ -7,7 +7,7 @@ error=0
 if [ -n "${remotes}" ]; then
   for remote in ${remotes}; do
     log -i "Syncing to '${remote}' ..."
-    rclone sync ${RESTIC_REPOSITORY_DIR} ${remote}:${RESTIC_SYNC_REMOTE_DIR} --fast-list --progress --stats 15m
+    rclone sync ${RESTIC_REPOSITORY_DIR} ${remote}:${RESTIC_SYNC_REMOTE_DIR} --fast-list --progress --stats 15m --log-level INFO
 
     if [ $? -ne 0 ]; then
       log -e "Could not sync to remote."
