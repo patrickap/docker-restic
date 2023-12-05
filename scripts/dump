@@ -13,8 +13,16 @@ fi
 
   log -i "Starting task DUMP ..."
   ${script_dir}/_dump/execute.sh && \
-  ${script_dir}/_dump/prune.sh && \
-  ${script_dir}/_dump/check.sh
+  {
+    if [[ "${*}" =~ "--prune" ]]; then
+      ${script_dir}/_dump/prune.sh
+    fi
+  } && \
+  {
+    if [[ "${*}" =~ "--check" ]]; then
+      ${script_dir}/_dump/check.sh
+    fi
+  }
 
   if [ $? -ne 0 ]; then
     log -e "Completed task DUMP with errors. Check log output above."

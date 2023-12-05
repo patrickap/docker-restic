@@ -16,8 +16,16 @@ fi
   ${script_dir}/_container/stop.sh && \
   ${script_dir}/_backup/execute.sh && \
   ${script_dir}/_container/start.sh && \
-  ${script_dir}/_backup/prune.sh && \
-  ${script_dir}/_backup/check.sh
+  {
+    if [[ "${*}" =~ "--prune" ]]; then
+      ${script_dir}/_backup/prune.sh
+    fi
+  } && \
+  {
+    if [[ "${*}" =~ "--check" ]]; then
+      ${script_dir}/_backup/check.sh
+    fi
+  }
 
   if [ $? -ne 0 ]; then
     ${script_dir}/_container/start.sh

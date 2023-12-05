@@ -13,7 +13,11 @@ fi
 
   log -i "Starting task SYNC ..."
   ${script_dir}/_sync/execute.sh && \
-  ${script_dir}/_sync/check.sh
+  {
+    if [[ "${*}" =~ "--check" ]]; then
+      ${script_dir}/_sync/check.sh
+    fi
+  }
 
   if [ $? -ne 0 ]; then
     log -e "Completed task SYNC with errors. Check log output above."

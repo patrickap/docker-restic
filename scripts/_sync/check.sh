@@ -19,7 +19,7 @@ if [ -n "${remotes}" ]; then
     fi
   done
 else
-  log -w "No matching remotes found. Rclone may not be configured."
+  log -w "Nothing checked. No remote found. Rclone may not be configured."
 fi
 
 if [ ${error} == 1 ]; then

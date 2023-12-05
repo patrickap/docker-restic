@@ -164,15 +164,15 @@ The following commands are available inside the `docker-restic` container. It is
   - stop containers
   - create snapshot
   - start containers
-  - prune snapshots
-  - check integrity
+  - prune snapshots (flag `--prune`)
+  - check integrity (flag `--check`)
 - `dump`:
   - create archive
-  - prune archives
-  - check integrity
+  - prune archives (flag `--prune`)
+  - check integrity (flag `--check`)
 - `sync`:
   - sync remote
-  - check integrity
+  - check integrity (flag `--check`)
 - `check`:
   - check backup data integrity
   - check dump data integrity
