@@ -82,6 +82,15 @@ docker-restic:
     - volume-3:/source/volume-3:ro
 ```
 
+**Note:**
+It may be necessary to add the `DAC_READ_SEARCH` capability to the container when backing up multiple volumes from different owners or with restricted permissions. This capability will allow Docker-Restic to read all directories.
+
+```yml
+docker-restic:
+  cap_add:
+    - DAC_READ_SEARCH
+```
+
 ## Remote Sync
 
 Remote syncing of backups can be configured with `rclone`. Either bind mound the config into the container or run `rclone config` inside the `docker-restic` container.

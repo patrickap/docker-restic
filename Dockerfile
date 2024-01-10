@@ -1,4 +1,4 @@
-FROM restic/restic:0.16.0
+FROM restic/restic:0.16.2
 
 ARG UID="1000" \
     GID="1000" \
@@ -55,6 +55,7 @@ RUN apk update \
         supercronic~=0.2.24 \
         shadow~=4.13 \
         su-exec~=0.2 \
+        libcap~=2.69 \
     && mkdir -p \
         $RESTIC_ROOT_DIR \
         $RESTIC_REPOSITORY_DIR \
@@ -68,7 +69,9 @@ RUN apk update \
         $RESTIC_ROOT_DIR/init.sh \
     && addgroup -S -g $GID restic \
     && adduser -S -H -D -s /bin/sh -u $UID -G restic restic \
-    && chown -R restic:restic $RESTIC_ROOT_DIR
+    && chown -R restic:restic $RESTIC_ROOT_DIR \
+    # add capabilities for reading all directories, regardless of owner
+    && setcap cap_dac_read_search=+ep /usr/bin/restic
 
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["init.sh"]
