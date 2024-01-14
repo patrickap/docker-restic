@@ -30,6 +30,8 @@ func Execute() {
 
 	// TODO: override flags from config when set on wrapper which take precendence
 
+	// TODO: fix order of args / flags
+
 	resticCmd := exec.Command("restic", append([]string{commandName}, command.Arguments...)...)
 	for key, value := range command.Flags {
 		// TODO: boolean flag parsing handle flag: true -> --flag
