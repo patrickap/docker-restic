@@ -1,4 +1,0 @@
-# every day expect sunday at 02:00
-0 2 * * 1-6 backup --prune --check && sync
-# every sunday at 02:00
-0 2 * * 7 backup --prune --check && dump --prune --check && sync --check

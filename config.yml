@@ -1,0 +1,20 @@
+repository:
+  location: "/srv/restic/repository"
+  password_file: "/run/secrets/password"
+
+commands:
+  backup:
+    arguments:
+      - /source
+    hooks:
+      pre: "echo 'exec containers, stop containers...'"
+      post: "echo 'start containers'"
+  prune:
+    flags:
+      keep-daily: 1
+      keep-weekly: 1
+      keep-monthly: 1
+      keep-yearly: 1
+  check:
+    flags:
+      read-data: true
