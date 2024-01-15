@@ -6,26 +6,16 @@ import (
 	"syscall"
 
 	"github.com/patrickap/docker-restic/m/v2/cmd"
-	"github.com/patrickap/docker-restic/m/v2/internal/log"
 )
 
 func main() {
-	// create channel to receive os signals
-	sigs := make(chan os.Signal, 1)
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
-	// register channel to receive sigint and sigterm signals
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
-	// start goroutine that will perform cleanup when a signal is received
 	go func() {
-		<-sigs
-		cleanup()
+		<-signals
 		os.Exit(1)
 	}()
 
 	cmd.Execute()
-}
-
-func cleanup() {
-	log.Info().Msg("Running cleanup...")
 }
