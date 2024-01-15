@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/patrickap/docker-restic/m/v2/internal/config"
 	"github.com/patrickap/docker-restic/m/v2/internal/log"
@@ -10,15 +11,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// TODO: make only runnable by user restic:restic
-
 var rootCmd = &cobra.Command{
-	Use:   "docker-restic",
-	Short: "...",
-	Long:  "...",
-	Run: func(cmd *cobra.Command, args []string) {
-		// handle
-	},
+	Use:  "docker-restic",
+	Args: cobra.ExactArgs(1),
 }
 
 func init() {
@@ -28,53 +23,59 @@ func init() {
 	}
 
 	for commandName := range config.Commands {
-		nextCmd := &cobra.Command{
+		subCmd := &cobra.Command{
 			Use: commandName,
 			Run: func(cmd *cobra.Command, args []string) {
 				// TODO: create repo folder and init repository if not exists
 
-				commandConfig, exists := config.Commands[commandName]
+				command, exists := config.Commands[commandName]
 				if !exists {
 					// handle
 				}
 
-				err = util.ExecuteCommand("/bin/sh", "-c", commandConfig.Hooks.Pre)
+				err = util.ExecuteCommand("/bin/sh", "-c", command.Hooks.Pre)
 				if err != nil {
 					// handle
 				}
 
 				// TODO: override flags from config when set on wrapper which take precendence
 
-				resticCmd := append([]string{commandConfig.Command}, commandConfig.Arguments...)
-				for key, value := range commandConfig.Flags {
+				commandArgs := command.Arguments
+				commandFlags := []string{}
+
+				for key, value := range command.Flags {
 					switch valueType := value.(type) {
 					case bool:
 						if valueType {
-							resticCmd = append(resticCmd, fmt.Sprintf("--%s", key))
+							commandFlags = append(commandFlags, fmt.Sprintf("--%s", key))
 						}
 					default:
-						resticCmd = append(resticCmd, fmt.Sprintf("--%s", key), fmt.Sprintf("%v", value))
+						commandFlags = append(commandFlags, fmt.Sprintf("--%s", key), fmt.Sprintf("%v", value))
 					}
 				}
 
-				err = util.ExecuteCommand("restic", resticCmd...)
+				log.Info().Msg("Running: restic " + strings.Join(append(commandArgs, commandFlags...), " "))
+
+				err = util.ExecuteCommand("restic", append(commandArgs, commandFlags...)...)
 				if err != nil {
 					log.Error().Msg("error")
 					os.Exit(1)
 				}
 
-				err = util.ExecuteCommand("/bin/sh", "-c", commandConfig.Hooks.Post)
+				err = util.ExecuteCommand("/bin/sh", "-c", command.Hooks.Post)
 				if err != nil {
 					// handle
 				}
 			},
 		}
 
-		rootCmd.AddCommand(nextCmd)
+		rootCmd.AddCommand(subCmd)
 	}
 }
 
 func Execute() {
+	// TODO: make only runnable by user restic:restic
+
 	err := rootCmd.Execute()
 	if err != nil {
 		// handle

@@ -7,12 +7,7 @@ import (
 )
 
 type Config struct {
-	Repository struct {
-		Location     string `yaml:"location"`
-		PasswordFile string `yaml:"password_file"`
-	} `yaml:"repository"`
 	Commands map[string]struct {
-		Command   string                 `yaml:"command"`
 		Arguments []string               `yaml:"arguments"`
 		Flags     map[string]interface{} `yaml:"flags"`
 		Hooks     struct {
