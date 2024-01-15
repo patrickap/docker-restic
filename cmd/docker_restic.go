@@ -28,9 +28,6 @@ func init() {
 		subCmd := &cobra.Command{
 			Use:          commandName,
 			SilenceUsage: true,
-			PreRun: func(cmd *cobra.Command, args []string) {
-				log.Info().Msg("PreRun called")
-			},
 			RunE: func(cmd *cobra.Command, args []string) error {
 				Execute := func() error {
 					command, found := config.Commands[commandName]
@@ -51,12 +48,14 @@ func init() {
 					return nil
 				}
 
+				log.Info().Msg("Hook PRE")
 				err := Execute()
+				log.Info().Msg("Hook POST")
 				if err != nil {
-					log.Info().Msg("RunE error called")
+					log.Info().Msg("Hook FAILURE")
 					return err
 				} else {
-					log.Info().Msg("RunE success called")
+					log.Info().Msg("Hook SUCCESS")
 					return nil
 				}
 			},
