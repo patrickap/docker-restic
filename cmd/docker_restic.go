@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
 	"strings"
 
 	"github.com/patrickap/docker-restic/m/v2/internal/config"
@@ -19,7 +17,8 @@ var rootCmd = &cobra.Command{
 func init() {
 	config, err := config.Parse()
 	if err != nil {
-		// handle
+		log.Error().Msg("Could not load configuration file")
+		panic(1)
 	}
 
 	for commandName := range config.Commands {
@@ -30,27 +29,29 @@ func init() {
 
 				command, exists := config.Commands[commandName]
 				if !exists {
-					// handle
+					log.Error().Msg("Could not find command in configuration file")
+					panic(1)
 				}
 
 				log.Info().Msgf("Executing hook (pre): %s", command.Hooks.Pre)
 				err = util.ExecuteCommand("/bin/sh", "-c", command.Hooks.Pre)
 				if err != nil {
-					// handle
+					log.Warn().Msg("Could not execute hook (pre)")
 				}
 
-				commandResult := createResticCommand(command)
+				commandResult := util.CreateCommand(command)
 
-				log.Info().Msgf("Executing command: %s", strings.Join(commandResult, " "))
+				log.Info().Msgf("Executing restic: %s", strings.Join(commandResult, " "))
 				err = util.ExecuteCommand(commandResult...)
 				if err != nil {
-					// handle
+					log.Error().Msg("Could not execute restic")
+					panic(1)
 				}
 
 				log.Info().Msgf("Executing hook (post) %s", command.Hooks.Post)
 				err = util.ExecuteCommand("/bin/sh", "-c", command.Hooks.Post)
 				if err != nil {
-					// handle
+					log.Warn().Msg("Could not execute hook (post)")
 				}
 			},
 		}
@@ -60,31 +61,11 @@ func init() {
 }
 
 func Execute() {
+	log.Info().Msg("Executing task ...")
 	// TODO: make only runnable by user restic:restic
 	err := rootCmd.Execute()
 	if err != nil {
-		// handle
-		os.Exit(1)
+		log.Error().Msg("Could not execute task")
+		panic(1)
 	}
-}
-
-func createResticCommand(command config.Command) []string {
-	commandArgs := command.Arguments
-	commandFlags := func() []string {
-		flags := []string{}
-		for _, flag := range util.SortMapByKey(command.Flags) {
-			switch flagType := flag.Value.(type) {
-			case bool:
-				if flagType {
-					flags = append(flags, fmt.Sprintf("--%s", flag.Key))
-				}
-			default:
-				flags = append(flags, fmt.Sprintf("--%s", flag.Key), fmt.Sprintf("%v", flag.Value))
-			}
-		}
-
-		return flags
-	}()
-
-	return append([]string{"restic"}, append(commandArgs, commandFlags...)...)
 }
