@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"os"
 	"strings"
 
@@ -16,59 +17,51 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
+	// TODO: create repo folder and init repository if not exists
 	config, err := config.Get()
 	if err != nil {
 		log.Error().Msg("Could not load configuration file")
-		return
+		os.Exit(1)
 	}
 
 	for commandName := range config.Commands {
 		subCmd := &cobra.Command{
-			Use: commandName,
-			Run: func(cmd *cobra.Command, args []string) {
-				// TODO: create repo folder and init repository if not exists
-
-				command, exists := config.Commands[commandName]
-				if !exists {
-					log.Error().Msg("Could not find command in configuration file")
-					return
-				}
-
-				defer func() {
-					log.Info().Msgf("Executing hook 'post' %s", command.Hooks.Post)
-					err = util.ExecuteCommand("/bin/sh", "-c", command.Hooks.Post).Run()
-					if err != nil {
-						log.Warn().Msg("Could not execute hook 'post'")
-					}
-				}()
-
-				log.Info().Msgf("Executing hook 'pre': %s", command.Hooks.Pre)
-				err = util.ExecuteCommand("/bin/sh", "-c", command.Hooks.Pre).Run()
-				if err != nil {
-					log.Warn().Msg("Could not execute hook 'pre'")
-				}
-
-				commandResult := util.BuildCommand(command)
-
-				log.Info().Msgf("Executing restic: %s", strings.Join(commandResult, " "))
-				err = util.ExecuteCommand(commandResult...).Run()
-				if err != nil {
-					log.Error().Msg("Could not execute restic")
-
-					log.Info().Msgf("Executing hook 'failure' %s", command.Hooks.Failure)
-					err = util.ExecuteCommand("/bin/sh", "-c", command.Hooks.Failure).Run()
-					if err != nil {
-						log.Warn().Msg("Could not execute hook 'failure'")
+			Use:          commandName,
+			SilenceUsage: true,
+			PreRun: func(cmd *cobra.Command, args []string) {
+				log.Info().Msg("PreRun called")
+			},
+			RunE: func(cmd *cobra.Command, args []string) error {
+				Execute := func() error {
+					command, found := config.Commands[commandName]
+					if !found {
+						log.Error().Msg("Could not find command in configuration file")
+						return errors.New("config not found")
 					}
 
-					return
+					commandResult := util.BuildCommand(command)
+
+					log.Info().Msgf("Executing restic: %s", strings.Join(commandResult, " "))
+					err = util.ExecuteCommand(commandResult...).Run()
+					if err != nil {
+						log.Error().Msg("Could not execute restic")
+						return err
+					}
+
+					return nil
 				}
 
-				log.Info().Msgf("Executing hook 'success' %s", command.Hooks.Success)
-				err = util.ExecuteCommand("/bin/sh", "-c", command.Hooks.Success).Run()
+				err := Execute()
 				if err != nil {
-					log.Warn().Msg("Could not execute hook 'success'")
+					log.Info().Msg("RunE error called")
+					return err
+				} else {
+					log.Info().Msg("RunE success called")
+					return nil
 				}
+			},
+			PostRun: func(cmd *cobra.Command, args []string) {
+				log.Info().Msg("PostRun called")
 			},
 		}
 

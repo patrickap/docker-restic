@@ -14,6 +14,18 @@ type Pair struct {
 	Value interface{}
 }
 
+type CommandBuild struct {
+	Command []string
+	Hooks   HooksBuild
+}
+
+type HooksBuild struct {
+	Pre     []string
+	Post    []string
+	Success []string
+	Failure []string
+}
+
 func BuildCommand(command config.Command) []string {
 	commandFlags := []string{}
 	for _, flag := range SortMapByKey(command.Flags) {
