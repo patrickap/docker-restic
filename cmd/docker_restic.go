@@ -33,6 +33,7 @@ func init() {
 					// handle
 				}
 
+				log.Info().Msgf("Executing hook (pre): %s", command.Hooks.Pre)
 				err = util.ExecuteCommand("/bin/sh", "-c", command.Hooks.Pre)
 				if err != nil {
 					// handle
@@ -54,14 +55,13 @@ func init() {
 					}
 				}
 
-				log.Info().Msg("Running: restic " + strings.Join(append(commandArgs, commandFlags...), " "))
-
+				log.Info().Msgf("Executing command: restic %s", strings.Join(append(commandArgs, commandFlags...), " "))
 				err = util.ExecuteCommand("restic", append(commandArgs, commandFlags...)...)
 				if err != nil {
-					log.Error().Msg("error")
-					os.Exit(1)
+					// handle
 				}
 
+				log.Info().Msgf("Executing hook (post) %s", command.Hooks.Post)
 				err = util.ExecuteCommand("/bin/sh", "-c", command.Hooks.Post)
 				if err != nil {
 					// handle
