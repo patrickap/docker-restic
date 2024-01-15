@@ -7,15 +7,18 @@ import (
 )
 
 type Config struct {
-	Commands map[string]Command
+	Commands map[string]Command `yaml:"commands"`
 }
 
 type Command struct {
+	Binary    string                 `yaml:"binary"`
 	Arguments []string               `yaml:"arguments"`
 	Flags     map[string]interface{} `yaml:"flags"`
 	Hooks     struct {
-		Pre  string `yaml:"pre"`
-		Post string `yaml:"post"`
+		Pre     string `yaml:"pre"`
+		Post    string `yaml:"post"`
+		Success string `yaml:"success"`
+		Failure string `yaml:"failure"`
 	} `yaml:"hooks"`
 }
 
@@ -25,7 +28,7 @@ func init() {
 	viper.AddConfigPath(os.Getenv("DOCKER_RESTIC_DIR"))
 }
 
-func Parse() (Config, error) {
+func Get() (Config, error) {
 	var config Config
 
 	err := viper.ReadInConfig()

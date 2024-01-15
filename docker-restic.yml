@@ -4,6 +4,7 @@ main-repository: &main-repository
 
 commands:
   backup:
+    binary: restic
     arguments:
       - backup
       - /source
@@ -18,3 +19,5 @@ commands:
     hooks:
       pre: "echo 'exec containers & stop containers...'"
       post: "echo 'start containers ...'"
+      success: ""
+      failure: ""

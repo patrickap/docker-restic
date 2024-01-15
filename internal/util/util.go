@@ -14,11 +14,8 @@ type Pair struct {
 	Value interface{}
 }
 
-// TODO: move somewhere else
-func CreateCommand(command config.Command) []string {
-	commandArgs := command.Arguments
+func BuildCommand(command config.Command) []string {
 	commandFlags := []string{}
-
 	for _, flag := range SortMapByKey(command.Flags) {
 		switch flagType := flag.Value.(type) {
 		case bool:
@@ -30,14 +27,15 @@ func CreateCommand(command config.Command) []string {
 		}
 	}
 
-	return append([]string{"restic"}, append(commandArgs, commandFlags...)...)
+	commandResult := append([]string{command.Binary}, append(command.Arguments, commandFlags...)...)
+	return commandResult
 }
 
-func ExecuteCommand(args ...string) error {
+func ExecuteCommand(args ...string) *exec.Cmd {
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	return cmd.Run()
+	return cmd
 }
 
 func SortMapByKey(m map[string]interface{}) []Pair {
