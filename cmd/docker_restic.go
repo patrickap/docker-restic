@@ -29,38 +29,35 @@ func init() {
 			Use:          commandName,
 			SilenceUsage: true,
 			RunE: func(cmd *cobra.Command, args []string) error {
-				Execute := func() error {
-					command, found := config.Commands[commandName]
-					if !found {
-						log.Error().Msg("Could not find command in configuration file")
-						return errors.New("config not found")
-					}
-
-					commandResult := util.BuildCommand(command)
-
-					log.Info().Msgf("Executing restic: %s", strings.Join(commandResult, " "))
-					err = util.ExecuteCommand(commandResult...).Run()
-					if err != nil {
-						log.Error().Msg("Could not execute restic")
-						return err
-					}
-
-					return nil
+				command, found := config.Commands[commandName]
+				if !found {
+					log.Error().Msg("Could not find command in configuration file")
+					return errors.New("config not found")
 				}
 
-				log.Info().Msg("Hook PRE")
-				err := Execute()
-				log.Info().Msg("Hook POST")
+				log.Info().Msgf("Executing hook 'Pre': %s", command.Hooks.Pre)
+				util.ExecuteCommand(strings.Split(command.Hooks.Pre, " ")...).Run()
+
+				commandResult := util.BuildCommand(command)
+				log.Info().Msgf("Executing restic: %s", strings.Join(commandResult, " "))
+				err = util.ExecuteCommand(commandResult...).Run()
+
+				log.Info().Msgf("Executing hook 'Post': %s", command.Hooks.Post)
+				util.ExecuteCommand(strings.Split(command.Hooks.Post, " ")...).Run()
+
 				if err != nil {
-					log.Info().Msg("Hook FAILURE")
+					log.Error().Msg("Could not execute restic")
+
+					log.Info().Msgf("Executing hook 'Failure': %s", command.Hooks.Failure)
+					util.ExecuteCommand(strings.Split(command.Hooks.Failure, " ")...).Run()
+
 					return err
 				} else {
-					log.Info().Msg("Hook SUCCESS")
+					log.Info().Msgf("Executing hook 'Success': %s", command.Hooks.Success)
+					util.ExecuteCommand(strings.Split(command.Hooks.Success, " ")...).Run()
+
 					return nil
 				}
-			},
-			PostRun: func(cmd *cobra.Command, args []string) {
-				log.Info().Msg("PostRun called")
 			},
 		}
 
