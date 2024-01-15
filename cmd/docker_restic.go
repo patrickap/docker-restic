@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"os"
 	"strings"
 
 	"github.com/patrickap/docker-restic/m/v2/internal/config"
@@ -18,7 +19,7 @@ func init() {
 	config, err := config.Parse()
 	if err != nil {
 		log.Error().Msg("Could not load configuration file")
-		panic(1)
+		os.Exit(1)
 	}
 
 	for commandName := range config.Commands {
@@ -30,7 +31,7 @@ func init() {
 				command, exists := config.Commands[commandName]
 				if !exists {
 					log.Error().Msg("Could not find command in configuration file")
-					panic(1)
+					os.Exit(1)
 				}
 
 				log.Info().Msgf("Executing hook (pre): %s", command.Hooks.Pre)
@@ -45,7 +46,7 @@ func init() {
 				err = util.ExecuteCommand(commandResult...)
 				if err != nil {
 					log.Error().Msg("Could not execute restic")
-					panic(1)
+					os.Exit(1)
 				}
 
 				log.Info().Msgf("Executing hook (post) %s", command.Hooks.Post)
@@ -64,6 +65,11 @@ func Execute() {
 	// TODO: make only runnable by user restic:restic
 	err := rootCmd.Execute()
 	if err != nil {
-		panic(1)
+		Cleanup()
+		os.Exit(1)
 	}
+}
+
+func Cleanup() {
+	log.Info().Msg("Running cleanup ...")
 }
