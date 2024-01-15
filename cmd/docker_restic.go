@@ -19,25 +19,34 @@ func init() {
 	config, err := config.Parse()
 	if err != nil {
 		log.Error().Msg("Could not load configuration file")
-		os.Exit(1)
+		return
 	}
 
 	for commandName := range config.Commands {
 		subCmd := &cobra.Command{
 			Use: commandName,
 			Run: func(cmd *cobra.Command, args []string) {
+				defer func() {
+					// TODO: implement cleanup hook
+					log.Info().Msgf("Executing hook 'cleanup' %s", "command.Hooks.Cleanup")
+					err = util.ExecuteCommand("/bin/sh", "-c", "command.Hooks.Cleanup")
+					if err != nil {
+						log.Warn().Msg("Could not execute hook 'cleanup'")
+					}
+				}()
+
 				// TODO: create repo folder and init repository if not exists
 
 				command, exists := config.Commands[commandName]
 				if !exists {
 					log.Error().Msg("Could not find command in configuration file")
-					os.Exit(1)
+					return
 				}
 
-				log.Info().Msgf("Executing hook (pre): %s", command.Hooks.Pre)
+				log.Info().Msgf("Executing hook 'pre': %s", command.Hooks.Pre)
 				err = util.ExecuteCommand("/bin/sh", "-c", command.Hooks.Pre)
 				if err != nil {
-					log.Warn().Msg("Could not execute hook (pre)")
+					log.Warn().Msg("Could not execute hook 'pre'")
 				}
 
 				commandResult := util.CreateCommand(command)
@@ -46,13 +55,13 @@ func init() {
 				err = util.ExecuteCommand(commandResult...)
 				if err != nil {
 					log.Error().Msg("Could not execute restic")
-					os.Exit(1)
+					return
 				}
 
-				log.Info().Msgf("Executing hook (post) %s", command.Hooks.Post)
+				log.Info().Msgf("Executing hook 'post' %s", command.Hooks.Post)
 				err = util.ExecuteCommand("/bin/sh", "-c", command.Hooks.Post)
 				if err != nil {
-					log.Warn().Msg("Could not execute hook (post)")
+					log.Warn().Msg("Could not execute hook 'post'")
 				}
 			},
 		}
@@ -65,11 +74,6 @@ func Execute() {
 	// TODO: make only runnable by user restic:restic
 	err := rootCmd.Execute()
 	if err != nil {
-		Cleanup()
 		os.Exit(1)
 	}
-}
-
-func Cleanup() {
-	log.Info().Msg("Running cleanup ...")
 }

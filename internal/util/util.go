@@ -14,6 +14,7 @@ type Pair struct {
 	Value interface{}
 }
 
+// TODO: move somewhere else
 func CreateCommand(command config.Command) []string {
 	commandArgs := command.Arguments
 	commandFlags := []string{}

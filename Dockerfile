@@ -27,7 +27,6 @@ RUN apk update \
     && apk add \
         docker-cli~=23.0.6 \
         rclone~=1.62.2 \
-        flock~=2.38.1 \
         supercronic~=0.2.24 \
         shadow~=4.13 \
         su-exec~=0.2 \
