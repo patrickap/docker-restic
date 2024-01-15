@@ -61,11 +61,9 @@ func init() {
 }
 
 func Execute() {
-	log.Info().Msg("Executing task ...")
 	// TODO: make only runnable by user restic:restic
 	err := rootCmd.Execute()
 	if err != nil {
-		log.Error().Msg("Could not execute task")
 		panic(1)
 	}
 }
