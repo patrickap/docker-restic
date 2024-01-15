@@ -3,68 +3,79 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"os/exec"
 
 	"github.com/patrickap/docker-restic/m/v2/internal/config"
 	"github.com/patrickap/docker-restic/m/v2/internal/log"
+	"github.com/patrickap/docker-restic/m/v2/internal/util"
 	"github.com/spf13/cobra"
 )
 
-var dockerResticCmd = &cobra.Command{
+// TODO: make only runnable by user restic:restic
+
+var rootCmd = &cobra.Command{
 	Use:   "docker-restic",
 	Short: "...",
-	Long:  `...`,
-	Args:  cobra.ExactArgs(1),
+	Long:  "...",
 	Run: func(cmd *cobra.Command, args []string) {
-		// TODO: init repository if not exists
-		resticCmd := args[0]
-
-		config, parseError := config.Parse()
-		if parseError != nil {
-			// handle
-		}
-
-		command, notFound := config.Commands[resticCmd]
-		if notFound {
-			// handle
-		}
-
-		if command.Hooks.Pre != "" {
-			preCmd := exec.Command("/bin/sh", "-c", command.Hooks.Pre)
-			preCmd.Stdout = os.Stdout
-			preCmd.Stderr = os.Stderr
-			preCmd.Run()
-		}
-
-		// TODO: override flags from config when set on wrapper which take precendence
-
-		resultCmd := exec.Command("restic", append([]string{resticCmd}, command.Arguments...)...)
-		for key, value := range command.Flags {
-			// TODO: boolean flag parsing handle flag: true -> --flag
-			resultCmd.Args = append(resultCmd.Args, fmt.Sprintf("--%s", key), fmt.Sprintf("%v", value))
-		}
-
-		resultCmd.Stdout = os.Stdout
-		resultCmd.Stderr = os.Stderr
-
-		log.Info().Msg("Running restic command: " + resultCmd.String())
-		cmdError := resultCmd.Run()
-		if cmdError != nil {
-			log.Error().Msg("Error running restic command: " + cmdError.Error())
-			os.Exit(1)
-		}
-
-		if command.Hooks.Post != "" {
-			postCmd := exec.Command("/bin/sh", "-c", command.Hooks.Post)
-			postCmd.Stdout = os.Stdout
-			postCmd.Stderr = os.Stderr
-			postCmd.Run()
-		}
+		// handle
 	},
 }
 
+func init() {
+	config, err := config.Parse()
+	if err != nil {
+		// handle
+	}
+
+	for commandName := range config.Commands {
+		nextCmd := &cobra.Command{
+			Use: commandName,
+			Run: func(cmd *cobra.Command, args []string) {
+				// TODO: create repo folder and init repository if not exists
+
+				commandConfig, exists := config.Commands[commandName]
+				if !exists {
+					// handle
+				}
+
+				err = util.ExecuteCommand("/bin/sh", "-c", commandConfig.Hooks.Pre)
+				if err != nil {
+					// handle
+				}
+
+				// TODO: override flags from config when set on wrapper which take precendence
+
+				resticCmd := append([]string{commandConfig.Command}, commandConfig.Arguments...)
+				for key, value := range commandConfig.Flags {
+					switch valueType := value.(type) {
+					case bool:
+						if valueType {
+							resticCmd = append(resticCmd, fmt.Sprintf("--%s", key))
+						}
+					default:
+						resticCmd = append(resticCmd, fmt.Sprintf("--%s", key), fmt.Sprintf("%v", value))
+					}
+				}
+
+				err = util.ExecuteCommand("restic", resticCmd...)
+				if err != nil {
+					log.Error().Msg("error")
+					os.Exit(1)
+				}
+
+				err = util.ExecuteCommand("/bin/sh", "-c", commandConfig.Hooks.Post)
+				if err != nil {
+					// handle
+				}
+			},
+		}
+
+		rootCmd.AddCommand(nextCmd)
+	}
+}
+
 func Execute() {
-	err := dockerResticCmd.Execute()
+	err := rootCmd.Execute()
 	if err != nil {
 		// handle
 		os.Exit(1)

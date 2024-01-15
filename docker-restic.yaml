@@ -4,12 +4,16 @@ repository:
 
 commands:
   backup:
+    command: backup
     arguments:
       - /source
     hooks:
       pre: "echo 'exec containers, stop containers...'"
       post: "echo 'start containers'"
-  forget:
+  prune:
+    command: forget
+    arguments:
+      - /source
     flags:
       keep-daily: 1
       keep-weekly: 1
@@ -17,6 +21,9 @@ commands:
       keep-yearly: 1
       group-by: paths
       prune: true
+    hooks:
+      pre: "echo 'exec containers, stop containers...'"
+      post: "echo 'start containers'"
   check:
     flags:
       read-data: true

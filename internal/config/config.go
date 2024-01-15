@@ -12,6 +12,7 @@ type Config struct {
 		PasswordFile string `yaml:"password_file"`
 	} `yaml:"repository"`
 	Commands map[string]struct {
+		Command   string                 `yaml:"command"`
 		Arguments []string               `yaml:"arguments"`
 		Flags     map[string]interface{} `yaml:"flags"`
 		Hooks     struct {
@@ -29,6 +30,16 @@ func init() {
 
 func Parse() (Config, error) {
 	var config Config
-	err := viper.Unmarshal(&config)
-	return config, err
+
+	err := viper.ReadInConfig()
+	if err != nil {
+		return config, err
+	}
+
+	err = viper.Unmarshal(&config)
+	if err != nil {
+		return config, err
+	}
+
+	return config, nil
 }
