@@ -7,14 +7,16 @@ import (
 )
 
 type Config struct {
-	Commands map[string]struct {
-		Arguments []string               `yaml:"arguments"`
-		Flags     map[string]interface{} `yaml:"flags"`
-		Hooks     struct {
-			Pre  string `yaml:"pre"`
-			Post string `yaml:"post"`
-		} `yaml:"hooks"`
-	} `yaml:"commands"`
+	Commands map[string]Command
+}
+
+type Command struct {
+	Arguments []string               `yaml:"arguments"`
+	Flags     map[string]interface{} `yaml:"flags"`
+	Hooks     struct {
+		Pre  string `yaml:"pre"`
+		Post string `yaml:"post"`
+	} `yaml:"hooks"`
 }
 
 func init() {

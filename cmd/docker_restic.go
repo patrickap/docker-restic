@@ -39,24 +39,10 @@ func init() {
 					// handle
 				}
 
-				// TODO: override flags from config when set on wrapper which take precendence
+				commandResult := createResticCommand(command)
 
-				commandArgs := command.Arguments
-				commandFlags := []string{}
-
-				for key, value := range command.Flags {
-					switch valueType := value.(type) {
-					case bool:
-						if valueType {
-							commandFlags = append(commandFlags, fmt.Sprintf("--%s", key))
-						}
-					default:
-						commandFlags = append(commandFlags, fmt.Sprintf("--%s", key), fmt.Sprintf("%v", value))
-					}
-				}
-
-				log.Info().Msgf("Executing command: restic %s", strings.Join(append(commandArgs, commandFlags...), " "))
-				err = util.ExecuteCommand("restic", append(commandArgs, commandFlags...)...)
+				log.Info().Msgf("Executing command: %s", strings.Join(commandResult, " "))
+				err = util.ExecuteCommand(commandResult...)
 				if err != nil {
 					// handle
 				}
@@ -75,10 +61,30 @@ func init() {
 
 func Execute() {
 	// TODO: make only runnable by user restic:restic
-
 	err := rootCmd.Execute()
 	if err != nil {
 		// handle
 		os.Exit(1)
 	}
+}
+
+func createResticCommand(command config.Command) []string {
+	commandArgs := command.Arguments
+	commandFlags := func() []string {
+		flags := []string{}
+		for _, flag := range util.SortMapByKey(command.Flags) {
+			switch flagType := flag.Value.(type) {
+			case bool:
+				if flagType {
+					flags = append(flags, fmt.Sprintf("--%s", flag.Key))
+				}
+			default:
+				flags = append(flags, fmt.Sprintf("--%s", flag.Key), fmt.Sprintf("%v", flag.Value))
+			}
+		}
+
+		return flags
+	}()
+
+	return append([]string{"restic"}, append(commandArgs, commandFlags...)...)
 }
