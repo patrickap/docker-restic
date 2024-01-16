@@ -11,8 +11,9 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:  "docker-restic",
-	Args: cobra.ExactArgs(1),
+	Use:          "docker-restic",
+	Args:         cobra.ExactArgs(1),
+	SilenceUsage: true,
 }
 
 func init() {
