@@ -31,10 +31,10 @@ func init() {
 				commandConfig := config.Commands[commandName]
 
 				// Hook Pre
-				log.Info().Msgf("Executing hook 'Pre': %s", commandConfig.Hooks.Pre)
+				log.Info().Msgf("Executing hook 'pre': %s", commandConfig.Hooks.Pre)
 				hookErr := util.ExecuteCommand(strings.Split(commandConfig.Hooks.Pre, " ")...).Run()
 				if hookErr != nil {
-					log.Error().Msg("Could not execute hook 'Pre'")
+					log.Error().Msg("Could not execute hook 'pre'")
 				}
 
 				// Command
@@ -46,25 +46,25 @@ func init() {
 					log.Error().Msgf("Could not execute command '%s'", commandName)
 
 					// Hook Failure
-					log.Info().Msgf("Executing hook 'Failure': %s", commandConfig.Hooks.Failure)
+					log.Info().Msgf("Executing hook 'failure': %s", commandConfig.Hooks.Failure)
 					hookErr := util.ExecuteCommand(strings.Split(commandConfig.Hooks.Failure, " ")...).Run()
 					if hookErr != nil {
-						log.Error().Msg("Could not execute hook 'Failure'")
+						log.Error().Msg("Could not execute hook 'failure'")
 					}
 				} else {
 					// Hook Success
-					log.Info().Msgf("Executing hook 'Success': %s", commandConfig.Hooks.Success)
+					log.Info().Msgf("Executing hook 'success': %s", commandConfig.Hooks.Success)
 					hookErr := util.ExecuteCommand(strings.Split(commandConfig.Hooks.Success, " ")...).Run()
 					if hookErr != nil {
-						log.Error().Msg("Could not execute hook 'Success'")
+						log.Error().Msg("Could not execute hook 'success'")
 					}
 				}
 
 				// Hook Post
-				log.Info().Msgf("Executing hook 'Post': %s", commandConfig.Hooks.Post)
+				log.Info().Msgf("Executing hook 'post': %s", commandConfig.Hooks.Post)
 				hookErr = util.ExecuteCommand(strings.Split(commandConfig.Hooks.Post, " ")...).Run()
 				if hookErr != nil {
-					log.Error().Msg("Could not execute hook 'Post'")
+					log.Error().Msg("Could not execute hook 'post'")
 				}
 
 				return commandErr
@@ -76,9 +76,8 @@ func init() {
 }
 
 func Execute() {
-	// TODO: make only runnable by user restic:restic
-	err := rootCmd.Execute()
-	if err != nil {
+	commandErr := rootCmd.Execute()
+	if commandErr != nil {
 		os.Exit(1)
 	}
 }
