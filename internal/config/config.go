@@ -1,8 +1,7 @@
 package config
 
 import (
-	"os"
-
+	"github.com/patrickap/docker-restic/m/v2/internal/env"
 	"github.com/spf13/viper"
 )
 
@@ -25,7 +24,7 @@ type CommandConfig struct {
 func init() {
 	viper.SetConfigName("docker-restic")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath(os.Getenv("DOCKER_RESTIC_DIR"))
+	viper.AddConfigPath(env.DOCKER_RESTIC_DIR)
 }
 
 func Get() (Config, error) {

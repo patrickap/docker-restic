@@ -4,14 +4,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gofrs/flock"
 	"github.com/patrickap/docker-restic/m/v2/internal/config"
 	"github.com/patrickap/docker-restic/m/v2/internal/log"
 	"github.com/patrickap/docker-restic/m/v2/internal/util"
 	"github.com/spf13/cobra"
 )
-
-var lock = flock.New(os.Getenv("DOCKER_RESTIC_DIR") + "/docker-restic.lock")
 
 var rootCmd = &cobra.Command{
 	Use:          "docker-restic",
@@ -77,12 +74,4 @@ func init() {
 
 func Execute() error {
 	return rootCmd.Execute()
-}
-
-func Lock() (bool, error) {
-	return lock.TryLock()
-}
-
-func Unlock() error {
-	return lock.Unlock()
 }
