@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	cfg "github.com/patrickap/docker-restic/m/v2/internal/config"
+	"github.com/patrickap/docker-restic/m/v2/internal/lock"
 	"github.com/patrickap/docker-restic/m/v2/internal/log"
 	"github.com/patrickap/docker-restic/m/v2/internal/util"
 	"github.com/spf13/cobra"
@@ -45,8 +46,13 @@ func createChildCommand(name string, config cfg.CommandConfig) *cobra.Command {
 		Use:          name,
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// TODO: lock.Lock()
-			// TODO: defer lock.Unlock()
+			log.Info().Msg("Trying to acquire lock")
+			locked, lockedErr := lock.Lock()
+			if !locked || lockedErr != nil {
+				log.Error().Msg("Could not acquire lock")
+				return lockedErr
+			}
+			defer lock.Unlock()
 
 			log.Info().Msgf("Executing hook 'pre': %s", config.Hooks.Pre)
 			hookErr := util.ExecuteCommand(util.ParseCommand(config.Hooks.Pre)...).Run()
