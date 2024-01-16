@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"sort"
 
+	"github.com/anmitsu/go-shlex"
 	"github.com/patrickap/docker-restic/m/v2/internal/config"
 )
 
@@ -14,16 +15,16 @@ type Pair struct {
 	Value interface{}
 }
 
-func BuildCommand(commandConfig config.CommandConfig) []string {
+func BuildCommand(config config.CommandConfig) []string {
 	binary := "restic"
-	arguments := commandConfig.Arguments
+	arguments := config.Arguments
 	flags := []string{}
 
-	if commandConfig.Binary != "" {
-		binary = commandConfig.Binary
+	if config.Binary != "" {
+		binary = config.Binary
 	}
 
-	for _, flag := range SortMapByKey(commandConfig.Flags) {
+	for _, flag := range SortMapByKey(config.Flags) {
 		switch flagType := flag.Value.(type) {
 		case bool:
 			if flagType {
@@ -38,8 +39,21 @@ func BuildCommand(commandConfig config.CommandConfig) []string {
 	return command
 }
 
+func ParseCommand(str string) []string {
+	strings, err := shlex.Split(str, true)
+	if err != nil {
+		return []string{}
+	}
+
+	return strings
+}
+
 func ExecuteCommand(args ...string) *exec.Cmd {
-	cmd := exec.Command(args[0], args[1:]...)
+	var cmd *exec.Cmd
+	if len(args) > 0 {
+		cmd = exec.Command(args[0], args[1:]...)
+	}
+
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd

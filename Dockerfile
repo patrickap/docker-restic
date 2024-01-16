@@ -9,9 +9,10 @@ RUN go mod download \
 FROM restic/restic:0.16.2
 
 ARG UID="1234" \
-    GID="1234"
+    GID="1234" \
+    DOCKER_RESTIC_DIR="/srv/docker-restic"
 
-ENV DOCKER_RESTIC_DIR="/srv/docker-restic" \ 
+ENV DOCKER_RESTIC_DIR=$DOCKER_RESTIC_DIR \
     # set restic cache directory
     RESTIC_CACHE_DIR="$DOCKER_RESTIC_DIR/cache" \
     # set rclone config path

@@ -18,7 +18,6 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	// TODO: create repo folder and init repository if not exists
-	// TODO: fix parsing and execution of hooks
 	config, configErr := config.Get()
 	if configErr != nil {
 		log.Error().Msg("Could not load configuration file")
@@ -34,7 +33,7 @@ func init() {
 
 				// Hook Pre
 				log.Info().Msgf("Executing hook 'pre': %s", commandConfig.Hooks.Pre)
-				hookErr := util.ExecuteCommand(strings.Split(commandConfig.Hooks.Pre, " ")...).Run()
+				hookErr := util.ExecuteCommand(util.ParseCommand(commandConfig.Hooks.Pre)...).Run()
 				if hookErr != nil {
 					log.Error().Msg("Could not execute hook 'pre'")
 				}
@@ -49,14 +48,14 @@ func init() {
 
 					// Hook Failure
 					log.Info().Msgf("Executing hook 'failure': %s", commandConfig.Hooks.Failure)
-					hookErr := util.ExecuteCommand(strings.Split(commandConfig.Hooks.Failure, " ")...).Run()
+					hookErr := util.ExecuteCommand(util.ParseCommand(commandConfig.Hooks.Failure)...).Run()
 					if hookErr != nil {
 						log.Error().Msg("Could not execute hook 'failure'")
 					}
 				} else {
 					// Hook Success
 					log.Info().Msgf("Executing hook 'success': %s", commandConfig.Hooks.Success)
-					hookErr := util.ExecuteCommand(strings.Split(commandConfig.Hooks.Success, " ")...).Run()
+					hookErr := util.ExecuteCommand(util.ParseCommand(commandConfig.Hooks.Success)...).Run()
 					if hookErr != nil {
 						log.Error().Msg("Could not execute hook 'success'")
 					}
@@ -64,7 +63,7 @@ func init() {
 
 				// Hook Post
 				log.Info().Msgf("Executing hook 'post': %s", commandConfig.Hooks.Post)
-				hookErr = util.ExecuteCommand(strings.Split(commandConfig.Hooks.Post, " ")...).Run()
+				hookErr = util.ExecuteCommand(util.ParseCommand(commandConfig.Hooks.Post)...).Run()
 				if hookErr != nil {
 					log.Error().Msg("Could not execute hook 'post'")
 				}
