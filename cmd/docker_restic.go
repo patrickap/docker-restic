@@ -4,6 +4,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/gofrs/flock"
 	"github.com/patrickap/docker-restic/m/v2/internal/config"
 	"github.com/patrickap/docker-restic/m/v2/internal/log"
 	"github.com/patrickap/docker-restic/m/v2/internal/util"
@@ -73,8 +74,19 @@ func init() {
 }
 
 func Execute() {
-	commandErr := rootCmd.Execute()
-	if commandErr != nil {
+	lock := flock.New(os.Getenv("DOCKER_RESTIC_DIR") + "/docker-restic.lock")
+	locked, lockedErr := lock.TryLock()
+
+	if lockedErr != nil {
+		log.Error().Msg("Could not acquire lock")
 		os.Exit(1)
+	}
+
+	if locked {
+		commandErr := rootCmd.Execute()
+		lock.Unlock()
+		if commandErr != nil {
+			os.Exit(1)
+		}
 	}
 }
