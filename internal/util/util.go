@@ -24,7 +24,7 @@ func BuildCommand(config config.CommandConfig) []string {
 		binary = config.Binary
 	}
 
-	for _, flag := range SortMapByKey(config.Flags) {
+	for _, flag := range SortByKey(config.Flags) {
 		switch flagType := flag.Value.(type) {
 		case bool:
 			if flagType {
@@ -59,13 +59,16 @@ func ExecuteCommand(args ...string) *exec.Cmd {
 	return cmd
 }
 
-func SortMapByKey(m map[string]interface{}) []Pair {
+func SortByKey(m map[string]interface{}) []Pair {
 	pairs := make([]Pair, 0, len(m))
-	for k, v := range m {
-		pairs = append(pairs, Pair{k, v})
+
+	for key, value := range m {
+		pairs = append(pairs, Pair{key, value})
 	}
+
 	sort.Slice(pairs, func(i, j int) bool {
 		return pairs[i].Key < pairs[j].Key
 	})
+
 	return pairs
 }
