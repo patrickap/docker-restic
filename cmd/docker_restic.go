@@ -17,6 +17,8 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
+	// TODO: lock file ?!
+	// TODO: init repositories ?!
 	config, configErr := config.Get()
 	if configErr != nil {
 		log.Error().Msg("Could not load configuration file")
