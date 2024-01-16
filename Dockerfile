@@ -39,4 +39,4 @@ USER restic:restic
 ENTRYPOINT ["supercronic"]
 CMD ["-passthrough-logs", "./docker-restic.cron"]
 
-# TODO: remove test config.yml file
+# TODO: remove docker-restic.yml and docker-restic.cron or provide good defaults

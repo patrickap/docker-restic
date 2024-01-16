@@ -17,6 +17,7 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	// TODO: create repo folder and init repository if not exists
+	// TODO: fix parsing and execution of hooks
 	config, configErr := config.Get()
 	if configErr != nil {
 		log.Error().Msg("Could not load configuration file")
