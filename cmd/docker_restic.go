@@ -11,6 +11,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var lock = flock.New(os.Getenv("DOCKER_RESTIC_DIR") + "/docker-restic.lock")
+
 var rootCmd = &cobra.Command{
 	Use:          "docker-restic",
 	Args:         cobra.ExactArgs(1),
@@ -73,20 +75,14 @@ func init() {
 	}
 }
 
-func Execute() {
-	lock := flock.New(os.Getenv("DOCKER_RESTIC_DIR") + "/docker-restic.lock")
-	locked, lockedErr := lock.TryLock()
+func Execute() error {
+	return rootCmd.Execute()
+}
 
-	if lockedErr != nil {
-		log.Error().Msg("Could not acquire lock")
-		os.Exit(1)
-	}
+func Lock() (bool, error) {
+	return lock.TryLock()
+}
 
-	if locked {
-		commandErr := rootCmd.Execute()
-		lock.Unlock()
-		if commandErr != nil {
-			os.Exit(1)
-		}
-	}
+func Unlock() error {
+	return lock.Unlock()
 }

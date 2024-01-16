@@ -14,8 +14,14 @@ func main() {
 
 	go func() {
 		<-signals
+		// TODO: cmd.Unlock()
 		os.Exit(1)
 	}()
 
-	cmd.Execute()
+	// TODO: cmd.Lock() / Unlock()
+
+	err := cmd.Execute()
+	if err != nil {
+		// TODO: handle error
+	}
 }
