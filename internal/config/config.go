@@ -6,7 +6,13 @@ import (
 )
 
 type Config struct {
-	Commands map[string]CommandConfig `yaml:"commands"`
+	Repositories map[string]RepositoryConfig `yaml:"repositories"`
+	Commands     map[string]CommandConfig    `yaml:"commands"`
+}
+
+type RepositoryConfig struct {
+	Repo         string `yaml:"repo"`
+	PasswordFile string `yaml:"password_file"`
 }
 
 type CommandConfig struct {

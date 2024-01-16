@@ -1,6 +1,7 @@
-main-repository: &main-repository
-  repo: "/srv/restic/repository"
-  password-file: "/run/secrets/password"
+repositories:
+  main-repository: &main-repository
+    repo: "/srv/restic/repository"
+    password-file: "/run/secrets/password"
 
 commands:
   backup:
