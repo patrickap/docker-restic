@@ -19,7 +19,7 @@ ENV UID=$UID \
     # set rclone config path
     RCLONE_CONFIG="$DOCKER_RESTIC_DIR/rclone.conf" \
     # add docker-restic binary to PATH
-    PATH="$DOCKER_RESTIC_DIR:$DOCKER_RESTIC_DIR/bin:$PATH"
+    PATH="$DOCKER_RESTIC_DIR/bin:$PATH"
 
 COPY --from=builder /build $DOCKER_RESTIC_DIR
 
@@ -33,13 +33,14 @@ RUN apk update \
         libcap~=2.69 \
     && addgroup -S -g $GID restic \
     && adduser -S -H -D -s /bin/sh -u $UID -G restic restic \
-    && chmod +x $DOCKER_RESTIC_DIR/entrypoint.sh $DOCKER_RESTIC_DIR/init.sh \
+    && chmod +x $DOCKER_RESTIC_DIR/entrypoint.sh $DOCKER_RESTIC_DIR/docker-restic.sh \
     && chown -R restic:restic $DOCKER_RESTIC_DIR
     # TODO: fix setcap
     # && setcap 'cap_dac_read_search=+ep' /usr/bin/restic \
     # && setcap 'cap_dac_read_search=+ep' $DOCKER_RESTIC_DIR/bin/docker-restic
 
-ENTRYPOINT ["entrypoint.sh"]
-CMD ["init.sh"]
+WORKDIR $DOCKER_RESTIC_DIR
+ENTRYPOINT ["./entrypoint.sh"]
+CMD ["supercronic", "-passthrough-logs", "./docker-restic.cron"]
 
 # TODO: remove test config.yml file

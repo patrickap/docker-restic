@@ -15,9 +15,10 @@ if [ ! "${GID}" = "${default_gid}" ] && [ -n "${GID}" ]; then
   groupmod -o -g "${GID}" restic
 fi
 
-if [ ! "${UID}" = "${default_uid}" ] || [ ! "${GID}" = "${default_gid}" ] || [ "${RESTIC_CHOWN_ALL}" = "true" ]; then
-  echo "Changing ownership for '${DOCKER_RESTIC_DIR}' to '${UID}:${GID}'."
+if [ ! "${UID}" = "${default_uid}" ] || [ ! "${GID}" = "${default_gid}" ]; then
+  echo "Changing ownership of '${DOCKER_RESTIC_DIR}' to '${UID}:${GID}'."
   chown -R restic:restic ${DOCKER_RESTIC_DIR}
 fi
 
+echo "Running container as $(id restic)."
 exec su-exec restic "${@}"
