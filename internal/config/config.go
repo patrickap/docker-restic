@@ -7,10 +7,10 @@ import (
 )
 
 type Config struct {
-	Commands map[string]Command `yaml:"commands"`
+	Commands map[string]CommandConfig `yaml:"commands"`
 }
 
-type Command struct {
+type CommandConfig struct {
 	Binary    string                 `yaml:"binary"`
 	Arguments []string               `yaml:"arguments"`
 	Flags     map[string]interface{} `yaml:"flags"`

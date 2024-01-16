@@ -14,21 +14,28 @@ type Pair struct {
 	Value interface{}
 }
 
-func BuildCommand(command config.Command) []string {
-	commandFlags := []string{}
-	for _, flag := range SortMapByKey(command.Flags) {
+func BuildCommand(commandConfig config.CommandConfig) []string {
+	binary := "restic"
+	arguments := commandConfig.Arguments
+	flags := []string{}
+
+	if commandConfig.Binary != "" {
+		binary = commandConfig.Binary
+	}
+
+	for _, flag := range SortMapByKey(commandConfig.Flags) {
 		switch flagType := flag.Value.(type) {
 		case bool:
 			if flagType {
-				commandFlags = append(commandFlags, fmt.Sprintf("--%s", flag.Key))
+				flags = append(flags, fmt.Sprintf("--%s", flag.Key))
 			}
 		default:
-			commandFlags = append(commandFlags, fmt.Sprintf("--%s", flag.Key), fmt.Sprintf("%v", flag.Value))
+			flags = append(flags, fmt.Sprintf("--%s", flag.Key), fmt.Sprintf("%v", flag.Value))
 		}
 	}
 
-	commandResult := append([]string{command.Binary}, append(command.Arguments, commandFlags...)...)
-	return commandResult
+	command := append([]string{binary}, append(arguments, flags...)...)
+	return command
 }
 
 func ExecuteCommand(args ...string) *exec.Cmd {
