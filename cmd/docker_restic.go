@@ -46,11 +46,11 @@ func createChildCommand(name string, config cfg.CommandConfig) *cobra.Command {
 		Use:          name,
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			log.Info().Msg("Trying to acquire lock")
-			locked, lockedErr := lock.Lock()
-			if !locked || lockedErr != nil {
+			log.Info().Msg("Attempting to acquire lock")
+			lockErr := lock.Lock()
+			if lockErr != nil {
 				log.Error().Msg("Could not acquire lock")
-				return lockedErr
+				return lockErr
 			}
 			defer lock.Unlock()
 
