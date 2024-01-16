@@ -31,14 +31,12 @@ func init() {
 			RunE: func(cmd *cobra.Command, args []string) error {
 				commandConfig := config.Commands[commandName]
 
-				// Hook Pre
 				log.Info().Msgf("Executing hook 'pre': %s", commandConfig.Hooks.Pre)
 				hookErr := util.ExecuteCommand(util.ParseCommand(commandConfig.Hooks.Pre)...).Run()
 				if hookErr != nil {
 					log.Error().Msg("Could not execute hook 'pre'")
 				}
 
-				// Command
 				command := util.BuildCommand(commandConfig)
 				log.Info().Msgf("Executing command '%s': %s", commandName, strings.Join(command, " "))
 				commandErr := util.ExecuteCommand(command...).Run()
@@ -46,14 +44,12 @@ func init() {
 				if commandErr != nil {
 					log.Error().Msgf("Could not execute command '%s'", commandName)
 
-					// Hook Failure
 					log.Info().Msgf("Executing hook 'failure': %s", commandConfig.Hooks.Failure)
 					hookErr := util.ExecuteCommand(util.ParseCommand(commandConfig.Hooks.Failure)...).Run()
 					if hookErr != nil {
 						log.Error().Msg("Could not execute hook 'failure'")
 					}
 				} else {
-					// Hook Success
 					log.Info().Msgf("Executing hook 'success': %s", commandConfig.Hooks.Success)
 					hookErr := util.ExecuteCommand(util.ParseCommand(commandConfig.Hooks.Success)...).Run()
 					if hookErr != nil {
@@ -61,7 +57,6 @@ func init() {
 					}
 				}
 
-				// Hook Post
 				log.Info().Msgf("Executing hook 'post': %s", commandConfig.Hooks.Post)
 				hookErr = util.ExecuteCommand(util.ParseCommand(commandConfig.Hooks.Post)...).Run()
 				if hookErr != nil {
