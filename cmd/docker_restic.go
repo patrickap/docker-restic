@@ -17,7 +17,6 @@ var rootCmd = &cobra.Command{
 	SilenceUsage: true,
 }
 
-// TODO: lock file ?!
 // TODO: init repositories ?!
 
 func init() {
@@ -27,7 +26,7 @@ func init() {
 
 	for commandName := range config.Commands {
 		commandConfig := config.Commands[commandName]
-		childCmd := generateChildCommand(commandName, commandConfig)
+		childCmd := createChildCommand(commandName, commandConfig)
 		rootCmd.AddCommand(childCmd)
 	}
 }
@@ -41,7 +40,7 @@ func Execute() error {
 	return rootCmd.Execute()
 }
 
-func generateChildCommand(name string, config cfg.CommandConfig) *cobra.Command {
+func createChildCommand(name string, config cfg.CommandConfig) *cobra.Command {
 	childCmd := &cobra.Command{
 		Use:          name,
 		SilenceUsage: true,
