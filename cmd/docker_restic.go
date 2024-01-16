@@ -1,14 +1,15 @@
 package cmd
 
 import (
-	"os"
 	"strings"
 
-	"github.com/patrickap/docker-restic/m/v2/internal/config"
+	cfg "github.com/patrickap/docker-restic/m/v2/internal/config"
 	"github.com/patrickap/docker-restic/m/v2/internal/log"
 	"github.com/patrickap/docker-restic/m/v2/internal/util"
 	"github.com/spf13/cobra"
 )
+
+var config, configErr = cfg.Get()
 
 var rootCmd = &cobra.Command{
 	Use:          "docker-restic",
@@ -16,62 +17,73 @@ var rootCmd = &cobra.Command{
 	SilenceUsage: true,
 }
 
+// TODO: lock file ?!
+// TODO: init repositories ?!
+
 func init() {
-	// TODO: lock file ?!
-	// TODO: init repositories ?!
-	config, configErr := config.Get()
 	if configErr != nil {
-		log.Error().Msg("Could not load configuration file")
-		os.Exit(1)
+		return
 	}
 
 	for commandName := range config.Commands {
-		childCmd := &cobra.Command{
-			Use:          commandName,
-			SilenceUsage: true,
-			RunE: func(cmd *cobra.Command, args []string) error {
-				commandConfig := config.Commands[commandName]
-
-				log.Info().Msgf("Executing hook 'pre': %s", commandConfig.Hooks.Pre)
-				hookErr := util.ExecuteCommand(util.ParseCommand(commandConfig.Hooks.Pre)...).Run()
-				if hookErr != nil {
-					log.Error().Msg("Could not execute hook 'pre'")
-				}
-
-				command := util.BuildCommand(commandConfig)
-				log.Info().Msgf("Executing command '%s': %s", commandName, strings.Join(command, " "))
-				commandErr := util.ExecuteCommand(command...).Run()
-
-				if commandErr != nil {
-					log.Error().Msgf("Could not execute command '%s'", commandName)
-
-					log.Info().Msgf("Executing hook 'failure': %s", commandConfig.Hooks.Failure)
-					hookErr := util.ExecuteCommand(util.ParseCommand(commandConfig.Hooks.Failure)...).Run()
-					if hookErr != nil {
-						log.Error().Msg("Could not execute hook 'failure'")
-					}
-				} else {
-					log.Info().Msgf("Executing hook 'success': %s", commandConfig.Hooks.Success)
-					hookErr := util.ExecuteCommand(util.ParseCommand(commandConfig.Hooks.Success)...).Run()
-					if hookErr != nil {
-						log.Error().Msg("Could not execute hook 'success'")
-					}
-				}
-
-				log.Info().Msgf("Executing hook 'post': %s", commandConfig.Hooks.Post)
-				hookErr = util.ExecuteCommand(util.ParseCommand(commandConfig.Hooks.Post)...).Run()
-				if hookErr != nil {
-					log.Error().Msg("Could not execute hook 'post'")
-				}
-
-				return commandErr
-			},
-		}
-
+		commandConfig := config.Commands[commandName]
+		childCmd := generateChildCommand(commandName, commandConfig)
 		rootCmd.AddCommand(childCmd)
 	}
 }
 
 func Execute() error {
+	if configErr != nil {
+		log.Error().Msg("Could not load configuration file")
+		return configErr
+	}
+
 	return rootCmd.Execute()
+}
+
+func generateChildCommand(name string, config cfg.CommandConfig) *cobra.Command {
+	childCmd := &cobra.Command{
+		Use:          name,
+		SilenceUsage: true,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// TODO: lock.Lock()
+			// TODO: defer lock.Unlock()
+
+			log.Info().Msgf("Executing hook 'pre': %s", config.Hooks.Pre)
+			hookErr := util.ExecuteCommand(util.ParseCommand(config.Hooks.Pre)...).Run()
+			if hookErr != nil {
+				log.Error().Msg("Could not execute hook 'pre'")
+			}
+
+			command := util.BuildCommand(config)
+			log.Info().Msgf("Executing command '%s': %s", name, strings.Join(command, " "))
+			commandErr := util.ExecuteCommand(command...).Run()
+
+			if commandErr != nil {
+				log.Error().Msgf("Could not execute command '%s'", name)
+
+				log.Info().Msgf("Executing hook 'failure': %s", config.Hooks.Failure)
+				hookErr := util.ExecuteCommand(util.ParseCommand(config.Hooks.Failure)...).Run()
+				if hookErr != nil {
+					log.Error().Msg("Could not execute hook 'failure'")
+				}
+			} else {
+				log.Info().Msgf("Executing hook 'success': %s", config.Hooks.Success)
+				hookErr := util.ExecuteCommand(util.ParseCommand(config.Hooks.Success)...).Run()
+				if hookErr != nil {
+					log.Error().Msg("Could not execute hook 'success'")
+				}
+			}
+
+			log.Info().Msgf("Executing hook 'post': %s", config.Hooks.Post)
+			hookErr = util.ExecuteCommand(util.ParseCommand(config.Hooks.Post)...).Run()
+			if hookErr != nil {
+				log.Error().Msg("Could not execute hook 'post'")
+			}
+
+			return commandErr
+		},
+	}
+
+	return childCmd
 }

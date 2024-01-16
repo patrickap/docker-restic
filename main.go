@@ -6,6 +6,7 @@ import (
 	"syscall"
 
 	"github.com/patrickap/docker-restic/m/v2/cmd"
+	"github.com/patrickap/docker-restic/m/v2/internal/lock"
 )
 
 func main() {
@@ -14,14 +15,13 @@ func main() {
 
 	go func() {
 		<-signals
-		// TODO: cmd.Unlock()
+		lock.Unlock()
 		os.Exit(1)
 	}()
 
-	// TODO: cmd.Lock() / Unlock()
-
-	err := cmd.Execute()
-	if err != nil {
-		// TODO: handle error
+	cmdErr := cmd.Execute()
+	if cmdErr != nil {
+		lock.Unlock()
+		os.Exit(1)
 	}
 }
