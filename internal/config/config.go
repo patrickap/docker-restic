@@ -16,7 +16,6 @@ type RepositoryConfig struct {
 }
 
 type CommandConfig struct {
-	Binary    string                 `yaml:"binary"`
 	Arguments []string               `yaml:"arguments"`
 	Flags     map[string]interface{} `yaml:"flags"`
 	Hooks     struct {
