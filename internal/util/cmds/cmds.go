@@ -16,6 +16,7 @@ type Command struct {
 	Run func() error
 }
 
+// TODO: func BuildHook
 func BuildCommand(config config.CommandConfig) *Command {
 	command := func() []string {
 		arguments := config.Arguments
