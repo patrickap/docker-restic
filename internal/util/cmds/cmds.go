@@ -19,6 +19,7 @@ type Command struct {
 // TODO: func BuildHook
 func BuildCommand(config config.CommandConfig) *Command {
 	command := func() []string {
+		// TODO: remove variable arguments
 		arguments := config.Arguments
 		flags := []string{}
 
