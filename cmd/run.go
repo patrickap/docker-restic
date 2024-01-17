@@ -26,6 +26,7 @@ func init() {
 			Use:          commandName,
 			SilenceUsage: true,
 			RunE: func(cmd *cobra.Command, args []string) error {
+				// TODO: use lock for all commands -> rootCmd persistent pre runE?!
 				log.Info().Msg("Attempting to acquire lock")
 				lockErr := lock.Lock()
 				if lockErr != nil {
