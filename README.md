@@ -67,7 +67,13 @@ The configuration gets directly translated into native restic commands. The conf
 docker-restic run snapshot
 ```
 
-3. Create a local `docker-restic.cron` file.
+3. Initialize all repositories specified in config.
+
+```bash
+docker-restic init
+```
+
+4. Create a local `docker-restic.cron` file.
 
 ```bash
 # daily
@@ -76,7 +82,7 @@ docker-restic run snapshot
 
 The command gets scheduled on container startup.
 
-4. Run the container image:
+5. Run the container image:
 
 ```bash
 docker run -d \
