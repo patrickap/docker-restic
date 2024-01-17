@@ -6,6 +6,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// TODO: only run as user restic
+
 var config, configErr = cfg.Get()
 
 var rootCmd = &cobra.Command{

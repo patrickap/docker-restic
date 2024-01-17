@@ -7,7 +7,7 @@ commands:
   backup:
     arguments:
       - backup
-      - /source
+      - /data
     flags:
       <<: *default-repository
     hooks:
