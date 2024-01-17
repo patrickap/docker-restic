@@ -15,6 +15,7 @@ type Pair[K comparable, V any] struct {
 	Value V
 }
 
+// TODO: split commandconfig and hookconfig so i do not have to pass it here
 func BuildCommand(config config.CommandConfig) []string {
 	binary := "restic"
 	arguments := config.Arguments
