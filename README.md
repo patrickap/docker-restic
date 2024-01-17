@@ -55,9 +55,9 @@ commands:
       pre: "echo 'pre'"
       # runs after
       post: "echo 'post'"
-      # runs only after success
+      # runs only on success
       success: "echo 'success'"
-      # runs only after failues
+      # runs only on failure
       failure: "echo 'failure'"
 ```
 
