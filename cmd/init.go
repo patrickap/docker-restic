@@ -3,6 +3,7 @@ package cmd
 import (
 	"strings"
 
+	cfg "github.com/patrickap/docker-restic/m/v2/internal/config"
 	"github.com/patrickap/docker-restic/m/v2/internal/log"
 	"github.com/patrickap/docker-restic/m/v2/internal/util"
 	"github.com/spf13/cobra"
@@ -18,8 +19,8 @@ var initCmd = &cobra.Command{
 			repositoryConfig := config.Repositories[repositoryName]
 
 			log.Info().Msgf("Initializing repository '%s'", repositoryConfig.Repo)
-			// TODO: ExecuteCommand / BuildCommand refactor
-			commandErr := util.ExecuteCommand("restic", "init", "--repo", repositoryConfig.Repo, "--password-file", repositoryConfig.PasswordFile).Run()
+			command := util.BuildCommand(cfg.CommandConfig{Arguments: []string{"init"}, Flags: map[string]interface{}{"repo": repositoryConfig.Repo, "password_file": repositoryConfig.PasswordFile}})
+			commandErr := util.ExecuteCommand(command...).Run()
 			if commandErr != nil {
 				log.Error().Msgf("Could not initialize repository '%s'", repositoryConfig.Repo)
 				return commandErr
