@@ -27,6 +27,10 @@ func BuildCommand(name string, config config.CommandConfig) *Command {
 				if flagType {
 					flags = append(flags, fmt.Sprintf("--%s", flag.Key))
 				}
+			case []string:
+				for _, flagValue := range flagType {
+					flags = append(flags, fmt.Sprintf("--%s", flag.Key), flagValue)
+				}
 			default:
 				flags = append(flags, fmt.Sprintf("--%s", flag.Key), fmt.Sprintf("%v", flag.Value))
 			}
