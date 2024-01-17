@@ -3,74 +3,25 @@ package cmd
 import (
 	"strings"
 
-	cfg "github.com/patrickap/docker-restic/m/v2/internal/config"
 	"github.com/patrickap/docker-restic/m/v2/internal/lock"
 	"github.com/patrickap/docker-restic/m/v2/internal/log"
 	"github.com/patrickap/docker-restic/m/v2/internal/util"
 	"github.com/spf13/cobra"
 )
 
-var config, configErr = cfg.Get()
-
-var rootCmd = &cobra.Command{
-	Use:          "docker-restic",
+var runCmd = &cobra.Command{
+	Use:          "run",
+	Short:        "Run command specified in config file",
+	Long:         "Run command specified in config file: " + strings.Join(util.GetKeys(config.Commands), ", "),
 	Args:         cobra.ExactArgs(1),
 	SilenceUsage: true,
 }
 
-// TODO: init repositories ?!
-
 func init() {
-	if configErr != nil {
-		return
-	}
-
-	initCmd := createInitCommand(config)
-	childCmds := createChildCommands(config)
-	rootCmd.AddCommand(append([]*cobra.Command{initCmd}, childCmds...)...)
-}
-
-func Execute() error {
-	if configErr != nil {
-		log.Error().Msg("Could not load configuration file")
-		return configErr
-	}
-
-	return rootCmd.Execute()
-}
-
-func createInitCommand(config cfg.Config) *cobra.Command {
-	initCmd := &cobra.Command{
-		Use:          "init",
-		SilenceUsage: true,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			for repositoryName := range config.Repositories {
-				repositoryConfig := config.Repositories[repositoryName]
-
-				log.Info().Msgf("Initializing repository '%s'", repositoryConfig.Repo)
-				commandErr := util.ExecuteCommand("restic", "init", "--repo", repositoryConfig.Repo, "--password-file", repositoryConfig.PasswordFile).Run()
-				if commandErr != nil {
-					log.Error().Msgf("Could not initialize repository '%s'", repositoryConfig.Repo)
-					return commandErr
-				}
-
-				return nil
-			}
-
-			return nil
-		},
-	}
-
-	return initCmd
-}
-
-func createChildCommands(config cfg.Config) []*cobra.Command {
-	childCmds := []*cobra.Command{}
-
 	for commandName := range config.Commands {
 		commandConfig := config.Commands[commandName]
 
-		childCmd := &cobra.Command{
+		runChildCmd := &cobra.Command{
 			Use:          commandName,
 			SilenceUsage: true,
 			RunE: func(cmd *cobra.Command, args []string) error {
@@ -118,8 +69,8 @@ func createChildCommands(config cfg.Config) []*cobra.Command {
 			},
 		}
 
-		childCmds = append(childCmds, childCmd)
+		runCmd.AddCommand(runChildCmd)
 	}
 
-	return childCmds
+	rootCmd.AddCommand(runCmd)
 }

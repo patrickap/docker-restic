@@ -10,9 +10,9 @@ import (
 	"github.com/patrickap/docker-restic/m/v2/internal/config"
 )
 
-type Pair struct {
-	Key   string
-	Value interface{}
+type Pair[K comparable, V any] struct {
+	Key   K
+	Value V
 }
 
 func BuildCommand(config config.CommandConfig) []string {
@@ -59,11 +59,11 @@ func ExecuteCommand(args ...string) *exec.Cmd {
 	return cmd
 }
 
-func SortByKey(m map[string]interface{}) []Pair {
-	pairs := make([]Pair, 0, len(m))
+func SortByKey[K string, V any](m map[K]V) []Pair[K, V] {
+	pairs := make([]Pair[K, V], 0, len(m))
 
 	for key, value := range m {
-		pairs = append(pairs, Pair{key, value})
+		pairs = append(pairs, Pair[K, V]{key, value})
 	}
 
 	sort.Slice(pairs, func(i, j int) bool {
@@ -71,4 +71,14 @@ func SortByKey(m map[string]interface{}) []Pair {
 	})
 
 	return pairs
+}
+
+func GetKeys[K string, V any](m map[K]V) []K {
+	keys := make([]K, 0, len(m))
+
+	for key := range m {
+		keys = append(keys, key)
+	}
+
+	return keys
 }
