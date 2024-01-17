@@ -16,7 +16,7 @@ type Command struct {
 	Run func() error
 }
 
-func BuildCommand(name string, config config.CommandConfig) *Command {
+func BuildCommand(config config.CommandConfig) *Command {
 	command := func() []string {
 		arguments := config.Arguments
 		flags := []string{}
@@ -53,11 +53,11 @@ func BuildCommand(name string, config config.CommandConfig) *Command {
 			}
 		}
 
-		log.Info().Msgf("Executing command '%s': %s", name, strings.Join(command, " "))
+		log.Info().Msgf("Executing command: %s", strings.Join(command, " "))
 		commandErr := ExecuteCommand(command...).Run()
 
 		if commandErr != nil {
-			log.Error().Msgf("Could not execute command '%s'", name)
+			log.Error().Msg("Could not execute command")
 
 			if config.Hooks.Failure != "" {
 				log.Info().Msgf("Executing hook 'failure': %s", config.Hooks.Failure)

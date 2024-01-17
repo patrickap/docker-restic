@@ -34,7 +34,7 @@ func init() {
 				}
 				defer lock.Unlock()
 
-				command := cmds.BuildCommand(commandName, commandConfig)
+				command := cmds.BuildCommand(commandConfig)
 				commandErr := command.Run()
 				return commandErr
 			},

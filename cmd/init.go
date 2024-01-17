@@ -7,7 +7,6 @@ import (
 	"github.com/patrickap/docker-restic/m/v2/internal/log"
 	"github.com/patrickap/docker-restic/m/v2/internal/util/cmds"
 	"github.com/patrickap/docker-restic/m/v2/internal/util/maps"
-	"github.com/patrickap/docker-restic/m/v2/internal/util/structs"
 	"github.com/spf13/cobra"
 )
 
@@ -20,20 +19,15 @@ var initCmd = &cobra.Command{
 		for repositoryName := range config.Repositories {
 			repositoryConfig := config.Repositories[repositoryName]
 
-			arguments := []string{"init"}
-			flags, flagsErr := structs.ToMap(repositoryConfig)
-			if flagsErr != nil {
-				return flagsErr
-			}
-
-			log.Info().Msgf("Initializing repository '%s'", repositoryConfig.Repo)
-			command := cmds.BuildCommand("init", cfg.CommandConfig{
-				Arguments: arguments,
-				Flags:     flags,
+			log.Info().Msgf("Initializing repository '%s'", repositoryName)
+			command := cmds.BuildCommand(cfg.CommandConfig{
+				Arguments: []string{"init"},
+				Flags:     repositoryConfig,
 			})
+
 			commandErr := command.Run()
 			if commandErr != nil {
-				log.Error().Msgf("Could not initialize repository '%s'", repositoryConfig.Repo)
+				log.Error().Msgf("Could not initialize repository '%s'", repositoryName)
 				return commandErr
 			}
 

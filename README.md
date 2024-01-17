@@ -24,9 +24,10 @@ docker pull patrickap/docker-restic:latest
 2. Create a local `docker-restic.yml` file.
 
 ```yml
-main-repository: &main-repository
-  repo: "/srv/restic/repository"
-  password-file: "/run/secrets/password"
+repositories:
+  default-repository: &default-repository
+    repo: "/srv/docker-restic/repository"
+    password-file: "/run/secrets/password"
 
 commands:
   # restic backup /media --repo /srv/restic/repository --password-file /run/secrets/password
@@ -35,24 +36,27 @@ commands:
       - backup
       - /media
     flags:
-      <<: *main-repository
+      <<: *default-repository
     hooks:
       pre: "echo 'pre'"
       post: "echo 'post'"
       success: "echo 'success'"
       failure: "echo 'failure'"
 
-  # restic forget --repo /srv/restic/repository --password-file /run/secrets/password --keep-daily 7 --keep-weekly 4 --keep-monthly 12 --keep-yearly 2 --group-by paths --prune
+  # restic forget --repo /srv/restic/repository --password-file /run/secrets/password --keep-daily 7 --keep-weekly 4 --keep-monthly 12 --keep-yearly 2 --group-by paths --exclude *.secret --exclude *.bin --prune
   prune:
     arguments:
       - forget
     flags:
-      <<: *main-repository
+      <<: *default-repository
       keep-daily: 7
       keep-weekly: 4
       keep-monthly: 12
       keep-yearly: 2
       group-by: paths
+      exclude:
+        - "*.secret"
+        - "*.bin"
       prune: true
 ```
 

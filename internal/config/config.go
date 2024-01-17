@@ -10,10 +10,7 @@ type Config struct {
 	Commands     map[string]CommandConfig    `yaml:"commands"`
 }
 
-type RepositoryConfig struct {
-	Repo         string `yaml:"repo"`
-	PasswordFile string `yaml:"password-file"`
-}
+type RepositoryConfig map[string]interface{}
 
 type CommandConfig struct {
 	Arguments []string               `yaml:"arguments"`

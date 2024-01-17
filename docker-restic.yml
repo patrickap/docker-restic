@@ -1,7 +1,7 @@
 repositories:
   default-repository: &default-repository
-    repo: "/srv/restic/repository"
-    password-file: "/run/secrets/password"
+    repo: "/srv/docker-restic/repository"
+    password-file: "/tmp/password"
 
 commands:
   backup:
@@ -10,17 +10,8 @@ commands:
       - /source
     flags:
       <<: *default-repository
-      keep-daily: 1
-      keep-weekly: 2
-      keep-monthly: 3
-      keep-yearly: 4
-      group-by: paths
-      prune: true
-      exclude:
-        - "*.secret"
-        - "*.bin"
     hooks:
-      pre: "echo 'exec containers & stop containers...'"
-      post: "echo 'start containers ...'"
-      success: ""
-      failure: ""
+      pre: "echo 'pre'"
+      post: "echo 'post'"
+      success: "echo 'success'"
+      failure: "echo 'failure'"
