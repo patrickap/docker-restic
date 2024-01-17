@@ -6,6 +6,7 @@ Docker-Restic is a small wrapper that simplifies the use of restic especially fo
 
 - **Simple CLI**: Provides a robust command-line interface.
 - **Restic Commands**: Supports all available restic commands, arguments, and flags.
+- **Multiple Repositories** Supports multiple repositories and backup locations.
 - **Config File**: Utilizes a central configuration file for all custom commands.
 - **Custom Hooks**: Allows defining hooks to run custom commands.
 - **Automation**: Supports scheduling of commands out of the box.
@@ -25,58 +26,55 @@ docker pull patrickap/docker-restic:latest
 
 ```yml
 repositories:
-  default-repository: &default-repository
+  default-repository:
+    &default-repository # maps directly to restic command flags
     repo: "/srv/docker-restic/repository"
-    password-file: "/run/secrets/password"
+    password-file: "/run/secrets/restic-password"
 
 commands:
-  # restic backup /media --repo /srv/restic/repository --password-file /run/secrets/password
+  # equivalent to: restic backup /media --repo /srv/restic/repository --password-file /run/secrets/password --tag snapshot --verbose --exclude *.secret --exclude *.bin --exclude-larger-than 2048
   snapshot:
     arguments:
+      # maps directly to restic command arguments
+      # order is guaranteed
       - backup
       - /media
     flags:
+      # maps directly to restic command flags
+      # can be either boolean, string, integer or a list
+      # anchors can be used to reuse common flags
       <<: *default-repository
-    hooks:
-      pre: "echo 'pre'"
-      post: "echo 'post'"
-      success: "echo 'success'"
-      failure: "echo 'failure'"
-
-  # restic forget --repo /srv/restic/repository --password-file /run/secrets/password --keep-daily 7 --keep-weekly 4 --keep-monthly 12 --keep-yearly 2 --group-by paths --exclude *.secret --exclude *.bin --prune
-  prune:
-    arguments:
-      - forget
-    flags:
-      <<: *default-repository
-      keep-daily: 7
-      keep-weekly: 4
-      keep-monthly: 12
-      keep-yearly: 2
-      group-by: paths
+      tag: snapshot
+      verbose: true
       exclude:
         - "*.secret"
         - "*.bin"
-      prune: true
+      exclude-larger-than: 2048
+    hooks:
+      # runs before
+      pre: "echo 'pre'"
+      # runs after
+      post: "echo 'post'"
+      # runs only after success
+      success: "echo 'success'"
+      # runs only after failues
+      failure: "echo 'failure'"
 ```
 
-The configuration gets directly translated into native restic commands. The configured commands can later now be called like this:
+The configuration gets directly translated into native restic commands. The configured command `snapshot` above can later be called using `docker-restic`.
 
 ```bash
-docker-restic snapshot
-docker-restic prune
+docker-restic run snapshot
 ```
 
 3. Create a local `docker-restic.cron` file.
 
 ```bash
 # daily
-0 0 * * * docker-restic backup
-# weekly
-0 0 * * 0 docker-restic prune
+0 0 * * * docker-restic run snapshot
 ```
 
-The commands now get scheduled on container startup.
+The command gets scheduled on container startup.
 
 4. Run the container image:
 
@@ -149,7 +147,7 @@ docker-restic:
 
 5. Configure rclone (optional)
 
-Remote syncing of backups can be configured with `rclone`. Either by bind mounting the `rclone.conf` to `/srv/docker-restic/rclone.conf` into the container or run `rclone config` inside the `docker-restic` container.
+Remote syncing of backups can be configured with `rclone`. Either by bind mounting the `rclone.conf` to `/srv/docker-restic/rclone.conf` into the container or run `rclone config` inside the `docker-restic` container. Restic itself supports rclone as backend. Alternatively it's possible to run rclone via hooks.
 
 ## Restore from Backup
 
