@@ -60,15 +60,21 @@ func ExecuteCommand(args ...string) *exec.Cmd {
 }
 
 func SortByKey[K string, V any](m map[K]V) []Pair[K, V] {
+	pairs := GetPairs(m)
+
+	sort.Slice(pairs, func(i, j int) bool {
+		return pairs[i].Key < pairs[j].Key
+	})
+
+	return pairs
+}
+
+func GetPairs[K string, V any](m map[K]V) []Pair[K, V] {
 	pairs := make([]Pair[K, V], 0, len(m))
 
 	for key, value := range m {
 		pairs = append(pairs, Pair[K, V]{key, value})
 	}
-
-	sort.Slice(pairs, func(i, j int) bool {
-		return pairs[i].Key < pairs[j].Key
-	})
 
 	return pairs
 }

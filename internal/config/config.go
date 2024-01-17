@@ -12,7 +12,7 @@ type Config struct {
 
 type RepositoryConfig struct {
 	Repo         string `yaml:"repo"`
-	PasswordFile string `yaml:"password_file"`
+	PasswordFile string `yaml:"password-file"`
 }
 
 type CommandConfig struct {
