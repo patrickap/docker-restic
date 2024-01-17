@@ -17,8 +17,8 @@ commands:
       group-by: paths
       prune: true
       exclude:
-        - *.secret
-        - *.bin
+        - "*.secret"
+        - "*.bin"
     hooks:
       pre: "echo 'exec containers & stop containers...'"
       post: "echo 'start containers ...'"

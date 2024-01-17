@@ -27,12 +27,16 @@ func BuildCommand(name string, config config.CommandConfig) *Command {
 				if flagType {
 					flags = append(flags, fmt.Sprintf("--%s", flag.Key))
 				}
-			case []string:
-				for _, flagValue := range flagType {
-					flags = append(flags, fmt.Sprintf("--%s", flag.Key), flagValue)
-				}
-			default:
+			case string, int:
 				flags = append(flags, fmt.Sprintf("--%s", flag.Key), fmt.Sprintf("%v", flag.Value))
+			case interface{}:
+				if flagType, ok := flagType.([]interface{}); ok {
+					for _, flagValue := range flagType {
+						if flagValue, ok := flagValue.(string); ok {
+							flags = append(flags, fmt.Sprintf("--%s", flag.Key), flagValue)
+						}
+					}
+				}
 			}
 		}
 
