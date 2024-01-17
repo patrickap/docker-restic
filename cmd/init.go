@@ -19,7 +19,13 @@ var initCmd = &cobra.Command{
 			repositoryConfig := config.Repositories[repositoryName]
 
 			log.Info().Msgf("Initializing repository '%s'", repositoryConfig.Repo)
-			command := util.BuildCommand(cfg.CommandConfig{Arguments: []string{"init"}, Flags: map[string]interface{}{"repo": repositoryConfig.Repo, "password-file": repositoryConfig.PasswordFile}})
+			command := util.BuildCommand(cfg.CommandConfig{
+				Arguments: []string{"init"},
+				Flags: map[string]interface{}{
+					"repo":          repositoryConfig.Repo,
+					"password-file": repositoryConfig.PasswordFile,
+				},
+			})
 			commandErr := util.ExecuteCommand(command...).Run()
 			if commandErr != nil {
 				log.Error().Msgf("Could not initialize repository '%s'", repositoryConfig.Repo)
