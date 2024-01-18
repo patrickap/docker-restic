@@ -1,46 +1,31 @@
 repositories:
-  repository:
-    options: &repository-options
+  default-repository:
+    options: &default-repository-options
       repo: "/srv/docker-restic/backup/repository"
-      password-file: "/run/secrets/restic-password"
-  remote-repository:
-    options: &remote-repository-options
-      repo: "rclone:b2:docker-restic-bucket"
       password-file: "/run/secrets/restic-password"
 
 commands:
   backup:
     arguments: ["backup", "/source"]
     options:
-      <<: *repository-options
-  backup-remote:
-    arguments: ["backup", "/source"]
-    options:
-      <<: *remote-repository-options
+      <<: *default-repository-options
+    hooks:
+      success: |
+        echo "INF Syncing to remote" \
+        && rclone sync /srv/docker-restic/backup/repository b2:docker-restic-bucket --fast-list --progress --stats 15m
   check:
     arguments: ["check"]
     options:
-      <<: *repository-options
+      <<: *default-repository-options
       read-data: true
-  check-remote:
-    arguments: ["check"]
-    options:
-      <<: *remote-repository-options
-      read-data: true
+    hooks:
+      success: |
+        echo "INF Checking integrity of remote" \
+        && rclone check /srv/docker-restic/backup/repository b2:docker-restic-bucket --fast-list
   forget:
     arguments: ["forget"]
     options:
-      <<: *repository-options
-      keep-daily: 7
-      keep-weekly: 4
-      keep-monthly: 12
-      keep-yearly: 2
-      group-by: "paths"
-      prune: true
-  forget-remote:
-    arguments: ["forget"]
-    options:
-      <<: *remote-repository-options
+      <<: *default-repository-options
       keep-daily: 7
       keep-weekly: 4
       keep-monthly: 12
@@ -57,14 +42,13 @@ commands:
         "/srv/docker-restic/backup/export/backup.tar",
       ]
     options:
-      <<: *repository-options
+      <<: *default-repository-options
     hooks:
       pre: |
-        echo "INF Creating export directory" \
-        && mkdir -p /srv/docker-restic/backup/export
+        mkdir -p /srv/docker-restic/backup/export
       success: |
-        echo "INF Checking integrity of backup dump" \
+        echo "INF Checking integrity of dump" \
         && echo /srv/docker-restic/backup/export/backup.tar | xargs -r tar -tf > /dev/null \
-        && echo "INF Backup dump seems fine" || echo "ERR Backup dump may be corrupt" \
-        && echo "INF Pruning backup dumps, keeping latest 3" \
+        && echo "INF Dump seems fine" || echo "ERR Dump may be corrupt" \
+        && echo "INF Pruning dumps (keeping latest 3)" \
         && ls -t /srv/docker-restic/backup/export | tail -n +4 | xargs -I {} rm -- {}
