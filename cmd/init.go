@@ -19,6 +19,7 @@ var initCmd = &cobra.Command{
 		return lock.RunWithLock(func() error {
 			repositories := config.Current().Repositories
 
+			var cmdErr error
 			for repositoryName, repositoryConfig := range repositories {
 				log.Info().Msgf("Initializing repository '%s'", repositoryName)
 				cmd := command.BuildCommand(&config.CommandConfig{
@@ -26,10 +27,10 @@ var initCmd = &cobra.Command{
 					Options:   repositoryConfig.Options,
 				})
 
-				return cmd.Run()
+				cmdErr = cmd.Run()
 			}
 
-			return nil
+			return cmdErr
 		})
 	},
 }
