@@ -14,9 +14,9 @@ type Runnable struct {
 
 func BuildCommand(commandName string, config *config.CommandConfig) *Runnable {
 	return &Runnable{Run: func() error {
-		preErr := BuildCommandHooks(config.Hooks.Pre).Run()
-		if preErr != nil {
-			return preErr
+		hookErr := BuildCommandHooks(config.Hooks.Pre).Run()
+		if hookErr != nil {
+			return hookErr
 		}
 
 		command := append(config.Command, config.GetOptionList()...)
@@ -26,22 +26,22 @@ func BuildCommand(commandName string, config *config.CommandConfig) *Runnable {
 		if commandErr != nil {
 			log.Error().Msgf("Failed to run command '%s'", commandName)
 
-			failureErr := BuildCommandHooks(config.Hooks.Failure).Run()
-			if failureErr != nil {
-				return failureErr
+			hookErr := BuildCommandHooks(config.Hooks.Failure).Run()
+			if hookErr != nil {
+				return hookErr
 			}
 
 			return commandErr
 		} else {
-			successErr := BuildCommandHooks(config.Hooks.Success).Run()
-			if successErr != nil {
-				return successErr
+			hookErr := BuildCommandHooks(config.Hooks.Success).Run()
+			if hookErr != nil {
+				return hookErr
 			}
 		}
 
-		postErr := BuildCommandHooks(config.Hooks.Post).Run()
-		if postErr != nil {
-			return postErr
+		hookErr = BuildCommandHooks(config.Hooks.Post).Run()
+		if hookErr != nil {
+			return hookErr
 		}
 
 		return nil
