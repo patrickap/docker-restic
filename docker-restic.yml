@@ -39,7 +39,7 @@ commands:
         "latest",
         "/",
         ">",
-        "/srv/docker-restic/backup/export/backup.tar",
+        "/srv/docker-restic/backup/export/backup_$(date +'%Y-%m-%d_%H.%M.%S').tar",
       ]
     options:
       <<: *default-repository-options
@@ -48,7 +48,12 @@ commands:
         mkdir -p /srv/docker-restic/backup/export
       success: |
         echo "INF Checking integrity of dump" \
-        && echo /srv/docker-restic/backup/export/backup.tar | xargs -r tar -tf > /dev/null \
-        && echo "INF Dump seems fine" || echo "ERR Dump may be corrupt" \
-        && echo "INF Pruning dumps (keeping latest 3)" \
-        && ls -t /srv/docker-restic/backup/export | tail -n +4 | xargs -I {} rm -- {}
+        && { \
+            echo /srv/docker-restic/backup/export/backup.tar | xargs -r tar -tf > /dev/null \
+            && echo "INF Dump seems fine"; \
+           } \
+        || {  \
+            echo "ERR Dump may be corrupt"; exit 1; \
+           } \
+        && echo "INF Pruning dumps (keep last 4)" \
+        && rm -rf $(ls -t /srv/docker-restic/backup/export/backup_* | tail +5 | xargs -r echo)
