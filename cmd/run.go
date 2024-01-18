@@ -6,7 +6,6 @@ import (
 	"github.com/patrickap/docker-restic/m/v2/internal/command"
 	"github.com/patrickap/docker-restic/m/v2/internal/config"
 	"github.com/patrickap/docker-restic/m/v2/internal/lock"
-	"github.com/patrickap/docker-restic/m/v2/internal/log"
 	"github.com/spf13/cobra"
 )
 
@@ -30,15 +29,8 @@ func init() {
 			SilenceUsage: true,
 			RunE: func(c *cobra.Command, args []string) error {
 				return lock.RunWithLock(func() error {
-					cmd := command.BuildCommand(&commandConfig)
-
-					err := cmd.Run()
-					if err != nil {
-						log.Error().Msgf("Failed to run command '%s'", commandName)
-						return err
-					}
-
-					return nil
+					cmd := command.BuildCommand(commandName, &commandConfig)
+					return cmd.Run()
 				})
 			},
 		}

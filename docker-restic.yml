@@ -12,8 +12,12 @@ commands:
     command: ["restic", "backup", "/source"]
     options:
       <<: *repository
+    hooks:
+      success:
+        - forget
+        - check
 
-  backup-prune:
+  forget:
     command: ["restic", "forget"]
     options:
       <<: *repository
@@ -24,7 +28,7 @@ commands:
       group-by: "paths"
       prune: true
 
-  backup-check:
+  check:
     command: ["restic", "check"]
     options:
       <<: *repository
@@ -42,6 +46,9 @@ commands:
       stats: "15m"
       fast-list: true
       progress: true
+    hooks:
+      success:
+        - sync-check
 
   sync-check:
     command:
@@ -64,8 +71,9 @@ commands:
     options:
       <<: *repository
     hooks:
-      pre: |
-        mkdir -p /srv/docker-restic/backup/export
+      success:
+        - dump-prune
+        - dump-check
 
   dump-prune:
     command:
