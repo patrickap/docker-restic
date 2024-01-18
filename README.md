@@ -5,7 +5,7 @@ Docker-Restic is a small wrapper that simplifies the use of restic especially fo
 ## Features
 
 - **Simple CLI**: Provides a robust command-line interface.
-- **Restic Commands**: Supports all available restic commands, arguments, and flags.
+- **Restic Commands**: Supports all available restic commands, arguments, and options.
 - **Multiple Repositories** Supports multiple repositories and backup locations.
 - **Config File**: Utilizes a central configuration file for all custom commands.
 - **Custom Hooks**: Allows defining hooks to run custom commands.
@@ -27,23 +27,23 @@ docker pull patrickap/docker-restic:latest
 ```yml
 repositories:
   default-repository:
-    &default-repository # maps directly to restic command flags
-    repo: "/srv/docker-restic/repository"
-    password-file: "/run/secrets/restic-password"
+    options: &default-repository-options
+      # maps directly to restic command options
+      # can be used as repo scoped options
+      repo: "/srv/docker-restic/repository"
+      password-file: "/run/secrets/restic-password"
 
 commands:
   # equivalent to: restic backup /media --repo /srv/restic/repository --password-file /run/secrets/password --tag snapshot --verbose --exclude *.secret --exclude *.bin --exclude-larger-than 2048
   snapshot:
-    arguments:
-      # maps directly to restic command arguments
-      # order is guaranteed
-      - backup
-      - /media
-    flags:
-      # maps directly to restic command flags
+    # maps directly to restic command arguments
+    # order is guaranteed
+    arguments: [backup, /media]
+    options:
+      # maps directly to restic command options
       # can be either boolean, string, integer or a list
-      # anchors can be used to reuse common flags
-      <<: *default-repository
+      # anchors can be used to reuse common options
+      <<: *default-repository-options
       tag: snapshot
       verbose: true
       exclude:
@@ -164,7 +164,7 @@ Remote syncing of backups can be configured with `rclone`. Either by bind mounti
 ...
 
 - docker exec
-- with user flag to rpevent restic from writing files as root user owner, if happened chown -R restic:restic /dir
+- with --user options to prevent restic from writing files as root user owner, if happened chown -R restic:restic /dir
 
 ## Restore from Backup
 

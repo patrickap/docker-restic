@@ -14,11 +14,13 @@ type Config struct {
 	Commands     map[string]CommandConfig    `mapstructure:"commands"`
 }
 
-type RepositoryConfig map[string]interface{}
+type RepositoryConfig struct {
+	Options map[string]interface{} `mapstructure:"options"`
+}
 
 type CommandConfig struct {
 	Arguments []string               `mapstructure:"arguments"`
-	Flags     map[string]interface{} `mapstructure:"flags"`
+	Options   map[string]interface{} `mapstructure:"options"`
 	Hooks     struct {
 		Pre     string `mapstructure:"pre"`
 		Post    string `mapstructure:"post"`
@@ -56,29 +58,29 @@ func (c *Config) GetCommandList() []string {
 	return maps.GetKeys(c.Commands)
 }
 
-func (c *CommandConfig) GetFlagList() []string {
-	flags := []string{}
+func (c *CommandConfig) GetOptionList() []string {
+	options := []string{}
 
-	for _, flag := range maps.SortByKey(c.Flags) {
-		switch flagType := flag.Value.(type) {
+	for _, option := range maps.SortByKey(c.Options) {
+		switch optionType := option.Value.(type) {
 		case bool:
-			if flagType {
-				flags = append(flags, fmt.Sprintf("--%s", flag.Key))
+			if optionType {
+				options = append(options, fmt.Sprintf("--%s", option.Key))
 			}
 		case string, int:
-			flags = append(flags, fmt.Sprintf("--%s", flag.Key), fmt.Sprintf("%v", flag.Value))
+			options = append(options, fmt.Sprintf("--%s", option.Key), fmt.Sprintf("%v", option.Value))
 		case interface{}:
-			if flagType, ok := flagType.([]interface{}); ok {
-				for _, flagValue := range flagType {
-					if flagValue, ok := flagValue.(string); ok {
-						flags = append(flags, fmt.Sprintf("--%s", flag.Key), flagValue)
+			if optionType, ok := optionType.([]interface{}); ok {
+				for _, optionValue := range optionType {
+					if optionValue, ok := optionValue.(string); ok {
+						options = append(options, fmt.Sprintf("--%s", option.Key), optionValue)
 					}
 				}
 			}
 		}
 	}
 
-	return flags
+	return options
 }
 
 func parse() (*Config, error) {

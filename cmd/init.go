@@ -21,7 +21,7 @@ var initCmd = &cobra.Command{
 			log.Info().Msgf("Initializing repository '%s'", repositoryName)
 			cmd := command.BuildCommand(&config.CommandConfig{
 				Arguments: []string{"init"},
-				Flags:     repositoryConfig,
+				Options:   repositoryConfig.Options,
 			})
 
 			cmdErr := cmd.Run()

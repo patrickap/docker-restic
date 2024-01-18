@@ -1,15 +1,14 @@
 repositories:
-  default-repository: &default-repository
-    repo: "/srv/docker-restic/repository"
-    password-file: "/tmp/password"
+  default-repository:
+    options: &default-repository-options
+      repo: "/srv/docker-restic/repository"
+      password-file: "/tmp/password"
 
 commands:
   backup:
-    arguments:
-      - backup
-      - /data
-    flags:
-      <<: *default-repository
+    arguments: [backup, /data]
+    options:
+      <<: *default-repository-options
     hooks:
       pre: "echo 'pre'"
       post: "echo 'post'"
