@@ -4,8 +4,6 @@ import (
 	"strings"
 
 	"github.com/patrickap/docker-restic/m/v2/internal/command"
-	"github.com/patrickap/docker-restic/m/v2/internal/lock"
-	"github.com/patrickap/docker-restic/m/v2/internal/log"
 	"github.com/patrickap/docker-restic/m/v2/internal/util/maps"
 	"github.com/spf13/cobra"
 )
@@ -26,15 +24,6 @@ func init() {
 			Use:          commandName,
 			SilenceUsage: true,
 			RunE: func(c *cobra.Command, args []string) error {
-				// TODO: use lock for all commands -> rootCmd persistent pre runE?!
-				log.Info().Msg("Attempting to acquire lock")
-				lockErr := lock.Lock()
-				if lockErr != nil {
-					log.Error().Msg("Could not acquire lock")
-					return lockErr
-				}
-				defer lock.Unlock()
-
 				cmd := command.BuildCommand(commandConfig)
 				cmdErr := cmd.Run()
 				return cmdErr
