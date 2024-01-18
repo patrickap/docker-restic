@@ -6,8 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// TODO: only run as user restic
-
 var rootCmd = &cobra.Command{
 	Use:          "docker-restic",
 	Args:         cobra.ExactArgs(1),

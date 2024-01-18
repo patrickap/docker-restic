@@ -24,7 +24,7 @@ func init() {
 			Use:          commandName,
 			SilenceUsage: true,
 			RunE: func(c *cobra.Command, args []string) error {
-				cmd := command.BuildCommand(commandConfig)
+				cmd := command.BuildCommand(&commandConfig)
 				cmdErr := cmd.Run()
 				return cmdErr
 			},

@@ -155,6 +155,17 @@ docker-restic:
 
 Remote syncing of backups can be configured with `rclone`. Either by bind mounting the `rclone.conf` to `/srv/docker-restic/rclone.conf` into the container or run `rclone config` inside the `docker-restic` container. Restic itself supports rclone as backend. Alternatively it's possible to run rclone via hooks.
 
+## Schedule Backups
+
+...
+
+## Manual Backups
+
+...
+
+- docker exec
+- with user flag to rpevent restic from writing files as root user owner, if happened chown -R restic:restic /dir
+
 ## Restore from Backup
 
 To restore a backup a new Docker volume with the correct name must be created including the contents of the backup. After restarting the containers the data should be mounted and restored.

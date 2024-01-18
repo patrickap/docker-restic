@@ -12,7 +12,7 @@ type Runnable struct {
 	Run func() error
 }
 
-func BuildCommand(config config.CommandConfig) *Runnable {
+func BuildCommand(config *config.CommandConfig) *Runnable {
 	return &Runnable{Run: func() error {
 
 		BuildCommandHook("pre", config.Hooks.Pre).Run()
