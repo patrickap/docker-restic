@@ -1,7 +1,10 @@
 package config
 
 import (
+	"fmt"
+
 	"github.com/patrickap/docker-restic/m/v2/internal/env"
+	"github.com/patrickap/docker-restic/m/v2/internal/util/maps"
 	"github.com/spf13/viper"
 )
 
@@ -43,4 +46,29 @@ func Get() (Config, error) {
 	}
 
 	return config, nil
+}
+
+func (c *CommandConfig) GetFlagList() []string {
+	flags := []string{}
+
+	for _, flag := range maps.SortByKey(c.Flags) {
+		switch flagType := flag.Value.(type) {
+		case bool:
+			if flagType {
+				flags = append(flags, fmt.Sprintf("--%s", flag.Key))
+			}
+		case string, int:
+			flags = append(flags, fmt.Sprintf("--%s", flag.Key), fmt.Sprintf("%v", flag.Value))
+		case interface{}:
+			if flagType, ok := flagType.([]interface{}); ok {
+				for _, flagValue := range flagType {
+					if flagValue, ok := flagValue.(string); ok {
+						flags = append(flags, fmt.Sprintf("--%s", flag.Key), flagValue)
+					}
+				}
+			}
+		}
+	}
+
+	return flags
 }
