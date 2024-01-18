@@ -72,7 +72,7 @@ commands:
       [
         "/bin/sh",
         "-c",
-        "rm -rf $(ls -t /srv/docker-restic/backup/export/backup_* | tail +5) | xargs -r echo)",
+        "rm -rf $(ls -t /srv/docker-restic/backup/export/backup_* | tail +5) | xargs -r echo",
       ]
 
   dump-check:

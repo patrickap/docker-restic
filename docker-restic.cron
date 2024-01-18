@@ -1,15 +1,1 @@
-# every day expect sunday at 02:00
-0 2 * * 1-6 docker-restic run backup \
-            && docker-restic run prune \
-            && docker-restic run check \
-            && docker-restic run sync
-
-# every sunday at 02:00
-0 2 * * 7 docker-restic run backup \
-          && docker-restic run backup-prune \
-          && docker-restic run backup-check \
-          && docker-restic run dump \
-          && docker-restic run dump-prune \
-          && docker-restic run dump-check \
-          && docker-restic run sync \
-          && docker-restic run sync-check
+* * * * * /bin/true
