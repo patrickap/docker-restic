@@ -21,6 +21,8 @@ func init() {
 	commands := config.Current().Commands
 
 	for commandName, commandConfig := range commands {
+		commandConfig := commandConfig
+
 		runChildCmd := &cobra.Command{
 			Use:          commandName,
 			SilenceUsage: true,

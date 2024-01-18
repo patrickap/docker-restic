@@ -46,6 +46,22 @@ func init() {
 	}
 }
 
+func parse() (*Config, error) {
+	var c Config
+
+	err := viper.ReadInConfig()
+	if err != nil {
+		return &c, err
+	}
+
+	err = viper.Unmarshal(&c)
+	if err != nil {
+		return &c, err
+	}
+
+	return &c, nil
+}
+
 func Current() *Config {
 	return config
 }
@@ -81,20 +97,4 @@ func (c *CommandConfig) GetOptionList() []string {
 	}
 
 	return options
-}
-
-func parse() (*Config, error) {
-	var c Config
-
-	err := viper.ReadInConfig()
-	if err != nil {
-		return &c, err
-	}
-
-	err = viper.Unmarshal(&c)
-	if err != nil {
-		return &c, err
-	}
-
-	return &c, nil
 }
