@@ -4,48 +4,56 @@ import (
 	"fmt"
 
 	"github.com/patrickap/docker-restic/m/v2/internal/env"
+	"github.com/patrickap/docker-restic/m/v2/internal/log"
 	"github.com/patrickap/docker-restic/m/v2/internal/util/maps"
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	Repositories map[string]RepositoryConfig `yaml:"repositories"`
-	Commands     map[string]CommandConfig    `yaml:"commands"`
+	Repositories map[string]RepositoryConfig `mapstructure:"repositories"`
+	Commands     map[string]CommandConfig    `mapstructure:"commands"`
 }
 
 type RepositoryConfig map[string]interface{}
 
 type CommandConfig struct {
-	Arguments []string               `yaml:"arguments"`
-	Flags     map[string]interface{} `yaml:"flags"`
+	Arguments []string               `mapstructure:"arguments"`
+	Flags     map[string]interface{} `mapstructure:"flags"`
 	Hooks     struct {
-		Pre     string `yaml:"pre"`
-		Post    string `yaml:"post"`
-		Success string `yaml:"success"`
-		Failure string `yaml:"failure"`
-	} `yaml:"hooks"`
+		Pre     string `mapstructure:"pre"`
+		Post    string `mapstructure:"post"`
+		Success string `mapstructure:"success"`
+		Failure string `mapstructure:"failure"`
+	} `mapstructure:"hooks"`
 }
+
+var (
+	config    *Config
+	configErr error
+)
 
 func init() {
 	viper.SetConfigName("docker-restic")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(env.DOCKER_RESTIC_DIR)
+
+	config, configErr = parse()
+	if configErr != nil {
+		log.Error().Msg("Could not load configuration file")
+		panic(configErr)
+	}
 }
 
-func Get() (Config, error) {
-	var config Config
+func Current() *Config {
+	return config
+}
 
-	err := viper.ReadInConfig()
-	if err != nil {
-		return config, err
-	}
+func (c *Config) GetRepositoryList() []string {
+	return maps.GetKeys(c.Repositories)
+}
 
-	err = viper.Unmarshal(&config)
-	if err != nil {
-		return config, err
-	}
-
-	return config, nil
+func (c *Config) GetCommandList() []string {
+	return maps.GetKeys(c.Commands)
 }
 
 func (c *CommandConfig) GetFlagList() []string {
@@ -71,4 +79,20 @@ func (c *CommandConfig) GetFlagList() []string {
 	}
 
 	return flags
+}
+
+func parse() (*Config, error) {
+	var c Config
+
+	err := viper.ReadInConfig()
+	if err != nil {
+		return &c, err
+	}
+
+	err = viper.Unmarshal(&c)
+	if err != nil {
+		return &c, err
+	}
+
+	return &c, nil
 }

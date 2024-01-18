@@ -1,15 +1,12 @@
 package cmd
 
 import (
-	cfg "github.com/patrickap/docker-restic/m/v2/internal/config"
 	"github.com/patrickap/docker-restic/m/v2/internal/lock"
 	"github.com/patrickap/docker-restic/m/v2/internal/log"
 	"github.com/spf13/cobra"
 )
 
 // TODO: only run as user restic
-
-var config, configErr = cfg.Get()
 
 var rootCmd = &cobra.Command{
 	Use:          "docker-restic",
@@ -29,10 +26,5 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() error {
-	if configErr != nil {
-		log.Error().Msg("Could not load configuration file")
-		return configErr
-	}
-
 	return rootCmd.Execute()
 }

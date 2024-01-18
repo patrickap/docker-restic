@@ -1,25 +1,25 @@
 package cmd
 
 import (
-	"strings"
+	"fmt"
 
 	"github.com/patrickap/docker-restic/m/v2/internal/command"
-	"github.com/patrickap/docker-restic/m/v2/internal/util/maps"
+	"github.com/patrickap/docker-restic/m/v2/internal/config"
 	"github.com/spf13/cobra"
 )
 
 var runCmd = &cobra.Command{
 	Use:          "run",
-	Short:        "Run command specified in config file",
-	Long:         "Run command specified in config file: " + strings.Join(maps.GetKeys(config.Commands), ", "),
+	Short:        "Run provided command specified in config file",
+	Long:         fmt.Sprintf("Run provided command specified in config file: %v", config.Current().GetCommandList()),
 	Args:         cobra.ExactArgs(1),
 	SilenceUsage: true,
 }
 
 func init() {
-	for commandName := range config.Commands {
-		commandConfig := config.Commands[commandName]
+	commands := config.Current().Commands
 
+	for commandName, commandConfig := range commands {
 		runChildCmd := &cobra.Command{
 			Use:          commandName,
 			SilenceUsage: true,

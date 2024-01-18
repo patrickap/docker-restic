@@ -1,26 +1,25 @@
 package cmd
 
 import (
-	"strings"
+	"fmt"
 
 	"github.com/patrickap/docker-restic/m/v2/internal/command"
-	cfg "github.com/patrickap/docker-restic/m/v2/internal/config"
+	"github.com/patrickap/docker-restic/m/v2/internal/config"
 	"github.com/patrickap/docker-restic/m/v2/internal/log"
-	"github.com/patrickap/docker-restic/m/v2/internal/util/maps"
 	"github.com/spf13/cobra"
 )
 
 var initCmd = &cobra.Command{
 	Use:          "init",
-	Short:        "Initialize repositories specified in config file",
-	Long:         "Initialize repositories specified in config file: " + strings.Join(maps.GetKeys(config.Repositories), ", "),
+	Short:        "Initialize all repositories specified in config file",
+	Long:         fmt.Sprintf("Initialize all repositories specified in config file: %v", config.Current().GetRepositoryList()),
 	SilenceUsage: true,
 	RunE: func(c *cobra.Command, args []string) error {
-		for repositoryName := range config.Repositories {
-			repositoryConfig := config.Repositories[repositoryName]
+		repositories := config.Current().Repositories
 
+		for repositoryName, repositoryConfig := range repositories {
 			log.Info().Msgf("Initializing repository '%s'", repositoryName)
-			cmd := command.BuildCommand(cfg.CommandConfig{
+			cmd := command.BuildCommand(config.CommandConfig{
 				Arguments: []string{"init"},
 				Flags:     repositoryConfig,
 			})
