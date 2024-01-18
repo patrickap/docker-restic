@@ -5,6 +5,7 @@ import (
 
 	"github.com/patrickap/docker-restic/m/v2/internal/command"
 	"github.com/patrickap/docker-restic/m/v2/internal/config"
+	"github.com/patrickap/docker-restic/m/v2/internal/lock"
 	"github.com/spf13/cobra"
 )
 
@@ -24,9 +25,10 @@ func init() {
 			Use:          commandName,
 			SilenceUsage: true,
 			RunE: func(c *cobra.Command, args []string) error {
-				cmd := command.BuildCommand(&commandConfig)
-				cmdErr := cmd.Run()
-				return cmdErr
+				return lock.RunWithLock(func() error {
+					cmd := command.BuildCommand(&commandConfig)
+					return cmd.Run()
+				})
 			},
 		}
 
