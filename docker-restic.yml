@@ -1,16 +1,70 @@
 repositories:
-  default-repository:
-    options: &default-repository-options
-      repo: "/srv/docker-restic/repository"
-      password-file: "/tmp/password"
+  repository:
+    options: &repository-options
+      repo: "/srv/docker-restic/backup/repository"
+      password-file: "/run/secrets/restic-password"
+  remote-repository:
+    options: &remote-repository-options
+      repo: "rclone:b2:docker-restic-bucket"
+      password-file: "/run/secrets/restic-password"
 
 commands:
   backup:
-    arguments: [backup, /data]
+    arguments: ["backup", "/source"]
     options:
-      <<: *default-repository-options
+      <<: *repository-options
+  backup-remote:
+    arguments: ["backup", "/source"]
+    options:
+      <<: *remote-repository-options
+  check:
+    arguments: ["check"]
+    options:
+      <<: *repository-options
+      read-data: true
+  check-remote:
+    arguments: ["check"]
+    options:
+      <<: *remote-repository-options
+      read-data: true
+  forget:
+    arguments: ["forget"]
+    options:
+      <<: *repository-options
+      keep-daily: 7
+      keep-weekly: 4
+      keep-monthly: 12
+      keep-yearly: 2
+      group-by: "paths"
+      prune: true
+  forget-remote:
+    arguments: ["forget"]
+    options:
+      <<: *remote-repository-options
+      keep-daily: 7
+      keep-weekly: 4
+      keep-monthly: 12
+      keep-yearly: 2
+      group-by: "paths"
+      prune: true
+  dump:
+    arguments:
+      [
+        "dump",
+        "latest",
+        "/",
+        ">",
+        "/srv/docker-restic/backup/export/backup.tar",
+      ]
+    options:
+      <<: *repository-options
     hooks:
-      pre: "echo 'pre'"
-      post: "echo 'post'"
-      success: "echo 'success'"
-      failure: "echo 'failure'"
+      pre: |
+        echo "INF Creating export directory" \
+        && mkdir -p /srv/docker-restic/backup/export
+      success: |
+        echo "INF Checking integrity of backup dump" \
+        && echo /srv/docker-restic/backup/export/backup.tar | xargs -r tar -tf > /dev/null \
+        && echo "INF Backup dump seems fine" || echo "ERR Backup dump may be corrupt" \
+        && echo "INF Pruning backup dumps, keeping latest 3" \
+        && ls -t /srv/docker-restic/backup/export | tail -n +4 | xargs -I {} rm -- {}

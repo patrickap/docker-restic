@@ -21,7 +21,7 @@ if [ ! "${UID}" = "${default_uid}" ] || [ ! "${GID}" = "${default_gid}" ]; then
 fi
 
 if capsh --has-b=cap_dac_read_search &> /dev/null; then
-  echo "INF Setting necessary capabilities on binaries"
+  echo "INF Applying 'cap_dac_read_search' capability to restic binaries"
   setcap 'cap_dac_read_search=+ep' /usr/bin/restic
   setcap 'cap_dac_read_search=+ep' $DOCKER_RESTIC_DIR/bin/docker-restic
 fi
