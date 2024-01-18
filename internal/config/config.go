@@ -10,18 +10,13 @@ import (
 )
 
 type Config struct {
-	Repositories map[string]RepositoryConfig `mapstructure:"repositories"`
-	Commands     map[string]CommandConfig    `mapstructure:"commands"`
-}
-
-type RepositoryConfig struct {
-	Options map[string]interface{} `mapstructure:"options"`
+	Commands map[string]CommandConfig `mapstructure:"commands"`
 }
 
 type CommandConfig struct {
-	Arguments []string               `mapstructure:"arguments"`
-	Options   map[string]interface{} `mapstructure:"options"`
-	Hooks     struct {
+	Command []string               `mapstructure:"command"`
+	Options map[string]interface{} `mapstructure:"options"`
+	Hooks   struct {
 		Pre     string `mapstructure:"pre"`
 		Post    string `mapstructure:"post"`
 		Success string `mapstructure:"success"`
@@ -64,10 +59,6 @@ func parse() (*Config, error) {
 
 func Current() *Config {
 	return config
-}
-
-func (c *Config) GetRepositoryList() []string {
-	return maps.GetKeys(c.Repositories)
 }
 
 func (c *Config) GetCommandList() []string {

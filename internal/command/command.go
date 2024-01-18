@@ -17,7 +17,7 @@ func BuildCommand(config *config.CommandConfig) *Runnable {
 
 		BuildCommandHook("pre", config.Hooks.Pre).Run()
 
-		command := append([]string{"restic"}, append(config.Arguments, config.GetOptionList()...)...)
+		command := append(config.Command, config.GetOptionList()...)
 		log.Info().Msgf("Executing command: %s", strings.Join(command, " "))
 		commandErr := shell.ExecuteCommand(command...).Run()
 

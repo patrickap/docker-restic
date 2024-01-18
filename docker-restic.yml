@@ -1,59 +1,84 @@
-repositories:
-  default-repository:
-    options: &default-repository-options
-      repo: "/srv/docker-restic/backup/repository"
-      password-file: "/run/secrets/restic-password"
+repository: &repository
+  repo: "/srv/docker-restic/backup/repository"
+  password-file: "/run/secrets/restic-password"
 
 commands:
+  init:
+    command: ["restic", "init"]
+    options:
+      <<: *repository
+
   backup:
-    arguments: ["backup", "/source"]
+    command: ["restic", "backup", "/source"]
     options:
-      <<: *default-repository-options
-    hooks:
-      success: |
-        echo "INF Syncing to remote" \
-        && rclone sync /srv/docker-restic/backup/repository b2:docker-restic-bucket --fast-list --progress --stats 15m
-  check:
-    arguments: ["check"]
+      <<: *repository
+
+  backup-prune:
+    command: ["restic", "forget"]
     options:
-      <<: *default-repository-options
-      read-data: true
-    hooks:
-      success: |
-        echo "INF Checking integrity of remote" \
-        && rclone check /srv/docker-restic/backup/repository b2:docker-restic-bucket --fast-list
-  forget:
-    arguments: ["forget"]
-    options:
-      <<: *default-repository-options
+      <<: *repository
       keep-daily: 7
       keep-weekly: 4
       keep-monthly: 12
       keep-yearly: 2
       group-by: "paths"
       prune: true
-  dump:
-    arguments:
+
+  backup-check:
+    command: ["restic", "check"]
+    options:
+      <<: *repository
+      read-data: true
+
+  sync:
+    command:
       [
-        "dump",
-        "latest",
-        "/",
-        ">",
-        "/srv/docker-restic/backup/export/backup_$(date +'%Y-%m-%d_%H.%M.%S').tar",
+        "rclone",
+        "sync",
+        "/srv/docker-restic/backup/repository",
+        "b2:docker-restic-bucket",
       ]
     options:
-      <<: *default-repository-options
+      stats: "15m"
+      fast-list: true
+      progress: true
+
+  sync-check:
+    command:
+      [
+        "rclone",
+        "check",
+        "/srv/docker-restic/backup/repository",
+        "b2:docker-restic-bucket",
+      ]
+    options:
+      fast-list: true
+
+  dump:
+    command:
+      [
+        "/bin/sh",
+        "-c",
+        "restic dump latest / > /srv/docker-restic/backup/export/backup_$(date +'%Y-%m-%d_%H.%M.%S').tar",
+      ]
+    options:
+      <<: *repository
     hooks:
       pre: |
         mkdir -p /srv/docker-restic/backup/export
-      success: |
-        echo "INF Checking integrity of dump" \
-        && { \
-            echo /srv/docker-restic/backup/export/backup.tar | xargs -r tar -tf > /dev/null \
-            && echo "INF Dump seems fine"; \
-           } \
-        || {  \
-            echo "ERR Dump may be corrupt"; exit 1; \
-           } \
-        && echo "INF Pruning dumps (keep last 4)" \
-        && rm -rf $(ls -t /srv/docker-restic/backup/export/backup_* | tail +5 | xargs -r echo)
+
+  dump-prune:
+    command:
+      [
+        "/bin/sh",
+        "-c",
+        "rm -rf $(ls -t /srv/docker-restic/backup/export/backup_* | tail +5) | xargs -r echo)",
+      ]
+
+  dump-check:
+    command:
+      [
+        "/bin/sh",
+        "-c",
+        "echo $(ls -t /srv/docker-restic/backup/export/backup_* | head -1) | xargs -r tar -tf > /dev/null",
+      ]
