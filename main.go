@@ -19,8 +19,8 @@ func main() {
 		os.Exit(1)
 	}()
 
-	cmdErr := cmd.Execute()
-	if cmdErr != nil {
+	err := cmd.Execute()
+	if err != nil {
 		lock.Unlock()
 		os.Exit(1)
 	}

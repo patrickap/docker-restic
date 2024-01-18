@@ -17,10 +17,10 @@ type CommandConfig struct {
 	Command []string               `mapstructure:"command"`
 	Options map[string]interface{} `mapstructure:"options"`
 	Hooks   struct {
-		Pre     string `mapstructure:"pre"`
-		Post    string `mapstructure:"post"`
-		Success string `mapstructure:"success"`
-		Failure string `mapstructure:"failure"`
+		Pre     []string `mapstructure:"pre"`
+		Post    []string `mapstructure:"post"`
+		Success []string `mapstructure:"success"`
+		Failure []string `mapstructure:"failure"`
 	} `mapstructure:"hooks"`
 }
 
@@ -36,7 +36,7 @@ func init() {
 
 	config, configErr = parse()
 	if configErr != nil {
-		log.Error().Msg("Could not load configuration file")
+		log.Error().Msg("Failed to load config file")
 		panic(configErr)
 	}
 }

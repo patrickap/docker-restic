@@ -3,18 +3,7 @@ package shell
 import (
 	"os"
 	"os/exec"
-
-	"github.com/anmitsu/go-shlex"
 )
-
-func ParseCommand(command string) []string {
-	strings, err := shlex.Split(command, true)
-	if err != nil {
-		return []string{}
-	}
-
-	return strings
-}
 
 func ExecuteCommand(args ...string) *exec.Cmd {
 	var cmd *exec.Cmd

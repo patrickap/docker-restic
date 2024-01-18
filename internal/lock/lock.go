@@ -29,10 +29,10 @@ func Unlock() error {
 }
 
 func RunWithLock(f func() error) error {
-	lockErr := lock.Lock()
-	if lockErr != nil {
-		log.Error().Msg("Could not acquire lock")
-		return lockErr
+	err := lock.Lock()
+	if err != nil {
+		log.Error().Msg("Failed to acquire lock")
+		return err
 	}
 
 	defer lock.Unlock()
