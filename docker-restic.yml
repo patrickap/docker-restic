@@ -66,7 +66,8 @@ commands:
       [
         "/bin/sh",
         "-c",
-        "restic ${@:1} dump latest / > /srv/docker-restic/backup/test.tar",
+        "restic ${@} dump latest / > /srv/docker-restic/backup/test.tar",
+        "--",
       ]
     options:
       <<: *repository
