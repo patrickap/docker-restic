@@ -19,10 +19,7 @@ func BuildCommand(commandName string, config *config.CommandConfig) *Runnable {
 			return hookErr
 		}
 
-		command, replaced := config.GetCommand(map[string]string{"options": strings.Join(config.GetOptions(), " ")})
-		if !replaced {
-			command = append(config.Command, config.GetOptions()...)
-		}
+		command := config.GetCommand()
 		log.Info().Msgf("Running command '%s': %s", commandName, strings.Join(command, " "))
 
 		commandErr := util.ExecuteCommand(command...).Run()

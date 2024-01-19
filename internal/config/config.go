@@ -66,19 +66,9 @@ func (c *Config) GetCommands() []string {
 	return util.GetKeys(c.Commands)
 }
 
-func (c *CommandConfig) GetCommand(replacements map[string]string) ([]string, bool) {
-	replaced := false
-	command := make([]string, len(c.Command))
-	copy(command, c.Command)
-
-	if replacements != nil {
-		for i, word := range command {
-			command[i] = util.Replace(word, replacements)
-			replaced = true
-		}
-	}
-
-	return command, replaced
+func (c *CommandConfig) GetCommand() []string {
+	command := append(c.Command, c.GetOptions()...)
+	return command
 }
 
 func (c *CommandConfig) GetOptions() []string {

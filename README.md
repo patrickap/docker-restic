@@ -164,6 +164,13 @@ Remote syncing of backups can be configured with `rclone`. Either by bind mounti
 
 - custom commands, other programs, new shell process, placeholders
 - hooks for repetition etc.
+- accessing passed options and move them
+
+```bash
+/bin/sh -c 'echo "${@:1}" --option1 option1 --option2 option2'
+# or
+/bin/sh -c 'shift; echo "$@" --option1 option1 --option2 option2'
+```
 
 ## Schedule Backups
 

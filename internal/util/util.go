@@ -4,7 +4,6 @@ import (
 	"os"
 	"os/exec"
 	"sort"
-	"strings"
 )
 
 type Pair[K comparable, V any] struct {
@@ -40,15 +39,6 @@ func GetKeys[K string, V any](m map[K]V) []K {
 	}
 
 	return keys
-}
-
-func Replace(s string, replacements map[string]string) string {
-	for placeholder, replacement := range replacements {
-		if strings.Contains(strings.ToLower(s), strings.ToLower(placeholder)) {
-			s = strings.ReplaceAll(s, placeholder, replacement)
-		}
-	}
-	return s
 }
 
 func ExecuteCommand(args ...string) *exec.Cmd {
