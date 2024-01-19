@@ -45,7 +45,12 @@ commands:
       # anchors can be used to reuse common options
       <<: *default-repository-options
       tag: snapshot
+      # options default to prefix "--"
+      # in this case --verbose
+      # can also be added manually with "-" or "--" for compatability
       verbose: true
+      # -verbose: true
+      # --verbose: true
       exclude:
         - "*.secret"
         - "*.bin"
