@@ -13,9 +13,14 @@ commands:
     options:
       <<: *repository
     hooks:
+      pre:
+        - container-exec
+        - container-stop
       success:
         - forget
         - check
+      post:
+        - container-start
 
   forget:
     command: ["restic", "forget"]
@@ -81,7 +86,7 @@ commands:
       [
         "/bin/sh",
         "-c",
-        "ls -t /srv/docker-restic/backup/export/backup_* | tail +7 | xargs -r -I {} rm -rf {}",
+        "ls -t /srv/docker-restic/backup/export/backup_* | tail +7 | xargs -r rm -rf",
       ]
 
   dump-check:
@@ -89,5 +94,29 @@ commands:
       [
         "/bin/sh",
         "-c",
-        "ls -t /srv/docker-restic/backup/export/backup_* | head -1 | xargs -r -I {} tar -tf {} > /dev/null",
+        "ls -t /srv/docker-restic/backup/export/backup_* | head -1 | xargs -r tar -tf > /dev/null",
+      ]
+
+  container-start:
+    command:
+      [
+        "/bin/sh",
+        "-c",
+        "docker ps -q --filter label=docker-restic.container.stop=true --filter status=exited | xargs -r docker restart > /dev/null",
+      ]
+
+  container-stop:
+    command:
+      [
+        "/bin/sh",
+        "-c",
+        "docker ps -q --filter label=docker-restic.container.stop=true | xargs -r docker stop > /dev/null",
+      ]
+
+  container-exec:
+    command:
+      [
+        "/bin/sh",
+        "-c",
+        'docker ps -q --filter label=docker-restic.container.exec | xargs -r -I {} docker exec {} /bin/sh -c "$(docker inspect --format ''{{index .Config.Labels "docker-restic.container.exec"}}'' {})" > /dev/null',
       ]
