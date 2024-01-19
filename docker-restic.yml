@@ -86,7 +86,7 @@ commands:
       [
         "/bin/sh",
         "-c",
-        "ls -t /srv/docker-restic/backup/export/backup_* | tail +7 | xargs -r rm -rf",
+        "set -euo pipefail; ls -t /srv/docker-restic/backup/export/backup_* | tail +7 | xargs -r rm -rf",
       ]
 
   dump-check:
@@ -94,7 +94,7 @@ commands:
       [
         "/bin/sh",
         "-c",
-        "ls -t /srv/docker-restic/backup/export/backup_* | head -1 | xargs -r tar -tf > /dev/null",
+        "set -euo pipefail; ls -t /srv/docker-restic/backup/export/backup_* | head -1 | xargs -r tar -tf > /dev/null",
       ]
 
   container-start:
@@ -102,7 +102,7 @@ commands:
       [
         "/bin/sh",
         "-c",
-        "docker ps -q --filter label=docker-restic.container.stop=true --filter status=exited | xargs -r docker restart > /dev/null",
+        "set -euo pipefail; docker ps -q --filter label=docker-restic.container.stop=true --filter status=exited | xargs -r docker restart > /dev/null",
       ]
 
   container-stop:
@@ -110,7 +110,7 @@ commands:
       [
         "/bin/sh",
         "-c",
-        "docker ps -q --filter label=docker-restic.container.stop=true | xargs -r docker stop > /dev/null",
+        "set -euo pipefail; docker ps -q --filter label=docker-restic.container.stop=true | xargs -r docker stop > /dev/null",
       ]
 
   container-exec:
@@ -118,5 +118,5 @@ commands:
       [
         "/bin/sh",
         "-c",
-        'docker ps -q --filter label=docker-restic.container.exec | xargs -r -I {} docker exec {} /bin/sh -c "$(docker inspect --format ''{{index .Config.Labels "docker-restic.container.exec"}}'' {})" > /dev/null',
+        'set -euo pipefail; docker ps -q --filter label=docker-restic.container.exec | xargs -r -I {} docker exec {} /bin/sh -c "$(docker inspect --format ''{{index .Config.Labels "docker-restic.container.exec"}}'' {})" > /dev/null',
       ]
