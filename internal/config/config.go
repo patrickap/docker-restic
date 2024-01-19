@@ -62,7 +62,7 @@ func Current() *Config {
 	return config
 }
 
-func (c *Config) GetCommandList() []string {
+func (c *Config) GetCommands() []string {
 	return util.GetKeys(c.Commands)
 }
 
@@ -81,7 +81,7 @@ func (c *CommandConfig) GetCommand(replacements map[string]string) ([]string, bo
 	return command, replaced
 }
 
-func (c *CommandConfig) GetOptionList() []string {
+func (c *CommandConfig) GetOptions() []string {
 	options := []string{}
 
 	for _, option := range util.SortByKey(c.Options) {

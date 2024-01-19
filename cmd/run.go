@@ -12,7 +12,7 @@ import (
 var runCmd = &cobra.Command{
 	Use:          "run",
 	Short:        "Run provided command specified in config file",
-	Long:         fmt.Sprintf("Run provided command specified in config file: %v", config.Current().GetCommandList()),
+	Long:         fmt.Sprintf("Run provided command specified in config file: %v", config.Current().GetCommands()),
 	Args:         cobra.ExactArgs(1),
 	SilenceUsage: true,
 }
