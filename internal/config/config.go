@@ -6,7 +6,7 @@ import (
 
 	"github.com/patrickap/docker-restic/m/v2/internal/env"
 	"github.com/patrickap/docker-restic/m/v2/internal/log"
-	"github.com/patrickap/docker-restic/m/v2/internal/util/maps"
+	"github.com/patrickap/docker-restic/m/v2/internal/util"
 	"github.com/spf13/viper"
 )
 
@@ -63,13 +63,28 @@ func Current() *Config {
 }
 
 func (c *Config) GetCommandList() []string {
-	return maps.GetKeys(c.Commands)
+	return util.GetKeys(c.Commands)
+}
+
+func (c *CommandConfig) GetCommand(replacements map[string]string) ([]string, bool) {
+	replaced := false
+	command := make([]string, len(c.Command))
+	copy(command, c.Command)
+
+	if replacements != nil {
+		for i, word := range command {
+			command[i] = util.Replace(word, replacements)
+			replaced = true
+		}
+	}
+
+	return command, replaced
 }
 
 func (c *CommandConfig) GetOptionList() []string {
 	options := []string{}
 
-	for _, option := range maps.SortByKey(c.Options) {
+	for _, option := range util.SortByKey(c.Options) {
 		prefix := "--"
 		if strings.HasPrefix(option.Key, "-") {
 			prefix = ""

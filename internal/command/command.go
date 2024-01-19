@@ -5,7 +5,7 @@ import (
 
 	"github.com/patrickap/docker-restic/m/v2/internal/config"
 	"github.com/patrickap/docker-restic/m/v2/internal/log"
-	"github.com/patrickap/docker-restic/m/v2/internal/util/shell"
+	"github.com/patrickap/docker-restic/m/v2/internal/util"
 )
 
 type Runnable struct {
@@ -19,10 +19,13 @@ func BuildCommand(commandName string, config *config.CommandConfig) *Runnable {
 			return hookErr
 		}
 
-		command := append(config.Command, config.GetOptionList()...)
+		command, replaced := config.GetCommand(map[string]string{"options": strings.Join(config.GetOptionList(), " ")})
+		if !replaced {
+			command = append(config.Command, config.GetOptionList()...)
+		}
 		log.Info().Msgf("Running command '%s': %s", commandName, strings.Join(command, " "))
 
-		commandErr := shell.ExecuteCommand(command...).Run()
+		commandErr := util.ExecuteCommand(command...).Run()
 		if commandErr != nil {
 			log.Error().Msgf("Failed to run command '%s'", commandName)
 

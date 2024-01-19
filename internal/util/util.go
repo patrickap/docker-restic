@@ -1,6 +1,11 @@
-package maps
+package util
 
-import "sort"
+import (
+	"os"
+	"os/exec"
+	"sort"
+	"strings"
+)
 
 type Pair[K comparable, V any] struct {
 	Key   K
@@ -35,4 +40,24 @@ func GetKeys[K string, V any](m map[K]V) []K {
 	}
 
 	return keys
+}
+
+func Replace(s string, replacements map[string]string) string {
+	for placeholder, replacement := range replacements {
+		if strings.Contains(strings.ToLower(s), strings.ToLower(placeholder)) {
+			s = strings.ReplaceAll(s, placeholder, replacement)
+		}
+	}
+	return s
+}
+
+func ExecuteCommand(args ...string) *exec.Cmd {
+	var cmd *exec.Cmd
+	if len(args) > 0 {
+		cmd = exec.Command(args[0], args[1:]...)
+	}
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd
 }
