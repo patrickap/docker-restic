@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/patrickap/docker-restic/m/v2/internal/env"
 	"github.com/patrickap/docker-restic/m/v2/internal/log"
@@ -69,18 +70,23 @@ func (c *CommandConfig) GetOptionList() []string {
 	options := []string{}
 
 	for _, option := range maps.SortByKey(c.Options) {
+		prefix := "--"
+		if strings.HasPrefix(option.Key, "-") {
+			prefix = ""
+		}
+
 		switch optionType := option.Value.(type) {
 		case bool:
 			if optionType {
-				options = append(options, fmt.Sprintf("--%s", option.Key))
+				options = append(options, fmt.Sprintf("%s%s", prefix, option.Key))
 			}
 		case string, int:
-			options = append(options, fmt.Sprintf("--%s", option.Key), fmt.Sprintf("%v", option.Value))
+			options = append(options, fmt.Sprintf("%s%s", prefix, option.Key), fmt.Sprintf("%v", option.Value))
 		case interface{}:
 			if optionType, ok := optionType.([]interface{}); ok {
 				for _, optionValue := range optionType {
 					if optionValue, ok := optionValue.(string); ok {
-						options = append(options, fmt.Sprintf("--%s", option.Key), optionValue)
+						options = append(options, fmt.Sprintf("%s%s", prefix, option.Key), optionValue)
 					}
 				}
 			}
