@@ -36,9 +36,12 @@ repositories:
 commands:
   # equivalent to: restic backup /media --repo /srv/restic/repository --password-file /run/secrets/password --tag snapshot --verbose --exclude *.secret --exclude *.bin --exclude-larger-than 2048
   snapshot:
-    # maps directly to restic command arguments
-    # order is guaranteed
-    arguments: [backup, /media]
+    # specify command to run
+    command: ["restic", "backup", "/media"]
+    # command:
+    #   - restic
+    #   - backup
+    #   - /media
     options:
       # maps directly to restic command options
       # can be either boolean, string, integer or a list
@@ -162,12 +165,11 @@ Remote syncing of backups can be configured with `rclone`. Either by bind mounti
 
 ## Advance Config
 
-- custom commands, other programs, new shell process, placeholders
-- hooks for repetition etc.
-- accessing passed options and move them
+- custom commands (e.g. rclone), other programs, new shell process /bin/sh -c, placeholders for options like ${@} and -- (accessing passed options and move them)
+- hooks for repetition etc
 
 ```bash
-/bin/sh -c 'echo ${@}' -- --option1 option1 --option2 option2
+/bin/sh -c "echo ${@}" -- --option1 option1 --option2 option2
 ```
 
 ## Schedule Backups
