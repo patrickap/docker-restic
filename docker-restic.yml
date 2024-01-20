@@ -4,12 +4,17 @@ repository: &repository
 
 commands:
   init:
-    command: ["restic", "init"]
+    command:
+      - restic
+      - init
     options:
       <<: *repository
 
   backup:
-    command: ["restic", "backup", "/source"]
+    command:
+      - restic
+      - backup
+      - /source
     options:
       <<: *repository
     hooks:
@@ -23,7 +28,9 @@ commands:
         - container-start
 
   forget:
-    command: ["restic", "forget"]
+    command:
+      - restic
+      - forget
     options:
       <<: *repository
       keep-daily: 7
@@ -34,19 +41,19 @@ commands:
       prune: true
 
   check:
-    command: ["restic", "check"]
+    command:
+      - restic
+      - check
     options:
       <<: *repository
       read-data: true
 
   sync:
     command:
-      [
-        "rclone",
-        "sync",
-        "/srv/docker-restic/backup/repository",
-        "b2:docker-restic-bucket",
-      ]
+      - rclone
+      - sync
+      - /srv/docker-restic/backup/repository
+      - b2:docker-restic-bucket
     options:
       stats: "15m"
       fast-list: true
@@ -57,23 +64,19 @@ commands:
 
   sync-check:
     command:
-      [
-        "rclone",
-        "check",
-        "/srv/docker-restic/backup/repository",
-        "b2:docker-restic-bucket",
-      ]
+      - rclone
+      - check
+      - /srv/docker-restic/backup/repository
+      - b2:docker-restic-bucket
     options:
       fast-list: true
 
   dump:
     command:
-      [
-        "/bin/sh",
-        "-c",
-        "restic ${@} dump latest / > /srv/docker-restic/backup/export/backup_$(date +'%Y-%m-%d_%H.%M.%S').tar",
-        "--",
-      ]
+      - /bin/sh
+      - -c
+      - restic ${@} dump latest / > /srv/docker-restic/backup/export/backup_$(date +'%Y-%m-%d_%H.%M.%S').tar
+      - --
     options:
       <<: *repository
     hooks:
@@ -83,41 +86,30 @@ commands:
 
   dump-prune:
     command:
-      [
-        "/bin/sh",
-        "-c",
-        "set -euo pipefail; ls -t /srv/docker-restic/backup/export/backup_* | tail +7 | xargs -r rm -rf",
-      ]
+      - /bin/sh
+      - -c
+      - set -euo pipefail; ls -t /srv/docker-restic/backup/export/backup_* | tail +7 | xargs -r rm -rf
 
   dump-check:
     command:
-      [
-        "/bin/sh",
-        "-c",
-        "set -euo pipefail; ls -t /srv/docker-restic/backup/export/backup_* | head -1 | xargs -r tar -tf > /dev/null",
-      ]
+      - /bin/sh
+      - -c
+      - set -euo pipefail; ls -t /srv/docker-restic/backup/export/backup_* | head -1 | xargs -r tar -tf > /dev/null
 
   container-start:
     command:
-      [
-        "/bin/sh",
-        "-c",
-        "set -euo pipefail; docker ps -q --filter label=docker-restic.container.stop=true --filter status=exited | xargs -r docker restart > /dev/null",
-      ]
+      - /bin/sh
+      - -c
+      - set -euo pipefail; docker ps -q --filter label=docker-restic.container.stop=true --filter status=exited | xargs -r docker restart > /dev/null
 
   container-stop:
     command:
-      [
-        "/bin/sh",
-        "-c",
-        "set -euo pipefail; docker ps -q --filter label=docker-restic.container.stop=true | xargs -r docker stop > /dev/null",
-      ]
+      - /bin/sh
+      - -c
+      - set -euo pipefail; docker ps -q --filter label=docker-restic.container.stop=true | xargs -r docker stop > /dev/null
 
   container-exec:
-    # TODO: fix command
     command:
-      [
-        "/bin/sh",
-        "-c",
-        'set -euo pipefail; docker ps -q --filter label=docker-restic.container.exec | xargs -r -I {} docker exec {} /bin/sh -c "$(docker inspect --format ''{{index .Config.Labels "docker-restic.container.exec"}}'' {})" > /dev/null',
-      ]
+      - /bin/sh
+      - -c
+      - set -euo pipefail; docker ps -q --filter label=docker-restic.container.exec | xargs -r -I {} docker inspect --format '{{.Id}} {{index .Config.Labels "docker-restic.container.exec"}}' {} | xargs -r -n2 /bin/sh -c 'docker exec $0 /bin/sh -c "$1"'
