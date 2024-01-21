@@ -73,6 +73,8 @@ services:
 
 2. Configure the Docker-Restic container:
 
+<!-- TODO: mention and create default config.yml -->
+
 Docker-Restic can be configured using a central `docker-restic.yml` file. Create a local config and bind mount it into the container to `/srv/docker-restic/docker-restic.yml`
 
 ```yml
@@ -131,6 +133,8 @@ configured command `snapshot` above can later be called using the `docker-restic
 ```bash
 docker-restic run snapshot
 ```
+
+<!-- TODO: mention and create default config.cron -->
 
 To schedule commands create a `docker-restic.cron` file and bind mount it to `/srv/docker-restic/docker-restic.cron`
 
