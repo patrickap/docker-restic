@@ -40,5 +40,3 @@ RUN apk update \
 WORKDIR $DOCKER_RESTIC_DIR
 ENTRYPOINT ["./entrypoint.sh"]
 CMD ["supercronic", "-passthrough-logs", "./docker-restic.cron"]
-
-# TODO: remove docker-restic.yml and docker-restic.cron or provide good defaults
