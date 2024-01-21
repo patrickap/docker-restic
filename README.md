@@ -8,15 +8,15 @@ Docker-Restic is a lightweight wrapper designed to streamline the use of Restic,
 - **Restic Integration**: Supports all available Restic commands, arguments, options and more.
 - **Multiple Repositories**: Enables seamless management of multiple repositories and backup locations.
 - **Centralized Configuration**: Utilizes a central configuration file for all custom commands.
-- **Custom Hooks**: Permits the definition of hooks to execute tailored workflows, for increased flexibility.
-- **Custom Commands**: Facilitates the creation of custom commands for maximum adaptability to specific use cases.
-- **Automation Capabilities**: Supports the scheduling of commands, facilitating automated backups and operations.
+- **Custom Hooks**: Allows the definition of hooks to execute tailored workflows.
+- **Custom Commands**: Facilitates the creation of custom commands for maximum flexibility.
+- **Automation Capabilities**: Supports the scheduling of commands for automated backup operations.
 - **Non-root Container**: Operates as a non-root container by default, adhering to best security practices.
-- **Optional Capabilities**: Docker-Restic offers optional capabilities to read data from other users, providing versatility in handling various scenarios.
+- **Optional Capabilities**: Offers optional capabilities to read data from different owners if necessary.
 
 ## Getting Started
 
-To get started with Docker-Restic and start leveraging its capabilities, follow these steps:
+To get started with Docker-Restic, follow these steps:
 
 1. Pull the Docker-Restic image from the official Docker Hub repository and run the container with the specified configurations:
 
@@ -24,11 +24,12 @@ To get started with Docker-Restic and start leveraging its capabilities, follow 
 docker run -d \
   --name docker-restic \
   --restart always \
-  --cap-add DAC_READ_SEARCH \
-  -v $(pwd)/docker-restic.yml:/srv/docker-restic/docker-restic.yml:ro \
-  -v $(pwd)/docker-restic.cron:/srv/docker-restic/docker-restic.cron:ro \
-  -v docker-restic-data:/srv/docker-restic \
+  # Optional
+  # --cap-add DAC_READ_SEARCH \
+  # -v $(pwd)/docker-restic.yml:/srv/docker-restic/docker-restic.yml:ro \
+  # -v $(pwd)/docker-restic.cron:/srv/docker-restic/docker-restic.cron:ro \
   -v source:/source:ro \
+  -v docker-restic-data:/srv/docker-restic \
   -v /etc/localtime:/etc/localtime:ro \
   -v /var/run/docker.sock:/var/run/docker.sock:ro \
   --secret restic-password \
@@ -44,21 +45,23 @@ services:
   docker-restic:
     image: patrickap/docker-restic:latest
     restart: always
-    cap_add:
-      - DAC_READ_SEARCH
+    # Optional
+    # cap_add:
+    # - DAC_READ_SEARCH
     volumes:
-      - ./docker-restic.yml:/srv/docker-restic/docker-restic.yml:ro
-      - ./docker-restic.cron:/srv/docker-restic/docker-restic.cron:ro
+      # Optional
+      # - ./docker-restic.yml:/srv/docker-restic/docker-restic.yml:ro
+      # - ./docker-restic.cron:/srv/docker-restic/docker-restic.cron:ro
+      # - source:/source:ro
       - docker-restic-data:/srv/docker-restic
-      - source:/source:ro
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     secrets:
       - restic-password
 
 volumes:
-  docker-restic-data:
   source:
+  docker-restic-data:
 
 secrets:
   restic-password:
@@ -82,12 +85,12 @@ Docker-Restic provides default configurations to help you get started quickly. T
 - `container-start`: Starts all containers labeled `docker-restic.container.stop=true`.
 - `container-stop`: Stops all containers labeled `docker-restic.container.stop=true`.
 
-The entire backup process is scheduled once a day at 00:00. If this is not sufficient, the configurations can be modified or overwritten. Bind mount your custom configurations:
+The entire backup process is scheduled once a day at 00:00. If this is not sufficient, the configurations can be modified or overwritten completely. Bind mount your custom configurations like this:
 
 - `docker-restic.yml`: `/srv/docker-restic/docker-restic.yml`
 - `docker-restic.cron`: `/srv/docker-restic/docker-restic.cron`
 
-Do not forget to restart the container afterwards.
+Do not forget to restart the container.
 
 5. **Configure rclone (Optional)**
 
@@ -174,7 +177,7 @@ commands:
 It's also possible to change the position of the applied command options. By default, they get added at the end of the command automatically. To change it, run the command in a new shell process and access them using the special variable `$@`. Use `--` to signal the end of options for the `/bin/sh` command. Any arguments after `--` will be treated as positional parameters or arguments for the command string executed by `/bin/sh -c`. Try it in the terminal:
 
 ```bash
-/bin/sh -c "echo ${@}" -- --option-1 --option-2 --option-3
+/bin/sh -c 'echo ${@}' -- --option-1 --option-2 --option-3
 ```
 
 In the example below, during execution `${@}` gets replaced with the actual options.
