@@ -12,34 +12,35 @@ type Runnable struct {
 	Run func() error
 }
 
-func BuildCommand(commandName string, config *config.CommandConfig) *Runnable {
+func BuildCommand(commandName string, config *config.ConfigItem) *Runnable {
 	return &Runnable{Run: func() error {
-		hookErr := BuildCommandHooks(config.Hooks.Pre).Run()
+		command := config.Command()
+		hooks := config.Hooks()
+
+		hookErr := BuildCommandHooks(hooks.Pre()).Run()
 		if hookErr != nil {
 			return hookErr
 		}
 
-		command := config.GetCommand()
 		log.Info().Msgf("Running command '%s': %s", commandName, strings.Join(command, " "))
-
 		commandErr := util.ExecuteCommand(command...).Run()
 		if commandErr != nil {
 			log.Error().Msgf("Failed to run command '%s'", commandName)
 
-			hookErr := BuildCommandHooks(config.Hooks.Failure).Run()
+			hookErr := BuildCommandHooks(hooks.Failure()).Run()
 			if hookErr != nil {
 				return hookErr
 			}
 
 			return commandErr
 		} else {
-			hookErr := BuildCommandHooks(config.Hooks.Success).Run()
+			hookErr := BuildCommandHooks(hooks.Success()).Run()
 			if hookErr != nil {
 				return hookErr
 			}
 		}
 
-		hookErr = BuildCommandHooks(config.Hooks.Post).Run()
+		hookErr = BuildCommandHooks(hooks.Post()).Run()
 		if hookErr != nil {
 			return hookErr
 		}
@@ -51,7 +52,8 @@ func BuildCommand(commandName string, config *config.CommandConfig) *Runnable {
 func BuildCommandHooks(commandNames []string) *Runnable {
 	return &Runnable{Run: func() error {
 		for _, commandName := range commandNames {
-			command, found := config.Current().Commands[commandName]
+			commands := config.Instance().Commands()
+			command, found := commands[commandName]
 
 			if found {
 				err := BuildCommand(commandName, &command).Run()

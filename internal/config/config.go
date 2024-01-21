@@ -11,18 +11,22 @@ import (
 )
 
 type Config struct {
-	Commands map[string]CommandConfig `mapstructure:"commands"`
+	commands map[string]ConfigItem `mapstructure:"commands"`
 }
 
-type CommandConfig struct {
-	Command []string               `mapstructure:"command"`
-	Options map[string]interface{} `mapstructure:"options"`
-	Hooks   struct {
-		Pre     []string `mapstructure:"pre"`
-		Post    []string `mapstructure:"post"`
-		Success []string `mapstructure:"success"`
-		Failure []string `mapstructure:"failure"`
-	} `mapstructure:"hooks"`
+type ConfigItem struct {
+	command Command `mapstructure:"command"`
+	options Options `mapstructure:"options"`
+	hooks   Hooks   `mapstructure:"hooks"`
+}
+
+type Command []string
+type Options map[string]interface{}
+type Hooks struct {
+	pre     []string `mapstructure:"pre"`
+	post    []string `mapstructure:"post"`
+	success []string `mapstructure:"success"`
+	failure []string `mapstructure:"failure"`
 }
 
 var (
@@ -58,23 +62,23 @@ func parse() (*Config, error) {
 	return &c, nil
 }
 
-func Current() *Config {
+func Instance() *Config {
 	return config
 }
 
-func (c *Config) GetCommands() []string {
-	return util.GetKeys(c.Commands)
+func (c *Config) Commands() map[string]ConfigItem {
+	return c.commands
 }
 
-func (c *CommandConfig) GetCommand() []string {
-	command := append(c.Command, c.GetOptions()...)
+func (c *ConfigItem) Command() []string {
+	command := append(c.command, c.Options()...)
 	return command
 }
 
-func (c *CommandConfig) GetOptions() []string {
+func (c *ConfigItem) Options() []string {
 	options := []string{}
 
-	for _, option := range util.SortByKey(c.Options) {
+	for _, option := range util.SortByKey(c.options) {
 		prefix := "--"
 		if strings.HasPrefix(option.Key, "-") {
 			prefix = ""
@@ -99,4 +103,24 @@ func (c *CommandConfig) GetOptions() []string {
 	}
 
 	return options
+}
+
+func (c *ConfigItem) Hooks() Hooks {
+	return c.hooks
+}
+
+func (h *Hooks) Pre() []string {
+	return h.pre
+}
+
+func (h *Hooks) Post() []string {
+	return h.post
+}
+
+func (h *Hooks) Success() []string {
+	return h.success
+}
+
+func (h *Hooks) Failure() []string {
+	return h.failure
 }

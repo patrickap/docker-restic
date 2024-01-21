@@ -6,19 +6,20 @@ import (
 	"github.com/patrickap/docker-restic/m/v2/internal/command"
 	"github.com/patrickap/docker-restic/m/v2/internal/config"
 	"github.com/patrickap/docker-restic/m/v2/internal/lock"
+	"github.com/patrickap/docker-restic/m/v2/internal/util"
 	"github.com/spf13/cobra"
 )
 
 var runCmd = &cobra.Command{
 	Use:          "run",
 	Short:        "Run provided command specified in config file",
-	Long:         fmt.Sprintf("Run provided command specified in config file: %v", config.Current().GetCommands()),
+	Long:         fmt.Sprintf("Run provided command specified in config file: %v", util.GetKeys(config.Instance().Commands())),
 	Args:         cobra.ExactArgs(1),
 	SilenceUsage: true,
 }
 
 func init() {
-	commands := config.Current().Commands
+	commands := config.Instance().Commands()
 
 	for commandName, commandConfig := range commands {
 		commandName := commandName
