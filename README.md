@@ -155,7 +155,7 @@ docker-restic run backup
 
 ## Advanced Configuration
 
-Custom commands (e.g., for rclone) can easily be added to the config YAML:
+Custom commands besides Restic can easily be added to the config:
 
 ```yml
 commands:
@@ -163,45 +163,45 @@ commands:
     command: ["rclone", "sync", "/from", "to:remote"]
 ```
 
-It's also possible to run in a new shell for shell processes like `/bin/sh -c` for accessing environment variables or using shell operators.
+It’s also possible to execute complex shell commands that require interpretation by a specific shell like `/bin/sh -c`.
 
 ```yml
 commands:
-  test:
+  id:
     command: ["/bin/sh", "-c", "echo $(id)"]
 ```
 
-It's also possible to change the position of the applied command options. By default, they get added at the end of the command automatically. To change it, run the command in a new shell process and access them using the special variable `$@`. Use `--` to tell the shell that this is the end of the `/bin/sh -c` command. Try it in the terminal:
+It's also possible to change the position of the applied command options. By default, they get added at the end of the command automatically. To change it, run the command in a new shell process and access them using the special variable `$@`. Use `--` to signal the end of options for the `/bin/sh` command. Any arguments after `--` will be treated as positional parameters or arguments for the command string executed by `/bin/sh -c`. Try it in the terminal:
 
 ```bash
 /bin/sh -c "echo ${@}" -- --option-1 --option-2 --option-3
 ```
 
-In the example below, during execution `${@}` gets replaced with the actual options. This results in `custom-command --test another-argument`.
+In the example below, during execution `${@}` gets replaced with the actual options.
 
 ```yml
 commands:
-  test:
+  hello-world:
     command: ["/bin/sh", "-c", "echo ${@}; echo 'world!'", "--"]
     options:
       hello: true
 ```
 
-To run commands multiple times or group commands like for a workflow, hooks are a good fit. This example would run the same command 3 times:
+To run commands repeatedly or group commands to a workflow, hooks are suitable. This would run the same command three times:
 
 ```yml
 commands:
-  custom:
-    command: ["/bin/sh", "-c", "echo $(id)"]
+  hello-world:
+    command: ["/bin/sh", "-c", "echo 'hello world!'"]
     hooks:
       post:
-        - custom
-        - custom
+        - hello-world
+        - hello-world
 ```
 
 ## Manual Backups
 
-For manual backups, simply connect to the container. It's important to run the container as the user inside the container (by default `restic`) to prevent the container from writing files as the root user/owner which the non-root user can't access afterwards. If it happened per accident, run `chown -R restic:restic <directory>` to fix the permissions:
+For manual backups, simply connect to the container. It's important to run the container as the user inside the container (by default `restic`) to prevent the container from writing files as root which the non-root user can't access afterwards. If it happened per accident, run `chown -R restic:restic <directory>` to fix the permissions:
 
 ```bash
 docker exec -u <user> -it <container_name> /bin/sh
@@ -226,7 +226,7 @@ docker stop <container_name>
 
 # use a temporary container to create the volume and copy the backup
 docker volume create <volume_name>
-docker run --rm -it -v <volume_name>:/to -v <path_to_backup>:/from alpine ash -c 'cp -av /from/. /to'
+docker run --rm -it -v <volume_name>:/to -v <path_to_backup>:/from alpine /bin/sh -c 'cp -av /from/. /to'
 
 # restart the containers
 docker restart <container_name>
