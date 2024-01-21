@@ -19,7 +19,6 @@ commands:
       <<: *repository
     hooks:
       pre:
-        - container-exec
         - container-stop
       success:
         - forget
@@ -48,54 +47,6 @@ commands:
       <<: *repository
       read-data: true
 
-  sync:
-    command:
-      - rclone
-      - sync
-      - /srv/docker-restic/backup/repository
-      - b2:docker-restic-bucket
-    options:
-      stats: "15m"
-      fast-list: true
-      progress: true
-    hooks:
-      success:
-        - sync-check
-
-  sync-check:
-    command:
-      - rclone
-      - check
-      - /srv/docker-restic/backup/repository
-      - b2:docker-restic-bucket
-    options:
-      fast-list: true
-
-  dump:
-    command:
-      - /bin/sh
-      - -c
-      - restic ${@} dump latest / > /srv/docker-restic/backup/export/backup_$(date +'%Y-%m-%d_%H.%M.%S').tar
-      - --
-    options:
-      <<: *repository
-    hooks:
-      success:
-        - dump-prune
-        - dump-check
-
-  dump-prune:
-    command:
-      - /bin/sh
-      - -c
-      - set -euo pipefail; ls -t /srv/docker-restic/backup/export/backup_* | tail +7 | xargs -r rm -rf
-
-  dump-check:
-    command:
-      - /bin/sh
-      - -c
-      - set -euo pipefail; ls -t /srv/docker-restic/backup/export/backup_* | head -1 | xargs -r tar -tf > /dev/null
-
   container-start:
     command:
       - /bin/sh
@@ -107,9 +58,3 @@ commands:
       - /bin/sh
       - -c
       - set -euo pipefail; docker ps -q --filter label=docker-restic.container.stop=true | xargs -r docker stop > /dev/null
-
-  container-exec:
-    command:
-      - /bin/sh
-      - -c
-      - set -euo pipefail; docker ps -q --filter label=docker-restic.container.exec | xargs -r -I {} docker inspect --format '{{.Id}} {{index .Config.Labels "docker-restic.container.exec"}}' {} | xargs -r -n2 /bin/sh -c 'docker exec $0 /bin/sh -c "$1"'

@@ -1,1 +1,1 @@
-* * * * * /bin/true
+0 0 * * * docker-restic backup
