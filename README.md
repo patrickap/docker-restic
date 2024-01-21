@@ -28,7 +28,7 @@ docker run -d \
   -v $(pwd)/docker-restic.yml:/srv/docker-restic/docker-restic.yml:ro \
   -v $(pwd)/docker-restic.cron:/srv/docker-restic/docker-restic.cron:ro \
   -v docker-restic-data:/srv/docker-restic \
-  -v media:/media:ro \
+  -v source:/source:ro \
   -v /etc/localtime:/etc/localtime:ro \
   -v /var/run/docker.sock:/var/run/docker.sock:ro \
   --secret restic-password \
@@ -50,7 +50,7 @@ services:
       - ./docker-restic.yml:/srv/docker-restic/docker-restic.yml:ro
       - ./docker-restic.cron:/srv/docker-restic/docker-restic.cron:ro
       - docker-restic-data:/srv/docker-restic
-      - media:/media:ro
+      - source:/source:ro
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     secrets:
@@ -58,7 +58,7 @@ services:
 
 volumes:
   docker-restic-data:
-  media:
+  source:
 
 secrets:
   restic-password:
@@ -94,35 +94,35 @@ Remote syncing of backups can be configured with `rclone`. This can be done eith
 ## Configuration Reference
 
 ```yml
-# Specify a repository
-# This is user-specific and ignored by Docker-Restic
-# However, standard YAML anchors can be used to reuse common values
+# Anchors are constructs that can be reused throughout the config.
+# This is useful for defining Restic repositories.
+# It's not related to Docker Restic.
 repository: &repository
   repo: "/srv/docker-restic/backup/repository"
   password-file: "/run/secrets/restic-password"
 
 commands:
-  # Equivalent to: restic backup /media --repo /srv/restic/repository --password-file /run/secrets/password --tag snapshot --verbose --exclude *.secret --exclude *.bin --exclude-larger-than 2048
-  snapshot:
+  # Specify the command name which can be run using the `docker-restic` cli
+  # This command config is equivalent to: restic backup /source --repo /srv/restic/repository --password-file /run/secrets/password --tag snapshot --verbose --exclude *.secret --exclude *.bin --exclude-larger-than 2048
+  backup:
     # Specify the command to run
-    command: ["restic", "backup", "/media"]
-    # alternative syntax
+    command: ["restic", "backup", "/source"]
+    # Alternative syntax
     # command:
     #   - restic
     #   - backup
-    #   - /media
+    #   - /source
     options:
-      # Maps directly to restic command options
-      # Can be boolean, string, integer, or a list
-      # Anchors can be used to reuse common options
+      # Maps directly to command line options
+      # Can be either of type boolean, string, integer, or list
+      # Anchor aliases can be used to reuse common options
       <<: *repository
       tag: snapshot
       verbose: true
-      # options default to prefix "--"
-      # in this case --verbose
-      # can also be added manually with "-" or "--" for compatability
-      # -verbose: true
+      # Every option can be specified with prefix if needed
+      # Defaults to "--" (e.g. --verbose)
       # --verbose: true
+      # -verbose: true
       exclude:
         - "*.secret"
         - "*.bin"
