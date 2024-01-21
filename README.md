@@ -28,7 +28,7 @@ docker run -d \
   # --cap-add DAC_READ_SEARCH \
   # -v $(pwd)/docker-restic.yml:/srv/docker-restic/docker-restic.yml:ro \
   # -v $(pwd)/docker-restic.cron:/srv/docker-restic/docker-restic.cron:ro \
-  -v source:/source:ro \
+  # -v source:/source:ro \
   -v docker-restic-data:/srv/docker-restic \
   -v /etc/localtime:/etc/localtime:ro \
   -v /var/run/docker.sock:/var/run/docker.sock:ro \
