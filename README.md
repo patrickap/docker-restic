@@ -87,6 +87,8 @@ The entire backup process is scheduled once a day at 00:00. If this is not suffi
 - `docker-restic.yml`: `/srv/docker-restic/docker-restic.yml`
 - `docker-restic.cron`: `/srv/docker-restic/docker-restic.cron`
 
+Do not forget to restart the container afterwards.
+
 5. **Configure rclone (Optional)**
 
 Remote syncing of backups can be configured with `rclone`. This can be done either by bind mounting the `rclone.conf` to `/srv/docker-restic/rclone.conf` or by running `rclone config` inside the `docker-restic` container. Restic itself supports rclone as a backend. Alternatively, it's possible to run rclone via the Docker-Restic CLI using custom commands.
@@ -95,7 +97,7 @@ Remote syncing of backups can be configured with `rclone`. This can be done eith
 
 ```yml
 # Anchors are constructs that can be reused throughout the config.
-# This is useful for defining Restic repositories.
+# This is especially useful for defining Restic repositories.
 # It's not related to Docker Restic.
 repository: &repository
   repo: "/srv/docker-restic/backup/repository"
@@ -115,7 +117,7 @@ commands:
     options:
       # Maps directly to command line options
       # Can be either of type boolean, string, integer, or list
-      # Anchor aliases can be used to reuse common options
+      # Anchor aliases can easily be used to reuse common options
       <<: *repository
       tag: snapshot
       verbose: true
@@ -145,20 +147,11 @@ commands:
         - <command_name>
 ```
 
-The configured command `snapshot` can later be executed using the `docker-restic` CLI:
+The configured command named `backup` can now be executed using the `docker-restic` CLI:
 
 ```bash
-docker-restic run snapshot
+docker-restic run backup
 ```
-
-To schedule commands, create a `docker-restic.cron` file and bind mount it to `/srv/docker-restic/docker-restic.cron`:
-
-```bash
-# daily backup
-0 0 * * * docker-restic run snapshot
-```
-
-The command gets scheduled on container startup or restart.
 
 ## Advanced Configuration
 
