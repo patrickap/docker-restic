@@ -10,7 +10,7 @@ FROM restic/restic:0.16.2
 
 ARG UID="1234" \
     GID="1234" \
-    DOCKER_RESTIC_DIR="/srv/docker-restic"
+    DOCKER_RESTIC_DIR="/srv/restic"
 
 ENV UID=$UID \
     GID=$GID \

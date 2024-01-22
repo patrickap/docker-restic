@@ -1,5 +1,5 @@
 repository: &repository
-  repo: "/srv/docker-restic/backup/repository"
+  repo: "/srv/restic/backup/repository"
   password-file: "/run/secrets/restic-password"
 
 commands:

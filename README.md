@@ -26,10 +26,10 @@ docker run -d \
   --restart always \
   # Optional
   # --cap-add DAC_READ_SEARCH \
-  # -v $(pwd)/docker-restic.yml:/srv/docker-restic/docker-restic.yml:ro \
-  # -v $(pwd)/docker-restic.cron:/srv/docker-restic/docker-restic.cron:ro \
+  # -v $(pwd)/docker-restic.yml:/srv/restic/docker-restic.yml:ro \
+  # -v $(pwd)/docker-restic.cron:/srv/restic/docker-restic.cron:ro \
   # -v source:/source:ro \
-  -v docker-restic-data:/srv/docker-restic \
+  -v docker-restic-data:/srv/restic \
   -v /etc/localtime:/etc/localtime:ro \
   -v /var/run/docker.sock:/var/run/docker.sock:ro \
   --secret restic-password \
@@ -50,10 +50,10 @@ services:
     # - DAC_READ_SEARCH
     volumes:
       # Optional
-      # - ./docker-restic.yml:/srv/docker-restic/docker-restic.yml:ro
-      # - ./docker-restic.cron:/srv/docker-restic/docker-restic.cron:ro
+      # - ./docker-restic.yml:/srv/restic/docker-restic.yml:ro
+      # - ./docker-restic.cron:/srv/restic/docker-restic.cron:ro
       # - source:/source:ro
-      - docker-restic-data:/srv/docker-restic
+      - docker-restic-data:/srv/restic
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     secrets:
@@ -78,7 +78,7 @@ secrets:
 
 Docker-Restic provides default configurations to help you get started quickly. The following commands are supported out of the box:
 
-- `init`: Initializes a repository at `/srv/docker-restic/backup/repository` and expects the password file at `/run/secrets/restic-password`. This must be called once manually.
+- `init`: Initializes a repository at `/srv/restic/backup/repository` and expects the password file at `/run/secrets/restic-password`. This must be called once manually.
 - `backup`: Stops all necessary containers and creates a snapshot of data mounted at `/source`. On successful execution, it automatically calls `forget`, `check`, and restarts the containers.
 - `forget`: Prunes old backup snapshots based on the specified policy.
 - `check`: Checks the integrity of the repository.
@@ -87,14 +87,14 @@ Docker-Restic provides default configurations to help you get started quickly. T
 
 The entire backup process is scheduled once a day at 00:00. If this is not sufficient, the configurations can be modified or overwritten completely. Bind mount your custom configurations like this:
 
-- `docker-restic.yml`: `/srv/docker-restic/docker-restic.yml`
-- `docker-restic.cron`: `/srv/docker-restic/docker-restic.cron`
+- `docker-restic.yml`: `/srv/restic/docker-restic.yml`
+- `docker-restic.cron`: `/srv/restic/docker-restic.cron`
 
 Do not forget to restart the container.
 
 5. **Configure rclone (Optional)**
 
-Remote syncing of backups can be configured with `rclone`. This can be done either by bind mounting the `rclone.conf` to `/srv/docker-restic/rclone.conf` or by running `rclone config` inside the `docker-restic` container. Restic itself supports rclone as a backend. Alternatively, it's possible to run rclone via the Docker-Restic CLI using custom commands.
+Remote syncing of backups can be configured with `rclone`. This can be done either by bind mounting the `rclone.conf` to `/srv/restic/rclone.conf` or by running `rclone config` inside the `docker-restic` container. Restic itself supports rclone as a backend. Alternatively, it's possible to run rclone via the Docker-Restic CLI using custom commands.
 
 ## Configuration Reference
 
@@ -103,7 +103,7 @@ Remote syncing of backups can be configured with `rclone`. This can be done eith
 # This is especially useful for defining Restic repositories.
 # It's not related to Docker Restic.
 repository: &repository
-  repo: "/srv/docker-restic/backup/repository"
+  repo: "/srv/restic/backup/repository"
   password-file: "/run/secrets/restic-password"
 
 commands:
