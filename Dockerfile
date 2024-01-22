@@ -18,11 +18,12 @@ ENV UID=$UID \
     # set restic cache directory
     RESTIC_CACHE_DIR="$DOCKER_RESTIC_DIR/cache" \
     # set rclone config path
-    RCLONE_CONFIG="$DOCKER_RESTIC_DIR/rclone.conf" \
-    # add docker-restic binary to PATH
-    PATH="$DOCKER_RESTIC_DIR/bin:$PATH"
+    RCLONE_CONFIG="$DOCKER_RESTIC_DIR/rclone.conf"
 
-COPY --from=builder /build $DOCKER_RESTIC_DIR
+COPY --from=builder /build/bin /usr/bin
+COPY --from=builder /build/docker-restic.yml $DOCKER_RESTIC_DIR/docker-restic.yml
+COPY --from=builder /build/docker-restic.cron $DOCKER_RESTIC_DIR/docker-restic.cron
+COPY --from=builder /build/entrypoint.sh $DOCKER_RESTIC_DIR/entrypoint.sh
 
 RUN apk update \
     && apk add \
