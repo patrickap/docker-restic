@@ -1,23 +1,30 @@
 #!/bin/sh
 
-log -i "Starting container ..."
+echo "INF Starting container"
 
 default_uid=$(id restic -u)
 default_gid=$(id restic -g)
 
 if [ ! "${UID}" = "${default_uid}" ] && [ -n "${UID}" ]; then
-  log -i "Changing UID from '${default_uid}' to '${UID}'."
+  echo "INF Changing UID from '${default_uid}' to '${UID}'"
   usermod -o -u "${UID}" restic
 fi
 
 if [ ! "${GID}" = "${default_gid}" ] && [ -n "${GID}" ]; then
-  log -i "Changing GID from '${default_gid}' to '${GID}'."
+  echo "INF Changing GID from '${default_gid}' to '${GID}'"
   groupmod -o -g "${GID}" restic
 fi
 
-if [ ! "${UID}" = "${default_uid}" ] || [ ! "${GID}" = "${default_gid}" ] || [ "${RESTIC_CHOWN_ALL}" = "true" ]; then
-  log -i "Changing ownership for '${RESTIC_ROOT_DIR}' to '${UID}:${GID}'."
-  chown -R restic:restic ${RESTIC_ROOT_DIR}
+if [ ! "${UID}" = "${default_uid}" ] || [ ! "${GID}" = "${default_gid}" ]; then
+  echo "INF Changing ownership for '${DOCKER_RESTIC_DIR}' to '${UID}:${GID}'"
+  chown -R restic:restic ${DOCKER_RESTIC_DIR}
 fi
 
+if capsh --has-b=cap_dac_read_search &> /dev/null; then
+  echo "INF Applying 'cap_dac_read_search' capability to restic binaries"
+  setcap 'cap_dac_read_search=+ep' /usr/bin/restic
+  setcap 'cap_dac_read_search=+ep' $DOCKER_RESTIC_DIR/bin/docker-restic
+fi
+
+echo "INF Running container as $(id restic)"
 exec su-exec restic "${@}"

@@ -1,0 +1,60 @@
+repository: &repository
+  repo: "/srv/restic/backup/repository"
+  password-file: "/run/secrets/restic-password"
+
+commands:
+  init:
+    command:
+      - restic
+      - init
+    options:
+      <<: *repository
+
+  backup:
+    command:
+      - restic
+      - backup
+      - /source
+    options:
+      <<: *repository
+    hooks:
+      pre:
+        - container-stop
+      success:
+        - forget
+        - check
+      post:
+        - container-start
+
+  forget:
+    command:
+      - restic
+      - forget
+    options:
+      <<: *repository
+      keep-daily: 7
+      keep-weekly: 4
+      keep-monthly: 12
+      keep-yearly: 2
+      group-by: "paths"
+      prune: true
+
+  check:
+    command:
+      - restic
+      - check
+    options:
+      <<: *repository
+      read-data: true
+
+  container-start:
+    command:
+      - /bin/sh
+      - -c
+      - set -euo pipefail; docker ps -q --filter label=docker-restic.container.stop=true --filter status=exited | xargs -r docker restart > /dev/null
+
+  container-stop:
+    command:
+      - /bin/sh
+      - -c
+      - set -euo pipefail; docker ps -q --filter label=docker-restic.container.stop=true | xargs -r docker stop > /dev/null

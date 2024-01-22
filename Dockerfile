@@ -1,77 +1,42 @@
+FROM golang:1.21.6-alpine as builder
+
+WORKDIR /build
+COPY . .
+
+RUN go mod download \
+    && go build -o ./bin/docker-restic
+
 FROM restic/restic:0.16.2
 
-ARG UID="1000" \
-    GID="1000" \
-    RESTIC_PASSWORD \
-    RESTIC_PASSWORD_FILE \
-    RESTIC_ROOT_DIR="/srv/restic" \
-    RESTIC_BACKUP_KEEP_DAILY="7" \
-    RESTIC_BACKUP_KEEP_WEEKLY="4" \
-    RESTIC_BACKUP_KEEP_MONTHLY="12" \
-    RESTIC_BACKUP_KEEP_YEARLY="2" \
-    RESTIC_DUMP_KEEP_LAST="8" \
-    RESTIC_SYNC_REMOTE_MATCH="^restic-.*" \
-    RESTIC_SYNC_REMOTE_DIR="restic" \
-    RESTIC_LOCK_TIMEOUT="21600" \
-    RESTIC_CONTAINER_STOP_LABEL="restic.container.stop" \
-    RESTIC_CONTAINER_EXEC_LABEL="restic.container.exec" \
-    RESTIC_CHOWN_ALL="false"
+ARG UID="1234" \
+    GID="1234" \
+    DOCKER_RESTIC_DIR="/srv/restic"
 
 ENV UID=$UID \
     GID=$GID \
-    RESTIC_PASSWORD=$RESTIC_PASSWORD \
-    RESTIC_PASSWORD_FILE=$RESTIC_PASSWORD_FILE \
-    RESTIC_ROOT_DIR=$RESTIC_ROOT_DIR \
-    RESTIC_BACKUP_KEEP_DAILY=$RESTIC_BACKUP_KEEP_DAILY \
-    RESTIC_BACKUP_KEEP_WEEKLY=$RESTIC_BACKUP_KEEP_WEEKLY \
-    RESTIC_BACKUP_KEEP_MONTHLY=$RESTIC_BACKUP_KEEP_MONTHLY \
-    RESTIC_BACKUP_KEEP_YEARLY=$RESTIC_BACKUP_KEEP_YEARLY \
-    RESTIC_DUMP_KEEP_LAST=$RESTIC_DUMP_KEEP_LAST \
-    RESTIC_SYNC_REMOTE_MATCH=$RESTIC_SYNC_REMOTE_MATCH \
-    RESTIC_SYNC_REMOTE_DIR=$RESTIC_SYNC_REMOTE_DIR \
-    RESTIC_LOCK_TIMEOUT=$RESTIC_LOCK_TIMEOUT \
-    RESTIC_CONTAINER_STOP_LABEL=$RESTIC_CONTAINER_STOP_LABEL \
-    RESTIC_CONTAINER_EXEC_LABEL=$RESTIC_CONTAINER_EXEC_LABEL \
-    RESTIC_CHOWN_ALL=$RESTIC_CHOWN_ALL \
-    # set internal variables
-    RESTIC_REPOSITORY_DIR="$RESTIC_ROOT_DIR/backup/repository" \
-    RESTIC_EXPORT_DIR="$RESTIC_ROOT_DIR/backup/export" \
-    RESTIC_CONFIG_DIR="$RESTIC_ROOT_DIR/config" \
-    RESTIC_SCRIPT_DIR="$RESTIC_ROOT_DIR/scripts" \
+    DOCKER_RESTIC_DIR=$DOCKER_RESTIC_DIR \
     # set restic cache directory
-    RESTIC_CACHE_DIR="$RESTIC_ROOT_DIR/cache" \
+    RESTIC_CACHE_DIR="$DOCKER_RESTIC_DIR/cache" \
     # set rclone config path
-    RCLONE_CONFIG="$RESTIC_ROOT_DIR/config/rclone.conf" \
-    # add commands to PATH
-    PATH="$RESTIC_ROOT_DIR:$RESTIC_ROOT_DIR/scripts:$PATH"
+    RCLONE_CONFIG="$DOCKER_RESTIC_DIR/rclone.conf" \
+    # add docker-restic binary to PATH
+    PATH="$DOCKER_RESTIC_DIR/bin:$PATH"
 
-COPY . $RESTIC_ROOT_DIR
+COPY --from=builder /build $DOCKER_RESTIC_DIR
 
 RUN apk update \
     && apk add \
         docker-cli~=23.0.6 \
         rclone~=1.62.2 \
-        flock~=2.38.1 \
-        supercronic~=0.2.24 \
         shadow~=4.13 \
-        su-exec~=0.2 \
         libcap~=2.69 \
-    && mkdir -p \
-        $RESTIC_ROOT_DIR \
-        $RESTIC_REPOSITORY_DIR \
-        $RESTIC_EXPORT_DIR \
-        $RESTIC_CONFIG_DIR \
-        $RESTIC_SCRIPT_DIR \
-        $RESTIC_CACHE_DIR \
-    && chmod -R 755 \
-        $RESTIC_SCRIPT_DIR \
-        $RESTIC_ROOT_DIR/entrypoint.sh \
-        $RESTIC_ROOT_DIR/init.sh \
+        su-exec~=0.2 \
+        supercronic~=0.2.24 \
     && addgroup -S -g $GID restic \
     && adduser -S -H -D -s /bin/sh -u $UID -G restic restic \
-    && chown -R restic:restic $RESTIC_ROOT_DIR \
-    # add capabilities for reading all directories, regardless of owner
-    && setcap cap_dac_read_search=+ep /usr/bin/restic
+    && chown -R restic:restic $DOCKER_RESTIC_DIR \
+    && chmod +x $DOCKER_RESTIC_DIR/entrypoint.sh
 
-ENTRYPOINT ["entrypoint.sh"]
-CMD ["init.sh"]
+WORKDIR $DOCKER_RESTIC_DIR
+ENTRYPOINT ["./entrypoint.sh"]
+CMD ["supercronic", "-passthrough-logs", "./docker-restic.cron"]
