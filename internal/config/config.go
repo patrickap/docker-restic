@@ -11,22 +11,22 @@ import (
 )
 
 type Config struct {
-	commands map[string]ConfigItem `mapstructure:"commands"`
+	Commands map[string]ConfigItem `mapstructure:"commands"`
 }
 
 type ConfigItem struct {
-	command Command `mapstructure:"command"`
-	options Options `mapstructure:"options"`
-	hooks   Hooks   `mapstructure:"hooks"`
+	Command Command `mapstructure:"command"`
+	Options Options `mapstructure:"options"`
+	Hooks   Hooks   `mapstructure:"hooks"`
 }
 
 type Command []string
 type Options map[string]interface{}
 type Hooks struct {
-	pre     []string `mapstructure:"pre"`
-	post    []string `mapstructure:"post"`
-	success []string `mapstructure:"success"`
-	failure []string `mapstructure:"failure"`
+	Pre     []string `mapstructure:"pre"`
+	Post    []string `mapstructure:"post"`
+	Success []string `mapstructure:"success"`
+	Failure []string `mapstructure:"failure"`
 }
 
 var (
@@ -66,19 +66,19 @@ func Instance() *Config {
 	return config
 }
 
-func (c *Config) Commands() map[string]ConfigItem {
-	return c.commands
+func (c *Config) GetCommands() map[string]ConfigItem {
+	return c.Commands
 }
 
-func (c *ConfigItem) Command() []string {
-	command := append(c.command, c.Options()...)
+func (c *ConfigItem) GetCommand() []string {
+	command := append(c.Command, c.GetOptions()...)
 	return command
 }
 
-func (c *ConfigItem) Options() []string {
+func (c *ConfigItem) GetOptions() []string {
 	options := []string{}
 
-	for _, option := range util.SortByKey(c.options) {
+	for _, option := range util.SortByKey(c.Options) {
 		prefix := "--"
 		if strings.HasPrefix(option.Key, "-") {
 			prefix = ""
@@ -103,24 +103,4 @@ func (c *ConfigItem) Options() []string {
 	}
 
 	return options
-}
-
-func (c *ConfigItem) Hooks() Hooks {
-	return c.hooks
-}
-
-func (h *Hooks) Pre() []string {
-	return h.pre
-}
-
-func (h *Hooks) Post() []string {
-	return h.post
-}
-
-func (h *Hooks) Success() []string {
-	return h.success
-}
-
-func (h *Hooks) Failure() []string {
-	return h.failure
 }

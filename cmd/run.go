@@ -13,13 +13,13 @@ import (
 var runCmd = &cobra.Command{
 	Use:          "run",
 	Short:        "Run provided command specified in config file",
-	Long:         fmt.Sprintf("Run provided command specified in config file: %v", util.GetKeys(config.Instance().Commands())),
+	Long:         fmt.Sprintf("Run provided command specified in config file: %v", util.GetKeys(config.Instance().GetCommands())),
 	Args:         cobra.ExactArgs(1),
 	SilenceUsage: true,
 }
 
 func init() {
-	commands := config.Instance().Commands()
+	commands := config.Instance().GetCommands()
 
 	for commandName, commandConfig := range commands {
 		commandName := commandName
