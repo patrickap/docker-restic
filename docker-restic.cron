@@ -1,1 +1,1 @@
-0 0 * * * docker-restic backup
+0 0 * * * docker-restic run backup
