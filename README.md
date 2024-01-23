@@ -224,6 +224,8 @@ commands:
           docker-restic run command-3
 ```
 
+**Important:** Please note that invoking `docker-restic` within the command property is not feasible. This is due to the fact that the primary command obtains an exclusive lock, thereby preventing concurrent execution of other `docker-restic` commands.
+
 ## Manual Backups
 
 For manual backups, simply connect to the container. It's important to run the container as the user inside the container (by default `restic`) to prevent the container from writing files as root which the non-root user can't access afterwards. If it happened per accident, run `chown -R restic:restic <directory>` to fix the permissions:
