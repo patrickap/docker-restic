@@ -1,19 +1,16 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/patrickap/docker-restic/m/v2/internal/command"
 	"github.com/patrickap/docker-restic/m/v2/internal/config"
-	"github.com/patrickap/docker-restic/m/v2/internal/lock"
-	"github.com/patrickap/docker-restic/m/v2/internal/util"
+	"github.com/patrickap/docker-restic/m/v2/internal/log"
 	"github.com/spf13/cobra"
 )
 
 var runCmd = &cobra.Command{
 	Use:          "run",
 	Short:        "Run provided command specified in config file",
-	Long:         fmt.Sprintf("Run provided command specified in config file: %v", util.GetKeys(config.Instance().GetCommands())),
+	Long:         "Run provided command specified in config file",
 	Args:         cobra.ExactArgs(1),
 	SilenceUsage: true,
 }
@@ -29,10 +26,15 @@ func init() {
 			Use:          commandName,
 			SilenceUsage: true,
 			RunE: func(c *cobra.Command, args []string) error {
-				return lock.RunWithLock(func() error {
-					cmd := command.BuildCommand(commandName, &commandConfig)
-					return cmd.Run()
-				})
+				log.Info().Msgf("Running command '%s'", commandName)
+				cmd := command.BuildCommand(commandName, &commandConfig)
+				cmdErr := cmd.Run()
+				if cmdErr != nil {
+					log.Error().Msgf("Failed to run command '%s'", commandName)
+					return cmdErr
+				}
+
+				return nil
 			},
 		}
 

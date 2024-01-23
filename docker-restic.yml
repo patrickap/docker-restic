@@ -19,12 +19,21 @@ commands:
       <<: *repository
     hooks:
       pre:
-        - container-stop
+        - /bin/sh
+        - -c
+        - |
+          docker-restic run container-stop
       success:
-        - forget
-        - check
+        - /bin/sh
+        - -c
+        - |
+          docker-restic run forget
+          docker-restic run check
       post:
-        - container-start
+        - /bin/sh
+        - -c
+        - |
+          docker-restic run container-start
 
   forget:
     command:
@@ -51,10 +60,14 @@ commands:
     command:
       - /bin/sh
       - -c
-      - set -euo pipefail; docker ps -q --filter label=docker-restic.container.stop=true --filter status=exited | xargs -r docker restart > /dev/null
+      - |
+        set -euo pipefail
+        docker ps -q --filter label=docker-restic.container.stop=true --filter status=exited | xargs -r docker restart > /dev/null
 
   container-stop:
     command:
       - /bin/sh
       - -c
-      - set -euo pipefail; docker ps -q --filter label=docker-restic.container.stop=true | xargs -r docker stop > /dev/null
+      - |
+        set -euo pipefail
+        docker ps -q --filter label=docker-restic.container.stop=true | xargs -r docker stop > /dev/null

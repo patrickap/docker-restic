@@ -78,7 +78,7 @@ func (c *ConfigItem) GetCommand() []string {
 func (c *ConfigItem) GetOptions() []string {
 	options := []string{}
 
-	for _, option := range util.SortByKey(c.Options) {
+	for _, option := range util.GetPairs(c.Options) {
 		prefix := "--"
 		if strings.HasPrefix(option.Key, "-") {
 			prefix = ""
