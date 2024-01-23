@@ -90,7 +90,7 @@ secrets:
 
 Docker-Restic provides default configurations to help you get started quickly. The following commands are supported out of the box:
 
-- `init`: Initializes a repository at `/target/repository` and expects the password file at `/run/secrets/restic-password`. This must be called once manually.
+- `init`: Initializes a repository at `/target/repository` and expects the password file at `/run/secrets/restic-password`. This must be called once manually. Dont forget to run `su restic` before executing the command.
 - `backup`: Stops all necessary containers and creates a snapshot of data mounted at `/source`. On successful execution, it automatically calls `forget`, `check`, and restarts the containers.
 - `forget`: Prunes old backup snapshots based on the specified policy.
 - `check`: Checks the integrity of the repository.
@@ -165,6 +165,7 @@ commands:
 The configured command named `backup` can now be executed using the `docker-restic` CLI:
 
 ```bash
+su restic
 docker-restic run backup
 ```
 
