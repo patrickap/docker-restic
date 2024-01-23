@@ -8,7 +8,7 @@ import (
 	"github.com/patrickap/docker-restic/m/v2/internal/log"
 )
 
-var lock = flock.New(env.DOCKER_RESTIC_DIR + "/docker-restic.lock")
+var lock = flock.New(env.DOCKER_RESTIC_DIR + "/tmp/docker-restic.lock")
 
 func Lock() error {
 	locked, err := lock.TryLock()

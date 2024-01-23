@@ -16,7 +16,7 @@ if [ ! "${GID}" = "${default_gid}" ] && [ -n "${GID}" ]; then
 fi
 
 if [ ! "${UID}" = "${default_uid}" ] || [ ! "${GID}" = "${default_gid}" ]; then
-  echo "INF Changing ownership for '${DOCKER_RESTIC_DIR}' to '${UID}:${GID}'"
+  echo "INF Changing ownership of '${DOCKER_RESTIC_DIR}' to '${UID}:${GID}'"
   chown -R restic:restic ${DOCKER_RESTIC_DIR}
 fi
 

@@ -18,12 +18,12 @@ ENV UID=$UID \
     # set restic cache directory
     RESTIC_CACHE_DIR="$DOCKER_RESTIC_DIR/cache" \
     # set rclone config path
-    RCLONE_CONFIG="$DOCKER_RESTIC_DIR/rclone.conf"
+    RCLONE_CONFIG="$DOCKER_RESTIC_DIR/config/rclone.conf"
 
 COPY --from=builder /build/bin /usr/bin
-COPY --from=builder /build/docker-restic.yml $DOCKER_RESTIC_DIR/docker-restic.yml
-COPY --from=builder /build/docker-restic.cron $DOCKER_RESTIC_DIR/docker-restic.cron
-COPY --from=builder /build/entrypoint.sh $DOCKER_RESTIC_DIR/entrypoint.sh
+COPY --from=builder /build/entrypoint.sh /usr/bin/entrypoint.sh
+COPY --from=builder /build/docker-restic.yml $DOCKER_RESTIC_DIR/config/docker-restic.yml
+COPY --from=builder /build/docker-restic.cron $DOCKER_RESTIC_DIR/config/docker-restic.cron
 
 RUN apk update \
     && apk add \
@@ -36,8 +36,8 @@ RUN apk update \
     && addgroup -S -g $GID restic \
     && adduser -S -H -D -s /bin/sh -u $UID -G restic restic \
     && chown -R restic:restic $DOCKER_RESTIC_DIR \
-    && chmod +x $DOCKER_RESTIC_DIR/entrypoint.sh
+    && chmod +x /usr/bin/entrypoint.sh
 
 WORKDIR $DOCKER_RESTIC_DIR
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["entrypoint.sh"]
 CMD ["supercronic", "-passthrough-logs", "./docker-restic.cron"]

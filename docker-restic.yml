@@ -1,5 +1,5 @@
 repository: &repository
-  repo: "/target/repository"
+  repo: "/srv/restic/data"
   password-file: "/run/secrets/restic-password"
 
 commands:
