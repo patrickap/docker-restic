@@ -14,7 +14,7 @@ func Lock() error {
 	locked, err := lock.TryLock()
 
 	if !locked {
-		return errors.New("could not acquire lock")
+		return errors.New("failed to acquire lock")
 	}
 
 	if err != nil {
