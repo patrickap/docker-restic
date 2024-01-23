@@ -147,19 +147,24 @@ commands:
     hooks:
       # Runs before
       pre:
-        - <command_name>
+        ["echo", "simple example"]
+        # Alternative syntax
+        # - echo
+        # - "simple example"
       # Runs after
       post:
-        # Multiple hooks are supported
-        # If a hook fails, the following commands are skipped
-        - <command_name>
-        - <command_name>
+        ["/bin/sh", "-c", "echo 'advanced' && echo 'example'"]
+        # Alternative syntax
+        # - /bin/sh
+        # - -c
+        # - |
+        #   echo "advanced"
+        #   echo "example"
       # Runs only on success
-      success:
-        - <command_name>
+      success: ["/bin/sh", "-c", "docker-restic run <command_name>"]
       # Runs only on failure
       failure:
-        - <command_name>
+        - <command>
 ```
 
 The configured command named `backup` can now be executed using the `docker-restic` CLI:
@@ -203,7 +208,7 @@ commands:
       hello: true
 ```
 
-To run commands repeatedly or group commands to a workflow, hooks are suitable. This would run the same command three times:
+To run commands repeatedly or group commands to a workflow, hooks are suitable:
 
 ```yml
 commands:
@@ -211,8 +216,12 @@ commands:
     command: ["/bin/sh", "-c", "echo 'hello world!'"]
     hooks:
       post:
-        - hello-world
-        - hello-world
+        - /bin/sh
+        - -c
+        - |
+          docker-restic run command-1
+          docker-restic run command-2
+          docker-restic run command-3
 ```
 
 ## Manual Backups
