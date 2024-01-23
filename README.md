@@ -29,8 +29,8 @@ docker run -d \
   # --cap-add DAC_READ_SEARCH \
 
   # Optional: Overwrite the default configuration
-  # -v $(pwd)/docker-restic.yml:/srv/restic/docker-restic.yml:ro \
-  # -v $(pwd)/docker-restic.cron:/srv/restic/docker-restic.cron:ro \
+  # -v $(pwd)/docker-restic.yml:/srv/restic/config/docker-restic.yml:ro \
+  # -v $(pwd)/docker-restic.cron:/srv/restic/config/docker-restic.cron:ro \
 
   # Back up the named volume "data"
   -v data:/source/data:ro \
@@ -57,8 +57,8 @@ services:
     # - DAC_READ_SEARCH
     volumes:
       # Optional: Overwrite the default configuration
-      # - ./docker-restic.yml:/srv/restic/docker-restic.yml:ro
-      # - ./docker-restic.cron:/srv/restic/docker-restic.cron:ro
+      # - ./docker-restic.yml:/srv/restic/config/docker-restic.yml:ro
+      # - ./docker-restic.cron:/srv/restic/config/docker-restic.cron:ro
 
       # Back up the named volume "data"
       - data:/source/data:ro
@@ -99,14 +99,14 @@ Docker-Restic provides default configurations to help you get started quickly. T
 
 The entire backup process is scheduled once a day at 00:00. If this is not sufficient, the configurations can be modified or overwritten completely. Bind mount your custom configurations like this:
 
-- `docker-restic.yml`: `/srv/restic/docker-restic.yml`
-- `docker-restic.cron`: `/srv/restic/docker-restic.cron`
+- `docker-restic.yml`: `/srv/restic/config/docker-restic.yml`
+- `docker-restic.cron`: `/srv/restic/config/docker-restic.cron`
 
 Do not forget to restart the container.
 
 5. **Configure rclone (Optional)**
 
-Remote syncing of backups can be configured with `rclone`. This can be done either by bind mounting the `rclone.conf` to `/srv/restic/rclone.conf` or by running `rclone config` inside the `docker-restic` container. Restic itself supports rclone as a backend. Alternatively, it's possible to run rclone via the Docker-Restic CLI using custom commands.
+Remote syncing of backups can be configured with `rclone`. This can be done either by bind mounting the `rclone.conf` to `/srv/restic/config/rclone.conf` or by running `rclone config` inside the `docker-restic` container. Restic itself supports rclone as a backend. Alternatively, it's possible to run rclone via the Docker-Restic CLI using custom commands.
 
 ## Configuration Reference
 
@@ -115,12 +115,12 @@ Remote syncing of backups can be configured with `rclone`. This can be done eith
 # This is especially useful for defining Restic repositories.
 # It's not related to Docker Restic.
 repository: &repository
-  repo: "/target/repository"
+  repo: "/srv/restic/data"
   password-file: "/run/secrets/restic-password"
 
 commands:
   # Specify the command name which can be run using the `docker-restic` cli
-  # This command config is equivalent to: restic backup /source --repo /srv/restic/repository --password-file /run/secrets/password --tag snapshot --verbose --exclude *.secret --exclude *.bin --exclude-larger-than 2048
+  # This command config is equivalent to: restic backup /source --repo /srv/restic/data --password-file /run/secrets/password --tag snapshot --verbose --exclude *.secret --exclude *.bin --exclude-larger-than 2048
   backup:
     # Specify the command to run
     command: ["restic", "backup", "/source"]

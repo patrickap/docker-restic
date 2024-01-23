@@ -37,7 +37,7 @@ var (
 func init() {
 	viper.SetConfigName("docker-restic")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath(env.DOCKER_RESTIC_DIR)
+	viper.AddConfigPath(env.DOCKER_RESTIC_DIR + "/config")
 
 	config, configErr = parse()
 	if configErr != nil {

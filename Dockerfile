@@ -27,17 +27,23 @@ COPY --from=builder /build/docker-restic.cron $DOCKER_RESTIC_DIR/config/docker-r
 
 RUN apk update \
     && apk add \
-        docker-cli~=23.0.6 \
-        rclone~=1.62.2 \
-        shadow~=4.13 \
-        libcap~=2.69 \
-        su-exec~=0.2 \
-        supercronic~=0.2.24 \
+      docker-cli~=23.0.6 \
+      rclone~=1.62.2 \
+      shadow~=4.13 \
+      libcap~=2.69 \
+      su-exec~=0.2 \
+      supercronic~=0.2.24 \
     && addgroup -S -g $GID restic \
     && adduser -S -H -D -s /bin/sh -u $UID -G restic restic \
+    && mkdir -p \
+      $DOCKER_RESTIC_DIR \
+      $DOCKER_RESTIC_DIR/data \
+      $DOCKER_RESTIC_DIR/config \
+      $DOCKER_RESTIC_DIR/cache \
+      $DOCKER_RESTIC_DIR/tmp \
     && chown -R restic:restic $DOCKER_RESTIC_DIR \
     && chmod +x /usr/bin/entrypoint.sh
 
 WORKDIR $DOCKER_RESTIC_DIR
 ENTRYPOINT ["entrypoint.sh"]
-CMD ["supercronic", "-passthrough-logs", "./docker-restic.cron"]
+CMD ["supercronic", "-passthrough-logs", "./config/docker-restic.cron"]
