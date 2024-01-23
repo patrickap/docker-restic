@@ -24,12 +24,19 @@ To get started with Docker-Restic, follow these steps:
 docker run -d \
   --name docker-restic \
   --restart always \
-  # Optional
+
+  # Optional: Add capabilities to read directories of different owners
   # --cap-add DAC_READ_SEARCH \
+
+  # Optional: Overwrite the default configuration
   # -v $(pwd)/docker-restic.yml:/srv/restic/docker-restic.yml:ro \
   # -v $(pwd)/docker-restic.cron:/srv/restic/docker-restic.cron:ro \
-  # -v source:/source:ro \
-  -v docker-restic-data:/srv/restic \
+
+  # Back up the named volume "data"
+  -v data:/source/data:ro \
+  # Bind mount the backups to the host
+  -v ~/backups:/target \
+  -v restic-config:/srv/restic \
   -v /etc/localtime:/etc/localtime:ro \
   -v /var/run/docker.sock:/var/run/docker.sock:ro \
   --secret restic-password \
@@ -45,23 +52,28 @@ services:
   docker-restic:
     image: patrickap/docker-restic:latest
     restart: always
-    # Optional
+    # Optional: Add capabilities to read directories of different owners
     # cap_add:
     # - DAC_READ_SEARCH
     volumes:
-      # Optional
+      # Optional: Overwrite the default configuration
       # - ./docker-restic.yml:/srv/restic/docker-restic.yml:ro
       # - ./docker-restic.cron:/srv/restic/docker-restic.cron:ro
-      # - source:/source:ro
-      - docker-restic-data:/srv/restic
+
+      # Back up the named volume "data"
+      - data:/source/data:ro
+      # Bind mount the backups to the host
+      - ~/backups:/target
+      - restic-config:/srv/restic
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     secrets:
       - restic-password
 
 volumes:
-  source:
-  docker-restic-data:
+  restic-config:
+  data:
+    external: true
 
 secrets:
   restic-password:
@@ -78,7 +90,7 @@ secrets:
 
 Docker-Restic provides default configurations to help you get started quickly. The following commands are supported out of the box:
 
-- `init`: Initializes a repository at `/srv/restic/backup/repository` and expects the password file at `/run/secrets/restic-password`. This must be called once manually.
+- `init`: Initializes a repository at `/target/repository` and expects the password file at `/run/secrets/restic-password`. This must be called once manually.
 - `backup`: Stops all necessary containers and creates a snapshot of data mounted at `/source`. On successful execution, it automatically calls `forget`, `check`, and restarts the containers.
 - `forget`: Prunes old backup snapshots based on the specified policy.
 - `check`: Checks the integrity of the repository.
@@ -103,7 +115,7 @@ Remote syncing of backups can be configured with `rclone`. This can be done eith
 # This is especially useful for defining Restic repositories.
 # It's not related to Docker Restic.
 repository: &repository
-  repo: "/srv/restic/backup/repository"
+  repo: "/target/repository"
   password-file: "/run/secrets/restic-password"
 
 commands:
