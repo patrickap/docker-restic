@@ -2,6 +2,7 @@ package util
 
 import (
 	"bufio"
+	"os"
 	"os/exec"
 
 	"github.com/rs/zerolog/log"
@@ -22,39 +23,49 @@ func GetPairs[K string, V any](m map[K]V) []Pair[K, V] {
 	return pairs
 }
 
-func ExecuteCommand(args ...string) error {
-	if len(args) <= 0 {
+type ExecuteCommandOptions struct {
+	Arguments []string
+	WrapLogs  bool
+}
+
+func ExecuteCommand(options *ExecuteCommandOptions) error {
+	if len(options.Arguments) <= 0 {
 		return nil
 	}
 
-	cmd := exec.Command(args[0], args[1:]...)
+	cmd := exec.Command(options.Arguments[0], options.Arguments[1:]...)
 
-	stdout, stdoutErr := cmd.StdoutPipe()
-	if stdoutErr != nil {
-		return stdoutErr
-	}
-
-	stderr, stderrErr := cmd.StderrPipe()
-	if stderrErr != nil {
-		return stderrErr
-	}
-
-	cmd.Start()
-
-	go func() {
-		scanner := bufio.NewScanner(stdout)
-		for scanner.Scan() {
-			log.Info().Msg(scanner.Text())
+	if options.WrapLogs {
+		stdout, stdoutErr := cmd.StdoutPipe()
+		if stdoutErr != nil {
+			return stdoutErr
 		}
-	}()
 
-	go func() {
-		scanner := bufio.NewScanner(stderr)
-		for scanner.Scan() {
-			log.Error().Msg(scanner.Text())
+		stderr, stderrErr := cmd.StderrPipe()
+		if stderrErr != nil {
+			return stderrErr
 		}
-	}()
 
-	return cmd.Wait()
+		cmd.Start()
 
+		go func() {
+			scanner := bufio.NewScanner(stdout)
+			for scanner.Scan() {
+				log.Info().Msg(scanner.Text())
+			}
+		}()
+
+		go func() {
+			scanner := bufio.NewScanner(stderr)
+			for scanner.Scan() {
+				log.Error().Msg(scanner.Text())
+			}
+		}()
+
+		return cmd.Wait()
+	} else {
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		return cmd.Run()
+	}
 }
