@@ -3,16 +3,17 @@ package cmd
 import (
 	"github.com/patrickap/docker-restic/m/v2/internal/command"
 	"github.com/patrickap/docker-restic/m/v2/internal/config"
-	"github.com/patrickap/docker-restic/m/v2/internal/log"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
 var runCmd = &cobra.Command{
-	Use:          "run",
-	Short:        "Run provided command specified in config file",
-	Long:         "Run provided command specified in config file",
-	Args:         cobra.ExactArgs(1),
-	SilenceUsage: true,
+	Use:           "run",
+	Short:         "Run provided command specified in config file",
+	Long:          "Run provided command specified in config file",
+	Args:          cobra.ExactArgs(1),
+	SilenceUsage:  true,
+	SilenceErrors: true,
 }
 
 func init() {
@@ -26,11 +27,11 @@ func init() {
 			Use:          commandName,
 			SilenceUsage: true,
 			RunE: func(c *cobra.Command, args []string) error {
-				log.Info().Msgf("Running command '%s'", commandName)
+				log.Info().Msgf("Running command: %s", commandName)
 				cmd := command.BuildCommand(commandName, &commandConfig)
 				cmdErr := cmd.Run()
 				if cmdErr != nil {
-					log.Error().Msgf("Failed to run command '%s'", commandName)
+					log.Error().Msgf("Failed to run command: %s: %v", commandName, cmdErr)
 					return cmdErr
 				}
 

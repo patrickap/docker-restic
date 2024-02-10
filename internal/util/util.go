@@ -1,8 +1,10 @@
 package util
 
 import (
-	"os"
+	"bufio"
 	"os/exec"
+
+	"github.com/rs/zerolog/log"
 )
 
 type Pair[K comparable, V any] struct {
@@ -26,7 +28,33 @@ func ExecuteCommand(args ...string) error {
 	}
 
 	cmd := exec.Command(args[0], args[1:]...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
+
+	stdout, stdoutErr := cmd.StdoutPipe()
+	if stdoutErr != nil {
+		return stdoutErr
+	}
+
+	stderr, stderrErr := cmd.StderrPipe()
+	if stderrErr != nil {
+		return stderrErr
+	}
+
+	cmd.Start()
+
+	go func() {
+		scanner := bufio.NewScanner(stdout)
+		for scanner.Scan() {
+			log.Info().Msg(scanner.Text())
+		}
+	}()
+
+	go func() {
+		scanner := bufio.NewScanner(stderr)
+		for scanner.Scan() {
+			log.Error().Msg(scanner.Text())
+		}
+	}()
+
+	return cmd.Wait()
+
 }

@@ -5,9 +5,10 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:          "docker-restic",
-	Args:         cobra.ExactArgs(1),
-	SilenceUsage: true,
+	Use:           "docker-restic",
+	Args:          cobra.ExactArgs(1),
+	SilenceUsage:  true,
+	SilenceErrors: true,
 }
 
 func Execute() error {
