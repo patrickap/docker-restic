@@ -27,11 +27,11 @@ func init() {
 			Use:          commandName,
 			SilenceUsage: true,
 			RunE: func(c *cobra.Command, args []string) error {
-				log.Log.Info().Msgf("Running command: %s", commandName)
+				log.Instance().Info().Msgf("Running command: %s", commandName)
 				cmd := command.BuildCommand(commandName, &commandConfig)
 				cmdErr := cmd.Run()
 				if cmdErr != nil {
-					log.Log.Error().Msgf("Failed to run command: %s: %v", commandName, cmdErr)
+					log.Instance().Error().Msgf("Failed to run command: %s: %v", commandName, cmdErr)
 					return cmdErr
 				}
 

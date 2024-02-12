@@ -31,7 +31,7 @@ func Unlock() error {
 func RunWithLock(f func() error) error {
 	err := lock.Lock()
 	if err != nil {
-		log.Log.Error().Msgf("Failed to acquire lock: %v", err)
+		log.Instance().Error().Msgf("Failed to acquire lock: %v", err)
 		return err
 	}
 

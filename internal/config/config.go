@@ -41,7 +41,7 @@ func init() {
 
 	config, configErr = parse()
 	if configErr != nil {
-		log.Log.Error().Msgf("Failed to load config file: %v", configErr)
+		log.Instance().Error().Msgf("Failed to load config file: %v", configErr)
 		panic(configErr)
 	}
 }

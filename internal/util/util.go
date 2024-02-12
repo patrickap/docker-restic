@@ -54,14 +54,14 @@ func ExecuteCommand(options *ExecuteCommandOptions) error {
 		go func() {
 			scanner := bufio.NewScanner(stdout)
 			for scanner.Scan() {
-				log.Log.Info().Msg(scanner.Text())
+				log.Instance().Info().Msg(scanner.Text())
 			}
 		}()
 
 		go func() {
 			scanner := bufio.NewScanner(stderr)
 			for scanner.Scan() {
-				log.Log.Error().Msg(scanner.Text())
+				log.Instance().Error().Msg(scanner.Text())
 			}
 		}()
 

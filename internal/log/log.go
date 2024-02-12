@@ -7,7 +7,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-var Log zerolog.Logger
+var log zerolog.Logger
 
 type LevelWriter struct {
 	io.Writer
@@ -23,7 +23,11 @@ func init() {
 		stderrWriter,
 	)
 
-	Log = zerolog.New(multi)
+	log = zerolog.New(multi)
+}
+
+func Instance() *zerolog.Logger {
+	return &log
 }
 
 func (lw LevelWriter) WriteLevel(level zerolog.Level, p []byte) (n int, err error) {
