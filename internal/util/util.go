@@ -5,7 +5,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/rs/zerolog/log"
+	"github.com/patrickap/docker-restic/m/v2/internal/log"
 )
 
 type Pair[K comparable, V any] struct {
@@ -46,19 +46,22 @@ func ExecuteCommand(options *ExecuteCommandOptions) error {
 			return stderrErr
 		}
 
-		cmd.Start()
+		err := cmd.Start()
+		if err != nil {
+			return err
+		}
 
 		go func() {
 			scanner := bufio.NewScanner(stdout)
 			for scanner.Scan() {
-				log.Info().Msg(scanner.Text())
+				log.Log.Info().Msg(scanner.Text())
 			}
 		}()
 
 		go func() {
 			scanner := bufio.NewScanner(stderr)
 			for scanner.Scan() {
-				log.Error().Msg(scanner.Text())
+				log.Log.Error().Msg(scanner.Text())
 			}
 		}()
 

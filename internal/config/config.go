@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/patrickap/docker-restic/m/v2/internal/env"
+	"github.com/patrickap/docker-restic/m/v2/internal/log"
 	"github.com/patrickap/docker-restic/m/v2/internal/util"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
 
@@ -41,7 +41,7 @@ func init() {
 
 	config, configErr = parse()
 	if configErr != nil {
-		log.Error().Msgf("Failed to load config file: %v", configErr)
+		log.Log.Error().Msgf("Failed to load config file: %v", configErr)
 		panic(configErr)
 	}
 }

@@ -5,7 +5,7 @@ import (
 
 	"github.com/gofrs/flock"
 	"github.com/patrickap/docker-restic/m/v2/internal/env"
-	"github.com/rs/zerolog/log"
+	"github.com/patrickap/docker-restic/m/v2/internal/log"
 )
 
 var lock = flock.New(env.DOCKER_RESTIC_DIR + "/tmp/docker-restic.lock")
@@ -31,7 +31,7 @@ func Unlock() error {
 func RunWithLock(f func() error) error {
 	err := lock.Lock()
 	if err != nil {
-		log.Error().Msgf("Failed to acquire lock: %v", err)
+		log.Log.Error().Msgf("Failed to acquire lock: %v", err)
 		return err
 	}
 

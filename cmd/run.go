@@ -3,7 +3,7 @@ package cmd
 import (
 	"github.com/patrickap/docker-restic/m/v2/internal/command"
 	"github.com/patrickap/docker-restic/m/v2/internal/config"
-	"github.com/rs/zerolog/log"
+	"github.com/patrickap/docker-restic/m/v2/internal/log"
 	"github.com/spf13/cobra"
 )
 
@@ -27,11 +27,11 @@ func init() {
 			Use:          commandName,
 			SilenceUsage: true,
 			RunE: func(c *cobra.Command, args []string) error {
-				log.Info().Msgf("Running command: %s", commandName)
+				log.Log.Info().Msgf("Running command: %s", commandName)
 				cmd := command.BuildCommand(commandName, &commandConfig)
 				cmdErr := cmd.Run()
 				if cmdErr != nil {
-					log.Error().Msgf("Failed to run command: %s: %v", commandName, cmdErr)
+					log.Log.Error().Msgf("Failed to run command: %s: %v", commandName, cmdErr)
 					return cmdErr
 				}
 
