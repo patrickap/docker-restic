@@ -56,12 +56,20 @@ func ExecuteCommand(options *ExecuteCommandOptions) error {
 			for scanner.Scan() {
 				log.Instance().Info().Msg(scanner.Text())
 			}
+			scannerErr := scanner.Err()
+			if scannerErr != nil {
+				log.Instance().Error().Msgf("Failed to scan stdout: %v", scannerErr)
+			}
 		}()
 
 		go func() {
 			scanner := bufio.NewScanner(stderr)
 			for scanner.Scan() {
 				log.Instance().Error().Msg(scanner.Text())
+			}
+			scannerErr := scanner.Err()
+			if scannerErr != nil {
+				log.Instance().Error().Msgf("Failed to scan stderr: %v", scannerErr)
 			}
 		}()
 
