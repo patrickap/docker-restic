@@ -28,7 +28,7 @@ func init() {
 			SilenceUsage: true,
 			RunE: func(c *cobra.Command, args []string) error {
 				log.Instance().Info().Msgf("Running command: %s", commandName)
-				cmd := command.BuildCommand(commandName, &commandConfig)
+				cmd := command.BuildCommand(&commandConfig)
 				err := cmd.Run()
 				if err != nil {
 					log.Instance().Error().Msgf("Failed to run command: %s: %v", commandName, err)
