@@ -12,58 +12,50 @@ type Runnable struct {
 	Run func() error
 }
 
-func BuildCommand(commandName string, config *config.ConfigItem) *Runnable {
+func BuildCommand(config *config.ConfigItem) *Runnable {
 	return &Runnable{Run: func() error {
-		if len(config.Hooks.Pre) > 0 {
-			pre := util.ExecuteCommand(config.Hooks.Pre...)
-			pre.Stdout = os.Stdout
-			pre.Stderr = os.Stderr
-			err := pre.Run()
-			if err != nil {
-				return err
-			}
+		err := processHook(config.Hooks.Pre...)
+		if err != nil {
+			return err
 		}
 
-		err := lock.RunWithLock(func() error {
-			command := util.ExecuteCommand(config.GetCommand()...)
-			command.Stdout = os.Stdout
-			command.Stderr = os.Stderr
-			return command.Run()
-		})
+		err = lock.RunWithLock(func() error { return processCommand(config.GetCommand()...) })
 		if err != nil {
-			if len(config.Hooks.Failure) > 0 {
-				failure := util.ExecuteCommand(config.Hooks.Failure...)
-				failure.Stdout = os.Stdout
-				failure.Stderr = os.Stderr
-				err := failure.Run()
-				if err != nil {
-					return err
-				}
+			err := processHook(config.Hooks.Failure...)
+			if err != nil {
+				return err
 			}
 
 			return err
 		} else {
-			if len(config.Hooks.Success) > 0 {
-				success := util.ExecuteCommand(config.Hooks.Success...)
-				success.Stdout = os.Stdout
-				success.Stderr = os.Stderr
-				err := success.Run()
-				if err != nil {
-					return err
-				}
-			}
-		}
-
-		if len(config.Hooks.Post) > 0 {
-			post := util.ExecuteCommand(config.Hooks.Post...)
-			post.Stdout = os.Stdout
-			post.Stderr = os.Stderr
-			err := post.Run()
+			err := processHook(config.Hooks.Success...)
 			if err != nil {
 				return err
 			}
 		}
 
+		err = processHook(config.Hooks.Post...)
+		if err != nil {
+			return err
+		}
+
 		return nil
 	}}
+}
+
+func processHook(args ...string) error {
+	if len(args) > 0 {
+		hook := util.ExecuteCommand(args...)
+		hook.Stdout = os.Stdout
+		hook.Stderr = os.Stderr
+		return hook.Run()
+	}
+	return nil
+}
+
+func processCommand(args ...string) error {
+	command := util.ExecuteCommand(args...)
+	command.Stdout = os.Stdout
+	command.Stderr = os.Stderr
+	return command.Run()
 }
