@@ -12,32 +12,32 @@ type Runnable struct {
 
 func BuildCommand(commandName string, config *config.ConfigItem) *Runnable {
 	return &Runnable{Run: func() error {
-		hookErr := util.ExecuteCommand(&util.ExecuteCommandOptions{Arguments: config.Hooks.Pre})
-		if hookErr != nil {
-			return hookErr
+		err := util.ExecuteCommand(&util.ExecuteCommandOptions{Arguments: config.Hooks.Pre})
+		if err != nil {
+			return err
 		}
 
 		command := config.GetCommand()
-		commandErr := lock.RunWithLock(func() error {
+		err = lock.RunWithLock(func() error {
 			return util.ExecuteCommand(&util.ExecuteCommandOptions{Arguments: command, WrapLogs: true})
 		})
-		if commandErr != nil {
-			hookErr := util.ExecuteCommand(&util.ExecuteCommandOptions{Arguments: config.Hooks.Failure})
-			if hookErr != nil {
-				return hookErr
+		if err != nil {
+			err := util.ExecuteCommand(&util.ExecuteCommandOptions{Arguments: config.Hooks.Failure})
+			if err != nil {
+				return err
 			}
 
-			return commandErr
+			return err
 		} else {
-			hookErr := util.ExecuteCommand(&util.ExecuteCommandOptions{Arguments: config.Hooks.Success})
-			if hookErr != nil {
-				return hookErr
+			err := util.ExecuteCommand(&util.ExecuteCommandOptions{Arguments: config.Hooks.Success})
+			if err != nil {
+				return err
 			}
 		}
 
-		hookErr = util.ExecuteCommand(&util.ExecuteCommandOptions{Arguments: config.Hooks.Post})
-		if hookErr != nil {
-			return hookErr
+		err = util.ExecuteCommand(&util.ExecuteCommandOptions{Arguments: config.Hooks.Post})
+		if err != nil {
+			return err
 		}
 
 		return nil

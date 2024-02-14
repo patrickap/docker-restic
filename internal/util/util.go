@@ -2,10 +2,14 @@ package util
 
 import (
 	"bufio"
+	"io"
 	"os"
 	"os/exec"
+	"sync"
+	"syscall"
 
 	"github.com/patrickap/docker-restic/m/v2/internal/log"
+	"github.com/rs/zerolog"
 )
 
 type Pair[K comparable, V any] struct {
@@ -35,48 +39,68 @@ func ExecuteCommand(options *ExecuteCommandOptions) error {
 
 	cmd := exec.Command(options.Arguments[0], options.Arguments[1:]...)
 
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setpgid: true,
+	}
+
+	var (
+		stdout, stderr io.ReadCloser
+		err            error
+	)
+
 	if options.WrapLogs {
-		stdout, stdoutErr := cmd.StdoutPipe()
-		if stdoutErr != nil {
-			return stdoutErr
-		}
-
-		stderr, stderrErr := cmd.StderrPipe()
-		if stderrErr != nil {
-			return stderrErr
-		}
-
-		err := cmd.Start()
+		stdout, err = cmd.StdoutPipe()
 		if err != nil {
 			return err
 		}
 
-		go func() {
-			scanner := bufio.NewScanner(stdout)
-			for scanner.Scan() {
-				log.Instance().Info().Msg(scanner.Text())
-			}
-			scannerErr := scanner.Err()
-			if scannerErr != nil {
-				log.Instance().Error().Msgf("Failed to scan stdout: %v", scannerErr)
-			}
-		}()
-
-		go func() {
-			scanner := bufio.NewScanner(stderr)
-			for scanner.Scan() {
-				log.Instance().Error().Msg(scanner.Text())
-			}
-			scannerErr := scanner.Err()
-			if scannerErr != nil {
-				log.Instance().Error().Msgf("Failed to scan stderr: %v", scannerErr)
-			}
-		}()
-
-		return cmd.Wait()
+		stderr, err = cmd.StderrPipe()
+		if err != nil {
+			return err
+		}
 	} else {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
-		return cmd.Run()
+	}
+
+	err = cmd.Start()
+	if err != nil {
+		return err
+	}
+
+	var wg sync.WaitGroup
+
+	if stdout != nil {
+		go wrapLogOutput(&wg, log.Instance().Info, stdout)
+	}
+
+	if stderr != nil {
+		go wrapLogOutput(&wg, log.Instance().Error, stderr)
+	}
+
+	wg.Wait()
+
+	return cmd.Wait()
+}
+
+func wrapLogOutput(wg *sync.WaitGroup, logger func() *zerolog.Event, reader io.ReadCloser) {
+	wg.Add(1)
+
+	defer func() {
+		err := reader.Close()
+		if err != nil {
+			log.Instance().Error().Msgf("Failed to close pipe: %v", err)
+		}
+		wg.Done()
+	}()
+
+	scanner := bufio.NewScanner(reader)
+	for scanner.Scan() {
+		logger().Msg(scanner.Text())
+	}
+
+	err := scanner.Err()
+	if err != nil {
+		log.Instance().Error().Msgf("Failed to process output: %v", err)
 	}
 }

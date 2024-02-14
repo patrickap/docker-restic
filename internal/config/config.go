@@ -30,8 +30,8 @@ type Hooks struct {
 }
 
 var (
-	config    *Config
-	configErr error
+	config *Config
+	err    error
 )
 
 func init() {
@@ -39,10 +39,10 @@ func init() {
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(env.DOCKER_RESTIC_DIR + "/config")
 
-	config, configErr = parse()
-	if configErr != nil {
-		log.Instance().Error().Msgf("Failed to load config file: %v", configErr)
-		panic(configErr)
+	config, err = parse()
+	if err != nil {
+		log.Instance().Error().Msgf("Failed to load config file: %v", err)
+		panic(err)
 	}
 }
 
