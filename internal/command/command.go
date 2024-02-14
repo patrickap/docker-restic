@@ -5,6 +5,7 @@ import (
 
 	"github.com/patrickap/docker-restic/m/v2/internal/config"
 	"github.com/patrickap/docker-restic/m/v2/internal/lock"
+	"github.com/patrickap/docker-restic/m/v2/internal/log"
 	"github.com/patrickap/docker-restic/m/v2/internal/util"
 )
 
@@ -55,7 +56,7 @@ func processHook(args ...string) error {
 
 func processCommand(args ...string) error {
 	command := util.ExecuteCommand(args...)
-	command.Stdout = os.Stdout
-	command.Stderr = os.Stderr
+	command.Stdout = &log.LogWriter{os.Stdout, log.Instance().Info}
+	command.Stderr = &log.LogWriter{os.Stderr, log.Instance().Error}
 	return command.Run()
 }
