@@ -32,7 +32,7 @@ type LevelWriter struct {
 	Levels []zerolog.Level
 }
 
-func (lw LevelWriter) WriteLevel(level zerolog.Level, p []byte) (n int, err error) {
+func (lw *LevelWriter) WriteLevel(level zerolog.Level, p []byte) (n int, err error) {
 	for _, l := range lw.Levels {
 		if l == level {
 			return lw.Write(p)
