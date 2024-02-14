@@ -12,8 +12,8 @@ import (
 var log zerolog.Logger
 
 func init() {
-	stdoutWriter := &LevelWriter{os.Stdout, []zerolog.Level{zerolog.DebugLevel, zerolog.InfoLevel, zerolog.WarnLevel}}
-	stderrWriter := &LevelWriter{os.Stderr, []zerolog.Level{zerolog.ErrorLevel, zerolog.FatalLevel, zerolog.PanicLevel}}
+	stdoutWriter := &LevelWriter{Writer: os.Stdout, Levels: []zerolog.Level{zerolog.DebugLevel, zerolog.InfoLevel, zerolog.WarnLevel}}
+	stderrWriter := &LevelWriter{Writer: os.Stderr, Levels: []zerolog.Level{zerolog.ErrorLevel, zerolog.FatalLevel, zerolog.PanicLevel}}
 
 	multi := zerolog.MultiLevelWriter(
 		stdoutWriter,
@@ -41,12 +41,12 @@ func (lw *LevelWriter) WriteLevel(level zerolog.Level, p []byte) (n int, err err
 	return len(p), nil
 }
 
-type LogWriter struct {
+type LogWrapper struct {
 	Writer io.Writer
 	Logger func() *zerolog.Event
 }
 
-func (lw *LogWriter) Write(p []byte) (n int, err error) {
+func (lw *LogWrapper) Write(p []byte) (n int, err error) {
 	scanner := bufio.NewScanner(bytes.NewReader(p))
 	for scanner.Scan() {
 		lw.Logger().Msg(scanner.Text())

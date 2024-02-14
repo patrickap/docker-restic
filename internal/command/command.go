@@ -56,7 +56,7 @@ func processHook(args ...string) error {
 
 func processCommand(args ...string) error {
 	command := util.ExecuteCommand(args...)
-	command.Stdout = &log.LogWriter{os.Stdout, log.Instance().Info}
-	command.Stderr = &log.LogWriter{os.Stderr, log.Instance().Error}
+	command.Stdout = &log.LogWrapper{Writer: os.Stdout, Logger: log.Instance().Info}
+	command.Stderr = &log.LogWrapper{Writer: os.Stderr, Logger: log.Instance().Error}
 	return command.Run()
 }
