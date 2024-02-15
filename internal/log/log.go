@@ -20,7 +20,7 @@ func init() {
 		stderrWriter,
 	)
 
-	log = zerolog.New(multi)
+	log = zerolog.New(multi).With().Timestamp().Logger()
 }
 
 func Instance() *zerolog.Logger {
