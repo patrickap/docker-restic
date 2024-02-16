@@ -9,8 +9,8 @@ import (
 
 var runCmd = &cobra.Command{
 	Use:           "run",
-	Short:         "Run provided command specified in config file",
-	Long:          "Run provided command specified in config file",
+	Short:         "run command specified in config file",
+	Long:          "run command specified in config file",
 	Args:          cobra.ExactArgs(1),
 	SilenceUsage:  true,
 	SilenceErrors: true,
