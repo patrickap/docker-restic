@@ -15,29 +15,29 @@ type Runnable struct {
 
 func BuildCommand(config *config.ConfigItem) *Runnable {
 	return &Runnable{Run: func() error {
-		err := processHook(config.Hooks.Pre...)
-		if err != nil {
-			return err
+		hookErr := processHook(config.Hooks.Pre...)
+		if hookErr != nil {
+			return hookErr
 		}
 
-		err = lock.RunWithLock(func() error { return processCommand(config.GetCommand()...) })
-		if err != nil {
-			err := processHook(config.Hooks.Failure...)
-			if err != nil {
-				return err
+		commandErr := lock.RunWithLock(func() error { return processCommand(config.GetCommand()...) })
+		if commandErr != nil {
+			hookErr := processHook(config.Hooks.Failure...)
+			if hookErr != nil {
+				return hookErr
 			}
 
-			return err
+			return commandErr
 		} else {
-			err := processHook(config.Hooks.Success...)
-			if err != nil {
-				return err
+			hookErr := processHook(config.Hooks.Success...)
+			if hookErr != nil {
+				return hookErr
 			}
 		}
 
-		err = processHook(config.Hooks.Post...)
-		if err != nil {
-			return err
+		hookErr = processHook(config.Hooks.Post...)
+		if hookErr != nil {
+			return hookErr
 		}
 
 		return nil
