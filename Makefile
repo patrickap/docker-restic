@@ -26,7 +26,7 @@ docker-publish:
 	docker push $(IMAGE_NAME):$(IMAGE_VERSION)
 
 git-publish:
-  git add .
+	git add .
 	git commit -m "chore(release): $(IMAGE_VERSION)"
 	git push
 
