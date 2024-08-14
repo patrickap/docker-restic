@@ -20,7 +20,7 @@ restore_version:
 [private]
 docker-publish:
   @docker build --no-cache -t {{PROJECT_NAME}}:$(just get_version) .				
-  @docker push $(PROJECT_NAME):$(just get_version)
+  @docker push {{PROJECT_NAME}}:$(just get_version)
 
 [private]
 git-publish:
