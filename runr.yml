@@ -22,18 +22,18 @@ commands:
         - /bin/sh
         - -c
         - |
-          docker-restic run container-stop
+          runr container-stop
       success:
         - /bin/sh
         - -c
         - |
-          docker-restic run forget
-          docker-restic run check
+          runr forget
+          runr check
       post:
         - /bin/sh
         - -c
         - |
-          docker-restic run container-start
+          runr container-start
 
   forget:
     command:

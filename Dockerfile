@@ -1,10 +1,16 @@
-FROM golang:1.23.0 as builder
+FROM alpine:3.20 as builder
 
 WORKDIR /build
 COPY . .
 
-RUN go mod download \
-    && go build -o ./bin/docker-restic
+RUN apk update \
+    && apk add \
+      curl \
+      unzip \
+    && curl -L -o runr.zip https://github.com/patrickap/runr/archive/refs/tags/v0.0.2.zip \
+    && unzip runr.zip -d . \
+    && mkdir -p ./bin \
+    && mv ./runr-0.0.2/build/runr ./bin
 
 FROM restic/restic:0.17.0
 
@@ -17,13 +23,15 @@ ENV UID=$UID \
     DOCKER_RESTIC_DIR=$DOCKER_RESTIC_DIR \
     # set restic cache directory
     RESTIC_CACHE_DIR="$DOCKER_RESTIC_DIR/cache" \
+    # set runr config path
+    RUNR_CONFIG_DIR="$DOCKER_RESTIC_DIR/config" \
     # set rclone config path
     RCLONE_CONFIG="$DOCKER_RESTIC_DIR/config/rclone.conf"
 
 COPY --from=builder /build/bin /usr/bin
 COPY --from=builder /build/entrypoint.sh /usr/bin/entrypoint.sh
-COPY --from=builder /build/docker-restic.yml $DOCKER_RESTIC_DIR/config/docker-restic.yml
-COPY --from=builder /build/docker-restic.cron $DOCKER_RESTIC_DIR/config/docker-restic.cron
+COPY --from=builder /build/runr.yml $DOCKER_RESTIC_DIR/config/runr.yml
+COPY --from=builder /build/restic.cron $DOCKER_RESTIC_DIR/config/restic.cron
 
 RUN apk update \
     && apk add \
@@ -46,4 +54,4 @@ RUN apk update \
 
 WORKDIR $DOCKER_RESTIC_DIR
 ENTRYPOINT ["entrypoint.sh"]
-CMD ["supercronic", "-passthrough-logs", "./config/docker-restic.cron"]
+CMD ["supercronic", "-passthrough-logs", "./config/restic.cron"]

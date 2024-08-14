@@ -29,8 +29,8 @@ docker run -d \
   # --cap-add DAC_READ_SEARCH \
 
   # Optional: Overwrite the default configuration
-  # -v $(pwd)/docker-restic.yml:/srv/restic/config/docker-restic.yml:ro \
-  # -v $(pwd)/docker-restic.cron:/srv/restic/config/docker-restic.cron:ro \
+  # -v $(pwd)/runr.yml:/srv/restic/config/runr.yml:ro \
+  # -v $(pwd)/restic.cron:/srv/restic/config/restic.cron:ro \
 
   # Back up the named volume "data"
   -v data:/source/data:ro \
@@ -57,8 +57,8 @@ services:
     # - DAC_READ_SEARCH
     volumes:
       # Optional: Overwrite the default configuration
-      # - ./docker-restic.yml:/srv/restic/config/docker-restic.yml:ro
-      # - ./docker-restic.cron:/srv/restic/config/docker-restic.cron:ro
+      # - ./runr.yml:/srv/restic/config/runr.yml:ro
+      # - ./restic.cron:/srv/restic/config/restic.cron:ro
 
       # Back up the named volume "data"
       - data:/source/data:ro
@@ -99,8 +99,8 @@ Docker-Restic provides default configurations to help you get started quickly. T
 
 The entire backup process is scheduled once a day at 00:00. If this is not sufficient, the configurations can be modified or overwritten completely. Bind mount your custom configurations like this:
 
-- `docker-restic.yml`: `/srv/restic/config/docker-restic.yml`
-- `docker-restic.cron`: `/srv/restic/config/docker-restic.cron`
+- `runr.yml`: `/srv/restic/config/runr.yml`
+- `restic.cron`: `/srv/restic/config/restic.cron`
 
 Do not forget to restart the container.
 
@@ -110,121 +110,12 @@ Remote syncing of backups can be configured with `rclone`. This can be done eith
 
 ## Configuration Reference
 
-```yml
-# Anchors are constructs that can be reused throughout the config.
-# This is especially useful for defining Restic repositories.
-# It's not related to Docker Restic.
-repository: &repository
-  repo: "/srv/restic/data"
-  password-file: "/run/secrets/restic-password"
-
-commands:
-  # Specify the command name which can be run using the `docker-restic` cli
-  # This command config is equivalent to: restic backup /source --repo /srv/restic/data --password-file /run/secrets/password --tag snapshot --verbose --exclude *.secret --exclude *.bin --exclude-larger-than 2048
-  backup:
-    # Specify the command to run
-    command: ["restic", "backup", "/source"]
-    # Alternative syntax
-    # command:
-    #   - restic
-    #   - backup
-    #   - /source
-    options:
-      # Maps directly to command line options
-      # Can be either of type boolean, string, integer, or list
-      # Anchor aliases can easily be used to reuse common options
-      <<: *repository
-      tag: snapshot
-      verbose: true
-      # Every option can be specified with prefix if needed
-      # Defaults to "--" (e.g. --verbose)
-      # --verbose: true
-      # -verbose: true
-      exclude:
-        - "*.secret"
-        - "*.bin"
-      exclude-larger-than: 2048
-    hooks:
-      # Runs before
-      pre:
-        ["echo", "simple example"]
-        # Alternative syntax
-        # - echo
-        # - "simple example"
-      # Runs after
-      post:
-        ["/bin/sh", "-c", "echo 'advanced' && echo 'example'"]
-        # Alternative syntax
-        # - /bin/sh
-        # - -c
-        # - |
-        #   echo "advanced"
-        #   echo "example"
-      # Runs only on success
-      success: ["/bin/sh", "-c", "docker-restic run <command_name>"]
-      # Runs only on failure
-      failure:
-        - <command>
-```
-
-The configured command named `backup` can now be executed using the `docker-restic` CLI:
+Docker-Restic utilizes Runr under the hood, which is a lightweight command runner. Make sure to checkout the documentation on how to configure custom commands. The configured commands can be executed using the `runr` CLI:
 
 ```bash
 su restic
-docker-restic run backup
+runr <command-name>
 ```
-
-## Advanced Configuration
-
-Custom commands besides Restic can easily be added to the config:
-
-```yml
-commands:
-  sync:
-    command: ["rclone", "sync", "/from", "to:remote"]
-```
-
-It’s also possible to execute complex shell commands that require interpretation by a specific shell like `/bin/sh -c`.
-
-```yml
-commands:
-  id:
-    command: ["/bin/sh", "-c", "echo $(id)"]
-```
-
-It's also possible to change the position of the applied command options. By default, they get added at the end of the command automatically. To change it, run the command in a new shell process and access them using the special variable `$@`. Use `--` to signal the end of options for the `/bin/sh` command. Any arguments after `--` will be treated as positional parameters or arguments for the command string executed by `/bin/sh -c`. Try it in the terminal:
-
-```bash
-/bin/sh -c 'echo ${@}' -- --option-1 --option-2 --option-3
-```
-
-In the example below, during execution `${@}` gets replaced with the actual options.
-
-```yml
-commands:
-  hello-world:
-    command: ["/bin/sh", "-c", "echo ${@}; echo 'world!'", "--"]
-    options:
-      hello: true
-```
-
-To run commands repeatedly or group commands to a workflow, hooks are suitable:
-
-```yml
-commands:
-  hello-world:
-    command: ["/bin/sh", "-c", "echo 'hello world!'"]
-    hooks:
-      post:
-        - /bin/sh
-        - -c
-        - |
-          docker-restic run command-1
-          docker-restic run command-2
-          docker-restic run command-3
-```
-
-**Important:** Please note that invoking `docker-restic` within the command property is not feasible. This is due to the fact that the primary command obtains an exclusive lock, thereby preventing concurrent execution of other `docker-restic` commands.
 
 ## Manual Backups
 
