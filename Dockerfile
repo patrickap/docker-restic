@@ -7,10 +7,10 @@ RUN apk update \
     && apk add \
       curl \
       unzip \
-    && curl -L -o runr.zip https://github.com/patrickap/runr/archive/refs/tags/v0.0.2.zip \
+    && curl -L -o runr.zip https://github.com/patrickap/runr/archive/refs/tags/v0.1.0.zip \
     && unzip runr.zip -d . \
     && mkdir -p ./bin \
-    && mv ./runr-0.0.2/build/runr ./bin
+    && mv ./runr-0.1.0/build/runr ./bin
 
 FROM restic/restic:0.17.0
 
