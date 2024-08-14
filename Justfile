@@ -19,7 +19,7 @@ restore_version:
 
 [private]
 publish:
-  @git add .
+  @git add . -- ':!{{PROJECT_VERSION}}.bak'
   @git commit -m "chore(release): $(just get_version)"
   @git push
 
