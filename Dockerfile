@@ -1,4 +1,4 @@
-FROM golang:1.22.0-alpine as builder
+FROM golang:1.23.0 as builder
 
 WORKDIR /build
 COPY . .
@@ -6,7 +6,7 @@ COPY . .
 RUN go mod download \
     && go build -o ./bin/docker-restic
 
-FROM restic/restic:0.16.4
+FROM restic/restic:0.17.0
 
 ARG UID="1234" \
     GID="1234" \
@@ -27,12 +27,12 @@ COPY --from=builder /build/docker-restic.cron $DOCKER_RESTIC_DIR/config/docker-r
 
 RUN apk update \
     && apk add \
-      docker-cli~=25.0.3 \
-      rclone~=1.65.0 \
-      shadow~=4.14.2 \
-      libcap~=2.69 \
+      docker-cli~=26.1.5 \
+      rclone~=1.66.0 \
+      shadow~=4.15.1 \
+      libcap~=2.70 \
       su-exec~=0.2 \
-      supercronic~=0.2.27 \
+      supercronic~=0.2.29 \
     && addgroup -S -g $GID restic \
     && adduser -S -H -D -s /bin/sh -u $UID -G restic restic \
     && mkdir -p \

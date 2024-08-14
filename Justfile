@@ -36,24 +36,21 @@ clean_up:
 release_patch:
   @just backup_version
   @just set_version $(just get_version | awk -F. -v OFS=. '{$3++; print}')
-  @just docker-publish || just restore_version
-  @just git-publish || just restore_version
+  @just docker-publish && just git-publish || just restore_version
   @just clean_up
 
 [private]
 release_minor:
   @just backup_version
   @just set_version $(just get_version | awk -F. -v OFS=. '{$2++; $3=0; print}')
-  @just docker-publish || just restore_version
-  @just git-publish || just restore_version
+  @just docker-publish && just git-publish || just restore_version
   @just clean_up
 
 [private]
 release_major:
   @just backup_version
   @just set_version $(just get_version | awk -F. -v OFS=. '{$1++; $2=0; $3=0; print}')
-  @just docker-publish || just restore_version
-  @just git-publish || just restore_version
+  @just docker-publish && just git-publish || just restore_version
   @just clean_up
 
 release type:
