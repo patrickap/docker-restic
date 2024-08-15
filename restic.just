@@ -1,18 +1,18 @@
 just_flags := "--justfile ${DOCKER_RESTIC_DIR}/config/restic.just --working-directory ${DOCKER_RESTIC_DIR}"
 restic_flags := "--repo ${DOCKER_RESTIC_DIR}/data/repository --password-file /run/secrets/restic-password"
-rclone_flags := "--password-command: 'cat /run/secrets/rclone-password'"
+rclone_flags := "--password-command 'cat /run/secrets/rclone-password'"
 
 default:
   @just {{just_flags}} --list
 
 init:
-  -just {{just_flags}} init_restic
-  -just {{just_flags}} init_rclone
+  -@just {{just_flags}} init_restic
+  -@just {{just_flags}} init_rclone
 
 backup:
-  just {{just_flags}} container_stop
+  @just {{just_flags}} container_stop
   -restic backup /source {{restic_flags}}
-  just {{just_flags}} container_start
+  @just {{just_flags}} container_start
 
 backup_prune:
   restic forget {{restic_flags}} \
@@ -29,7 +29,7 @@ backup_check:
 
 backup_check_subset percent:
   restic check {{restic_flags}} \
-    --read-data-subset: {{percent}}%
+    --read-data-subset {{percent}}%
 
 sync remotes:
   set -euo pipefail \
@@ -82,9 +82,11 @@ init_restic:
 
 [private]
 init_rclone:
+  #!/usr/bin/env sh
   # Rclone does not provide a non-interactive method to encrypt the configuration file via CLI. 
   # Therefore, the `expect` tool is used to automate the interactive encryption process.
   expect <<EOF
+  set timeout 1
   spawn rclone config
   expect "n/s/q>" { send "s\r" }
   expect "a/q>" { send "a\r" }
