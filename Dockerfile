@@ -36,10 +36,11 @@ RUN apk update \
       $DOCKER_RESTIC_DIR/config \
       $DOCKER_RESTIC_DIR/cache \
       $DOCKER_RESTIC_DIR/tmp \
+    && echo "exec su-exec restic just --justfile \${DOCKER_RESTIC_DIR}/config/restic.just --working-directory \${DOCKER_RESTIC_DIR} \"\${@}\"" > /usr/local/bin/docker-restic \
     && chown -R restic:restic $DOCKER_RESTIC_DIR \
-    && chmod +x /usr/bin/entrypoint.sh
+    && chmod +x /usr/bin/entrypoint.sh  \
+    && chmod +x /usr/local/bin/docker-restic
 
-RUN echo "alias docker-restic='just --justfile $DOCKER_RESTIC_DIR/config/restic.just --working-directory $DOCKER_RESTIC_DIR' --timestamp --timestamp-format '%Y-%m-%d_%H.%M.%S'" >> /root/.bashrc
 
 WORKDIR $DOCKER_RESTIC_DIR
 ENTRYPOINT ["entrypoint.sh"]
