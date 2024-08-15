@@ -27,9 +27,9 @@ backup_check:
   restic check {{restic_flags}} \
     --read-data
 
-backup_check_subset value:
+backup_check_subset percent:
   restic check {{restic_flags}} \
-    --read-data-subset: {{value}}
+    --read-data-subset: {{percent}}%
 
 sync remotes:
   set -euo pipefail \
