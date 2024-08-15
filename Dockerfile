@@ -28,7 +28,7 @@ RUN apk update \
       su-exec~=0.2 \
       supercronic~=0.2.29 \
     && addgroup -S -g $GID restic \
-    && adduser -S -H -D -s /bin/sh -u $UID -G restic restic \
+    && adduser -S -D -s /bin/sh -u $UID -G restic restic \
     && mkdir -p \
       $DOCKER_RESTIC_DIR \
       $DOCKER_RESTIC_DIR/data \
