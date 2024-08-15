@@ -1,14 +1,58 @@
-repository: &repository
+restic-options: &restic-options
   repo: "/srv/restic/data"
   password-file: "/run/secrets/restic-password"
+
+rclone-options: &rclone-options
+  password-command: "cat /run/secrets/rclone-password"
 
 commands:
   init:
     command:
+      - /bin/true
+    hooks:
+      post:
+        - /bin/sh
+        - -c
+        - |
+          runr init-restic
+          runr init-rclone
+
+  init-restic:
+    command:
       - restic
       - init
     options:
-      <<: *repository
+      <<: *restic-options
+
+  init-rclone:
+    command:
+      - /bin/sh
+      - -c
+      - |
+        # Rclone does not provide a non-interactive method to encrypt the configuration file via CLI. 
+        # Therefore, the `expect` tool is used to automate the interactive encryption process.
+        expect <<EOF
+        spawn rclone config
+
+        # Select "Set configuration password"
+        expect "n/s/q>" { send "s\r" }
+
+        # Select "Add Password"
+        expect "a/q>" { send "a\r" }
+
+        # Enter and confirm password
+        expect "password:" { send "$(cat '/run/secrets/rclone-password')\r" }
+        expect "password:" { send "$(cat '/run/secrets/rclone-password')\r" }
+
+        # Quit to main menu
+        expect "c/u/q>" { send "q\r" }
+
+        # Quit the configuration
+        expect "n/s/q>" { send "q\r" }
+
+        # Exit expect
+        expect eof
+        EOF
 
   backup:
     command:
@@ -16,31 +60,25 @@ commands:
       - backup
       - /source
     options:
-      <<: *repository
+      <<: *restic-options
     hooks:
       pre:
         - /bin/sh
         - -c
         - |
           runr container-stop
-      success:
-        - /bin/sh
-        - -c
-        - |
-          runr forget
-          runr check
       post:
         - /bin/sh
         - -c
         - |
           runr container-start
 
-  forget:
+  backup-prune:
     command:
       - restic
       - forget
     options:
-      <<: *repository
+      <<: *restic-options
       keep-daily: 7
       keep-weekly: 4
       keep-monthly: 12
@@ -48,13 +86,77 @@ commands:
       group-by: "paths"
       prune: true
 
-  check:
+  backup-check:
     command:
       - restic
       - check
     options:
-      <<: *repository
+      <<: *restic-options
       read-data: true
+
+  backup-check-subset:
+    command:
+      - restic
+      - check
+    options:
+      <<: *restic-options
+      read-data-subset: "20%"
+
+  sync:
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -euo pipefail
+        remotes="drive:restic b2:docker-restic-bucket"
+        for remote in $remotes; do rclone sync /srv/restic/data/repository $remote ${@}; done
+      - --
+    options:
+      <<: *rclone-options
+      stats: "15m"
+      fast-list: true
+      progress: true
+
+  sync-check:
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -euo pipefail
+        remotes="drive:restic b2:docker-restic-bucket"
+        for remote in $remotes; do rclone check /srv/restic/data/repository $remote ${@}; done
+      - --
+    options:
+      <<: *rclone-options
+      stats: "15m"
+      fast-list: true
+      progress: true
+
+  dump:
+    command:
+      - /bin/sh
+      - -c
+      - |
+        restic ${@} dump latest / | gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase-file /run/secrets/restic-password -o /srv/restic/data/export/backup_$(date +'%Y-%m-%d_%H.%M.%S').tar.gpg
+      - --
+    options:
+      <<: *restic-options
+
+  dump-prune:
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -euo pipefail
+        ls -t /srv/restic/data/export/backup_* | tail +7 | xargs -r rm -rf
+
+  dump-check:
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -euo pipefail
+        ls -t /srv/restic/data/export/backup_* | head -1 | xargs -r gpg --batch --yes --decrypt --passphrase-file /run/secrets/restic-password | tar -tf - > /dev/null
 
   container-start:
     command:
@@ -71,3 +173,11 @@ commands:
       - |
         set -euo pipefail
         docker ps -q --filter label=docker-restic.container.stop=true | xargs -r docker stop > /dev/null
+
+  container-exec:
+    command:
+      - /bin/sh
+      - -c
+      - |
+        set -euo pipefail
+        docker ps -q --filter label=docker-restic.container.exec | xargs -r -I {} docker inspect --format '{{.Id}} {{index .Config.Labels "docker-restic.container.exec"}}' {} | xargs -r -n2 /bin/sh -c 'docker exec $0 /bin/sh -c "$1"'

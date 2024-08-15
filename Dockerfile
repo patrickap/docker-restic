@@ -32,11 +32,14 @@ COPY --from=builder /build/bin /usr/bin
 COPY --from=builder /build/entrypoint.sh /usr/bin/entrypoint.sh
 COPY --from=builder /build/runr.yml $DOCKER_RESTIC_DIR/config/runr.yml
 COPY --from=builder /build/restic.cron $DOCKER_RESTIC_DIR/config/restic.cron
+COPY --from=builder /build/rclone.conf $DOCKER_RESTIC_DIR/config/rclone.conf
 
 RUN apk update \
     && apk add \
       docker-cli~=26.1.5 \
       rclone~=1.66.0 \
+      expect~=5.45.4 \
+      gnupg~=2.4.5 \
       shadow~=4.15.1 \
       libcap~=2.70 \
       su-exec~=0.2 \
