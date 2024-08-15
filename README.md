@@ -29,7 +29,7 @@ docker run -d \
   # --cap-add DAC_READ_SEARCH \
 
   # Optional: Overwrite the default configuration
-  # -v $(pwd)/runr.yml:/srv/restic/config/runr.yml:ro \
+  # -v $(pwd)/restic.just:/srv/restic/config/restic.just:ro \
   # -v $(pwd)/restic.cron:/srv/restic/config/restic.cron:ro \
 
   # Back up the named volume "data"
@@ -57,7 +57,7 @@ services:
     # - DAC_READ_SEARCH
     volumes:
       # Optional: Overwrite the default configuration
-      # - ./runr.yml:/srv/restic/config/runr.yml:ro
+      # - ./restic.just:/srv/restic/config/restic.just:ro
       # - ./restic.cron:/srv/restic/config/restic.cron:ro
 
       # Back up the named volume "data"
@@ -99,7 +99,7 @@ Docker-Restic provides default configurations to help you get started quickly. T
 
 The entire backup process is scheduled once a day at 00:00. If this is not sufficient, the configurations can be modified or overwritten completely. Bind mount your custom configurations like this:
 
-- `runr.yml`: `/srv/restic/config/runr.yml`
+- `restic.just`: `/srv/restic/config/restic.just`
 - `restic.cron`: `/srv/restic/config/restic.cron`
 
 Do not forget to restart the container.
@@ -110,11 +110,11 @@ Remote syncing of backups can be configured with `rclone`. This can be done eith
 
 ## Configuration Reference
 
-Docker-Restic utilizes Runr under the hood, which is a lightweight command runner. Make sure to checkout the documentation on how to configure custom commands. The configured commands can be executed using the `runr` CLI:
+Docker-Restic utilizes Just under the hood, which is a powerful command runner. Make sure to checkout the [documentation](https://just.systems/man/en) on how to configure it. The configured commands should be executed using the `docker-restic` alias:
 
 ```bash
 su restic
-runr <command-name>
+docker-restic <command-name>
 ```
 
 ## Manual Backups
