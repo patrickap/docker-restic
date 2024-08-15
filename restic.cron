@@ -1,1 +1,1 @@
-0 0 * * * runr backup
+0 0 * * * docker-restic backup
