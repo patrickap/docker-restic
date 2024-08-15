@@ -1,17 +1,3 @@
-FROM alpine:3.20 as builder
-
-WORKDIR /build
-COPY . .
-
-RUN apk update \
-    && apk add \
-      curl \
-      unzip \
-    && curl -L -o runr.zip https://github.com/patrickap/runr/archive/refs/tags/v0.1.0.zip \
-    && unzip runr.zip -d . \
-    && mkdir -p ./bin \
-    && mv ./runr-0.1.0/build/runr ./bin
-
 FROM restic/restic:0.17.0
 
 ARG UID="1234" \
@@ -23,16 +9,13 @@ ENV UID=$UID \
     DOCKER_RESTIC_DIR=$DOCKER_RESTIC_DIR \
     # set restic cache directory
     RESTIC_CACHE_DIR="$DOCKER_RESTIC_DIR/cache" \
-    # set runr config path
-    RUNR_CONFIG_DIR="$DOCKER_RESTIC_DIR/config" \
     # set rclone config path
     RCLONE_CONFIG="$DOCKER_RESTIC_DIR/config/rclone.conf"
 
-COPY --from=builder /build/bin /usr/bin
-COPY --from=builder /build/entrypoint.sh /usr/bin/entrypoint.sh
-COPY --from=builder /build/restic.just $DOCKER_RESTIC_DIR/config/restic.just
-COPY --from=builder /build/restic.cron $DOCKER_RESTIC_DIR/config/restic.cron
-COPY --from=builder /build/rclone.conf $DOCKER_RESTIC_DIR/config/rclone.conf
+COPY entrypoint.sh /usr/bin/entrypoint.sh
+COPY restic.just $DOCKER_RESTIC_DIR/config/restic.just
+COPY restic.cron $DOCKER_RESTIC_DIR/config/restic.cron
+COPY rclone.conf $DOCKER_RESTIC_DIR/config/rclone.conf
 
 RUN apk update \
     && apk add \
@@ -56,7 +39,7 @@ RUN apk update \
     && chown -R restic:restic $DOCKER_RESTIC_DIR \
     && chmod +x /usr/bin/entrypoint.sh
 
-# RUN echo "alias docker-restic='just --justfile $DOCKER_RESTIC_DIR/config/restic.just --working-directory $DOCKER_RESTIC_DIR'" >> /root/.bashrc
+RUN echo "alias docker-restic='just --justfile $DOCKER_RESTIC_DIR/config/restic.just --working-directory $DOCKER_RESTIC_DIR' --timestamp --timestamp-format '%Y-%m-%d_%H.%M.%S'" >> /root/.bashrc
 
 WORKDIR $DOCKER_RESTIC_DIR
 ENTRYPOINT ["entrypoint.sh"]
