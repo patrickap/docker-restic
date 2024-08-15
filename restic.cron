@@ -1,1 +1,1 @@
-0 0 * * * docker-restic backup
+0 0 * * * docker-restic backup && docker-restic backup-prune && docker-restic backup-check && docker-restic sync remote:path
