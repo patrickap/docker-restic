@@ -30,7 +30,7 @@ ENV UID=$UID \
 
 COPY --from=builder /build/bin /usr/bin
 COPY --from=builder /build/entrypoint.sh /usr/bin/entrypoint.sh
-COPY --from=builder /build/runr.yml $DOCKER_RESTIC_DIR/config/runr.yml
+COPY --from=builder /build/restic.just $DOCKER_RESTIC_DIR/config/restic.just
 COPY --from=builder /build/restic.cron $DOCKER_RESTIC_DIR/config/restic.cron
 COPY --from=builder /build/rclone.conf $DOCKER_RESTIC_DIR/config/rclone.conf
 
@@ -40,6 +40,7 @@ RUN apk update \
       rclone~=1.66.0 \
       expect~=5.45.4 \
       gnupg~=2.4.5 \
+      just~=1.26.0 \
       shadow~=4.15.1 \
       libcap~=2.70 \
       su-exec~=0.2 \
@@ -54,6 +55,8 @@ RUN apk update \
       $DOCKER_RESTIC_DIR/tmp \
     && chown -R restic:restic $DOCKER_RESTIC_DIR \
     && chmod +x /usr/bin/entrypoint.sh
+
+# RUN echo "alias docker-restic='just --justfile $DOCKER_RESTIC_DIR/config/restic.just --working-directory $DOCKER_RESTIC_DIR'" >> /root/.bashrc
 
 WORKDIR $DOCKER_RESTIC_DIR
 ENTRYPOINT ["entrypoint.sh"]
