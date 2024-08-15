@@ -90,7 +90,7 @@ secrets:
 
 Docker-Restic provides default configurations to help you get started quickly. The following commands are supported out of the box:
 
-- `init`: Initializes a repository at `/target/repository` and expects the password file at `/run/secrets/restic-password`. This must be called once manually. Dont forget to run `su restic` before executing the command.
+- `init`: Initializes a repository at `/target/repository` and expects the password file at `/run/secrets/restic-password`. This must be called once manually.
 - `backup`: Stops all necessary containers and creates a snapshot of data mounted at `/source`. On successful execution, it automatically calls `forget`, `check`, and restarts the containers.
 - `forget`: Prunes old backup snapshots based on the specified policy.
 - `check`: Checks the integrity of the repository.
@@ -113,7 +113,6 @@ Remote syncing of backups can be configured with `rclone`. This can be done eith
 Docker-Restic utilizes Just under the hood, which is a powerful command runner. Make sure to checkout the [documentation](https://just.systems/man/en) on how to configure it. The configured commands should be executed using the `docker-restic` alias:
 
 ```bash
-su restic
 docker-restic <command-name>
 ```
 
