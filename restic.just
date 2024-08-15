@@ -5,6 +5,10 @@ rclone_flags := "--password-command: 'cat /run/secrets/rclone-password'"
 default:
   @just {{just_flags}} --list
 
+init:
+  -just {{just_flags}} init_restic
+  -just {{just_flags}} init_rclone
+
 backup:
   just {{just_flags}} container_stop
   -restic backup /source {{restic_flags}}
@@ -72,6 +76,24 @@ dump_check:
         --passphrase-file /run/secrets/restic-password \
           | tar -tf - > /dev/null
 
+[private]
+init_restic:
+  restic init {{restic_flags}}
+
+[private]
+init_rclone:
+  # Rclone does not provide a non-interactive method to encrypt the configuration file via CLI. 
+  # Therefore, the `expect` tool is used to automate the interactive encryption process.
+  expect <<EOF
+  spawn rclone config
+  expect "n/s/q>" { send "s\r" }
+  expect "a/q>" { send "a\r" }
+  expect "password:" { send "$(cat '/run/secrets/rclone-password')\r" }
+  expect "password:" { send "$(cat '/run/secrets/rclone-password')\r" }
+  expect "c/u/q>" { send "q\r" }
+  expect "n/s/q>" { send "q\r" }
+  expect eof
+  EOF
 
 [private]
 container_start:

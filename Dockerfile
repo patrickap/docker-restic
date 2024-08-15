@@ -15,7 +15,6 @@ ENV UID=$UID \
 COPY entrypoint.sh /usr/bin/entrypoint.sh
 COPY restic.just $DOCKER_RESTIC_DIR/config/restic.just
 COPY restic.cron $DOCKER_RESTIC_DIR/config/restic.cron
-COPY rclone.conf $DOCKER_RESTIC_DIR/config/rclone.conf
 
 RUN apk update \
     && apk add \
