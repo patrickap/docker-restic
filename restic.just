@@ -3,7 +3,7 @@ restic_flags := "--repo ${DOCKER_RESTIC_DIR}/data/repository --password-file /ru
 rclone_flags := "--password-command: 'cat /run/secrets/rclone-password'"
 
 default:
-  just {{just_flags}} --list
+  @just {{just_flags}} --list
 
 backup:
   just {{just_flags}} container_stop
