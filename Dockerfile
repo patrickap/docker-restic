@@ -13,6 +13,7 @@ ENV UID=$UID \
     RCLONE_CONFIG="$DOCKER_RESTIC_DIR/config/rclone.conf"
 
 COPY entrypoint.sh /usr/bin/entrypoint.sh
+COPY docker-restic.sh /usr/local/bin/docker-restic
 COPY restic.just $DOCKER_RESTIC_DIR/config/restic.just
 COPY restic.cron $DOCKER_RESTIC_DIR/config/restic.cron
 
@@ -35,7 +36,6 @@ RUN apk update \
       $DOCKER_RESTIC_DIR/config \
       $DOCKER_RESTIC_DIR/cache \
       $DOCKER_RESTIC_DIR/tmp \
-    && echo "exec su-exec restic just --justfile \${DOCKER_RESTIC_DIR}/config/restic.just --working-directory \${DOCKER_RESTIC_DIR} \"\${@}\"" > /usr/local/bin/docker-restic \
     && chown -R restic:restic $DOCKER_RESTIC_DIR \
     && chmod +x /usr/bin/entrypoint.sh  \
     && chmod +x /usr/local/bin/docker-restic
