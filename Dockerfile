@@ -14,7 +14,7 @@ ENV UID=$UID \
 
 COPY entrypoint.sh /usr/bin/entrypoint.sh
 COPY docker-restic.sh /usr/local/bin/docker-restic
-COPY restic.just $DOCKER_RESTIC_DIR/config/restic.just
+COPY restic.conf $DOCKER_RESTIC_DIR/config/restic.conf
 COPY restic.cron $DOCKER_RESTIC_DIR/config/restic.cron
 
 RUN apk update \
