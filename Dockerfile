@@ -1,4 +1,4 @@
-FROM restic/restic:0.17.1
+FROM restic/restic:0.17.3
 
 ARG UID="1234" \
     GID="1234" \
