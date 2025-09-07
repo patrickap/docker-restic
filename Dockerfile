@@ -1,4 +1,4 @@
-FROM restic/restic:0.18.0
+FROM alpine:3.22
 
 ARG UID="1234" \
     GID="1234" \
@@ -22,18 +22,18 @@ COPY docker-restic.sh /usr/local/bin/docker-restic
 COPY restic.conf $DOCKER_RESTIC_DIR/config/restic.conf
 COPY restic.cron $DOCKER_RESTIC_DIR/config/restic.cron
 
-RUN apk update \
-    && apk add \
-      docker-cli~=27.3.1 \
-      rclone~=1.68.2 \
+RUN apk add --no-cache \
+      docker-cli~=28.3.3 \
+      restic~=0.18.0 \
+      rclone~=1.69.3 \
       expect~=5.45.4 \
       gnupg~=2.4.7 \
-      just~=1.37.0 \
-      shadow~=4.16.0 \
-      libcap~=2.71 \
+      just~=1.40.0 \
+      shadow~=4.17.3 \
+      libcap~=2.76 \
       su-exec~=0.2 \
       supercronic~=0.2.33 \
-      gettext~=0.22.5 \
+      gettext~=0.24.1 \
     && addgroup -S -g $GID restic \
     && adduser -S -D -s /bin/sh -u $UID -G restic restic \
     && mkdir -p \
