@@ -1,21 +1,21 @@
 # Docker-Restic
 
-Docker-Restic is a lightweight wrapper designed to streamline the use of Restic, particularly for container backups. By parsing a configuration file, Docker-Restic exposes specified commands through the command-line interface (CLI).
+Docker-Restic is a lightweight wrapper around Restic particularly designed to be used for container backups.
 
 ## Key Features
 
-- **User-Friendly CLI**: Offers a robust and intuitive command-line interface.
-- **Centralized Configuration**: Utilizes a central configuration file for all custom commands.
-- **Custom Commands**: Facilitates the creation of custom commands for maximum flexibility.
-- **Automation Capabilities**: Supports the scheduling of commands for automated backup operations.
-- **Non-root Container**: Operates as a non-root container by default, adhering to best security practices.
-- **Optional Capabilities**: Offers optional capabilities to read volumes from different owners if necessary.
+- **CLI**: Simple command-line interface.
+- **Configuration**: Reads settings from files.
+- **Customization**: Supports custom commands.
+- **Automation**: Schedules commands for backups.
+- **Non-root**: Runs as a non-root container.
+- **Capabilities**: Can read volumes owned by different users.
 
 ## Getting Started
 
 To get started with Docker-Restic, follow these steps:
 
-1. Pull the Docker-Restic image from the official Docker Hub repository and run the container with the specified configurations:
+1. Pull the Docker-Restic image from Docker Hub and run the container with the specified configurations:
 
 ```bash
 docker run -d \
@@ -25,9 +25,10 @@ docker run -d \
   # Optional: Add capabilities to read directories of different owners
   # --cap-add DAC_READ_SEARCH \
 
-  # Optional: Overwrite the default configuration
+  # Optional: Mount custom configurations
   # -v $(pwd)/restic.conf:/srv/restic/config/restic.conf:ro \
   # -v $(pwd)/restic.cron:/srv/restic/config/restic.cron:ro \
+  # -v $(pwd)/restic.cron:/srv/restic/config/rclone.conf:ro \
 
   # Back up the named volume "data"
   -v data:/source/data:ro \
@@ -54,9 +55,10 @@ services:
     # cap_add:
     # - DAC_READ_SEARCH
     volumes:
-      # Optional: Overwrite the default configuration
+      # Optional: Mount custom configurations
       # - ./restic.conf:/srv/restic/config/restic.conf:ro
       # - ./restic.cron:/srv/restic/config/restic.cron:ro
+      # - ./rclone.conf:/srv/restic/config/rclone.conf:ro
 
       # Back up the named volume "data"
       - data:/source/data:ro
@@ -89,12 +91,17 @@ secrets:
 
 2. **Configure the Docker-Restic Container**
 
-Docker-Restic provides default configurations to help you get started quickly. A lot of commands are supported out of the box. Run `docker-restic -l` to list all available commands. Run `docker-restic init` once manually. This will initialize a restic repository at `/srv/restic/data/repository` and creates an encrypted rclone configuration at `/srv/restic/config/rclone.conf`.
+Docker-Restic provides default configurations to help you get started quickly. Optionally it's possible to mount custom configurations. During first launch a Restic repository will be created for you at `/srv/restic/data/repository` as well as an encrypted Rclone configuration at `/srv/restic/config/rclone.conf`.
 
-The entire backup process is scheduled once a day at 00:00. If this is not sufficient, the configurations can be modified or overwritten completely. Bind mount your custom configurations like this:
+You can add additional master keys to a Restic repository using `restic key add`. This lets you grant access without sharing the primary key. Separate keys provide the same access level but can be revoked individually. They also protect the main key and reduce the risk of its exposure.
+
+To add a new remote backup target either run `rclone config` inside the container or mount an existing encrypted configuration.
+
+The entire backup process is scheduled once a day at 00:00. Depending on your requirements you will need to provide your own configurations or modify the existing ones.
 
 - `restic.conf`: `/srv/restic/config/restic.conf`
 - `restic.cron`: `/srv/restic/config/restic.cron`
+- `rclone.conf`: `/srv/restic/config/rclone.conf`
 
 Do not forget to restart the container.
 
@@ -108,7 +115,7 @@ docker-restic <command-name>
 
 ## Manual Backups
 
-For manual backups, simply connect to the container. It's important to run the container as the user inside the container (by default `restic`) to prevent the container from writing files as root which the non-root user can't access afterwards. If it happened per accident, run `chown -R restic:restic <directory>` to fix the permissions:
+For manual backups, simply connect to the container. A lot of useful commands are provided by default. Run `docker-restic -l` to list all available commands. It's important to run the commands as the user inside the container (by default `restic`) to prevent the container from writing files as root which the non-root user can't access afterwards. If it happened per accident, run `chown -R restic:restic <directory>` to fix the permissions:
 
 ```bash
 docker exec -u <user> -it <container_name> /bin/sh

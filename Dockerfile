@@ -1,4 +1,4 @@
-FROM restic/restic:0.17.3
+FROM restic/restic:0.18.0
 
 ARG UID="1234" \
     GID="1234" \
@@ -7,6 +7,11 @@ ARG UID="1234" \
 ENV UID=$UID \
     GID=$GID \
     DOCKER_RESTIC_DIR=$DOCKER_RESTIC_DIR \
+    DOCKER_RESTIC_BACKUP_KEEP_DAILY="7" \
+    DOCKER_RESTIC_BACKUP_KEEP_WEEKLY="4" \
+    DOCKER_RESTIC_BACKUP_KEEP_MONTHLY="12" \
+    DOCKER_RESTIC_BACKUP_KEEP_YEARLY="2" \
+    DOCKER_RESTIC_DUMP_KEEP_LAST="7" \
     # set restic cache directory
     RESTIC_CACHE_DIR="$DOCKER_RESTIC_DIR/cache" \
     # set rclone config path
@@ -19,15 +24,16 @@ COPY restic.cron $DOCKER_RESTIC_DIR/config/restic.cron
 
 RUN apk update \
     && apk add \
-      docker-cli~=26.1.5 \
-      rclone~=1.66.0 \
+      docker-cli~=27.3.1 \
+      rclone~=1.68.2 \
       expect~=5.45.4 \
-      gnupg~=2.4.5 \
-      just~=1.26.0 \
-      shadow~=4.15.1 \
-      libcap~=2.70 \
+      gnupg~=2.4.7 \
+      just~=1.37.0 \
+      shadow~=4.16.0 \
+      libcap~=2.71 \
       su-exec~=0.2 \
-      supercronic~=0.2.29 \
+      supercronic~=0.2.33 \
+      gettext~=0.22.5 \
     && addgroup -S -g $GID restic \
     && adduser -S -D -s /bin/sh -u $UID -G restic restic \
     && mkdir -p \
@@ -43,4 +49,4 @@ RUN apk update \
 
 WORKDIR $DOCKER_RESTIC_DIR
 ENTRYPOINT ["entrypoint.sh"]
-CMD ["supercronic", "-passthrough-logs", "./config/restic.cron"]
+CMD ["supercronic", "-passthrough-logs", "--no-reap", "./config/restic.cron"]
