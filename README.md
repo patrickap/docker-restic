@@ -28,7 +28,7 @@ docker run -d \
   # Optional: Mount custom configurations
   # -v $(pwd)/restic.conf:/srv/restic/config/restic.conf:ro \
   # -v $(pwd)/restic.cron:/srv/restic/config/restic.cron:ro \
-  # -v $(pwd)/restic.cron:/srv/restic/config/rclone.conf:ro \
+  # -v $(pwd)/rclone.conf:/srv/restic/config/rclone.conf:ro \
 
   # Back up the named volume "data"
   -v data:/source/data:ro \
