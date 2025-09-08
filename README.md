@@ -95,7 +95,19 @@ Docker-Restic provides default configurations to help you get started quickly. O
 
 You can add additional master keys to a Restic repository using `restic key add`. This lets you grant access without sharing the primary key. Separate keys provide the same access level but can be revoked individually. They also protect the main key and reduce the risk of its exposure.
 
-To add a new remote backup target either run `rclone config` inside the container or mount an existing encrypted configuration.
+To add a new remote backup target either run `rclone config` inside the container or mount an existing encrypted configuration. By default all Rclone remotes with names ending in `_default` will automatically be used as backup targets and kept in sync. Since the remote path cannot be known in advance you need to specify it explicitly in your configuration. This can be achieved using aliases. In this example your backups will be synced to the `drive` remote at the path `/backup`.
+
+```ini
+[drive]
+type = drive
+client_id = <client_id>
+client_secret = <client_secret>
+token = <token>
+
+[drive_default]
+type = alias
+remote = drive:/backup
+```
 
 The entire backup process is scheduled once a day at 00:00. Depending on your requirements you will need to provide your own configurations or modify the existing ones.
 
