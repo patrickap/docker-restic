@@ -16,8 +16,8 @@ if [ ! "${GID}" = "${default_gid}" ] && [ -n "${GID}" ]; then
 fi
 
 if [ ! "${UID}" = "${default_uid}" ] || [ ! "${GID}" = "${default_gid}" ]; then
-  echo "Changing ownership of '${DOCKER_RESTIC_DIR}' to '${UID}:${GID}'"
-  chown -R restic:restic ${DOCKER_RESTIC_DIR}
+  echo "Changing ownership of directories to '${UID}:${GID}'"
+  chown -R restic:restic $DOCKER_RESTIC_DATA_DIR $DOCKER_RESTIC_CONFIG_DIR $DOCKER_RESTIC_CACHE_DIR $DOCKER_RESTIC_TMP_DIR
 fi
 
 if capsh --has-b=cap_dac_read_search &> /dev/null; then
@@ -26,12 +26,12 @@ if capsh --has-b=cap_dac_read_search &> /dev/null; then
   setcap 'cap_dac_read_search=+ep' /usr/bin/just
 fi
 
-if [ ! -d "${DOCKER_RESTIC_DIR}/data/repository" ] && [ -f /run/secrets/restic-password ]; then
+if [ ! -d "${DOCKER_RESTIC_DATA_DIR}/repository" ] && [ -f /run/secrets/restic-password ]; then
   echo "Initializing Restic"
   su-exec restic restic init $(docker-restic --evaluate restic_flags | envsubst)
 fi
 
-if [ ! -f "${DOCKER_RESTIC_DIR}/config/rclone.conf" ] && [ -f /run/secrets/rclone-password ]; then
+if [ ! -f "${DOCKER_RESTIC_CONFIG_DIR}/rclone.conf" ] && [ -f /run/secrets/rclone-password ]; then
   echo "Initializing Rclone"
   # Rclone does not provide a non-interactive method to encrypt the configuration file via CLI. 
   # Therefore, the `expect` tool is used to automate the interactive encryption process.

@@ -26,15 +26,19 @@ docker run -d \
   # --cap-add DAC_READ_SEARCH \
 
   # Optional: Mount custom configurations
-  # -v $(pwd)/restic.conf:/srv/restic/config/restic.conf:ro \
-  # -v $(pwd)/restic.cron:/srv/restic/config/restic.cron:ro \
-  # -v $(pwd)/rclone.conf:/srv/restic/config/rclone.conf:ro \
+  # -v $(pwd)/docker-restic.conf:/etc/docker-restic/docker-restic.conf:ro \
+  # -v $(pwd)/docker-restic.cron:/etc/docker-restic/docker-restic.cron:ro \
+  # -v $(pwd)/rclone.conf:/etc/docker-restic/rclone.conf:ro \
 
-  # Back up the named volume "data"
-  -v data:/source/data:ro \
-  # Bind mount the backups to the host
-  -v ~/backups:/target \
-  -v restic-config:/srv/restic \
+  # Persist the restic backup data in a named volume
+  -v docker-restic-data:/var/lib/docker-restic \
+
+  # Optional: Bind mount the restic backups to your host system
+  # -v ~/docker-restic-data:/var/lib/docker-restic \
+
+  # Example: Include any container volume in your backup
+  # -v app-data:/app/data:ro \
+
   -v /etc/localtime:/etc/localtime:ro \
   -v /var/run/docker.sock:/var/run/docker.sock:ro \
   --secret restic-password \
@@ -45,8 +49,6 @@ docker run -d \
 Alternatively, you can use Docker Compose:
 
 ```yml
-version: "3.7"
-
 services:
   docker-restic:
     image: patrickap/docker-restic:latest
@@ -56,15 +58,19 @@ services:
     # - DAC_READ_SEARCH
     volumes:
       # Optional: Mount custom configurations
-      # - ./restic.conf:/srv/restic/config/restic.conf:ro
-      # - ./restic.cron:/srv/restic/config/restic.cron:ro
-      # - ./rclone.conf:/srv/restic/config/rclone.conf:ro
+      # - ./docker-restic.conf:/etc/docker-restic/docker-restic.conf:ro
+      # - ./docker-restic.cron:/etc/docker-restic/docker-restic.cron:ro
+      # - ./rclone.conf:/etc/docker-restic/rclone.conf:ro
 
-      # Back up the named volume "data"
-      - data:/source/data:ro
-      # Bind mount the backups to the host
-      - ~/backups:/target
-      - restic-config:/srv/restic
+      # Persist the restic backup data in a named volume
+      - docker-restic-data:/var/lib/docker-restic
+
+      # Optional: Bind mount the restic backups to your host system
+      # - ~/docker-restic-data:/var/lib/docker-restic
+
+      # Example: Include any container volume in your backup
+      # - app-data:/app/data:ro
+
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     secrets:
@@ -72,15 +78,15 @@ services:
       - rclone-password
 
 volumes:
-  restic-config:
-  data:
+  restic-data:
+  app-data:
     external: true
 
 secrets:
   restic-password:
-    file: /path/to/restic-password.txt
+    file: /run/secrets/restic-password.txt
   rclone-password:
-    file: /path/to/rclone-password.txt
+    file: /run/secrets/rclone-password.txt
 ```
 
 **Notes:**
@@ -91,7 +97,7 @@ secrets:
 
 2. **Configure the Docker-Restic Container**
 
-Docker-Restic provides default configurations to help you get started quickly. Optionally it's possible to mount custom configurations. During first launch a Restic repository will be created for you at `/srv/restic/data/repository` as well as an encrypted Rclone configuration at `/srv/restic/config/rclone.conf`.
+Docker-Restic provides default configurations to help you get started quickly. Optionally it's possible to mount custom configurations. During first launch a Restic repository will be created for you at `/var/lib/docker-restic/repository` as well as an encrypted Rclone configuration at `/etc/docker-restic/rclone.conf`.
 
 You can add additional master keys to a Restic repository using `restic key add`. This lets you grant access without sharing the primary key. Separate keys provide the same access level but can be revoked individually. They also protect the main key and reduce the risk of its exposure.
 
@@ -111,9 +117,9 @@ remote = drive:/backup
 
 The entire backup process is scheduled once a day at 00:00. Depending on your requirements you will need to provide your own configurations or modify the existing ones.
 
-- `restic.conf`: `/srv/restic/config/restic.conf`
-- `restic.cron`: `/srv/restic/config/restic.cron`
-- `rclone.conf`: `/srv/restic/config/rclone.conf`
+- `docker-restic.conf`: `/etc/docker-restic/docker-restic.conf`
+- `docker-restic.cron`: `/etc/docker-restic/docker-restic.cron`
+- `rclone.conf`: `/etc/docker-restic/rclone.conf`
 
 Do not forget to restart the container.
 
