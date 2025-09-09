@@ -45,7 +45,7 @@ EOF
 fi
 
 # Change working directory
-cd "$DOCKER_RESTIC_ETC_DIR"
+cd "$DOCKER_RESTIC_CONFIG_DIR"
 
 echo "Running container as $(id restic)"
 exec su-exec restic "${@}"
