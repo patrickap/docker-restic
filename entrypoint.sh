@@ -40,8 +40,8 @@ if [ ! -f "${DOCKER_RESTIC_CONFIG_DIR}/rclone.conf" ] && [ -f /run/secrets/rclon
   su-exec restic expect <<EOF
 set timeout 1
 spawn rclone config encryption set
-expect "password:" { send "$(cat '/run/secrets/rclone-password')\r" }
-expect "password:" { send "$(cat '/run/secrets/rclone-password')\r" }
+expect "password:" { send -- "[exec cat /run/secrets/rclone-password]\r" }
+expect "password:" { send -- "[exec cat /run/secrets/rclone-password]\r" }
 expect eof
 EOF
 fi
