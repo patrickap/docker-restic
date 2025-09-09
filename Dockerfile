@@ -58,4 +58,4 @@ RUN apk add --no-cache \
 
 WORKDIR $DOCKER_RESTIC_DATA_DIR
 ENTRYPOINT ["entrypoint.sh"]
-CMD ["supercronic", "-passthrough-logs", "--no-reap", "$DOCKER_RESTIC_CONFIG_DIR/docker-restic.cron"]
+CMD ["supercronic", "-passthrough-logs", "--no-reap", "./docker-restic.cron"]
