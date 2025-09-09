@@ -2,17 +2,19 @@ FROM alpine:3.22
 
 ARG UID="1234" \
     GID="1234" \
-    DOCKER_RESTIC_DATA_DIR="/var/lib/docker-restic" \
-    DOCKER_RESTIC_CONFIG_DIR="/etc/docker-restic" \
-    DOCKER_RESTIC_CACHE_DIR="/var/cache/docker-restic" \
-    DOCKER_RESTIC_TMP_DIR="/tmp/docker-restic"
+    DOCKER_RESTIC_HOME_DIR="/var/lib/docker-restic" \
+    DOCKER_RESTIC_DATA_DIR="${DOCKER_RESTIC_HOME_DIR}/data" \
+    DOCKER_RESTIC_CONFIG_DIR="${DOCKER_RESTIC_HOME_DIR}/config" \
+    DOCKER_RESTIC_ETC_DIR="/etc/docker-restic" \
+    DOCKER_RESTIC_CACHE_DIR="/var/cache/docker-restic"
 
 ENV UID=$UID \
     GID=$GID \
+    DOCKER_RESTIC_HOME_DIR=$DOCKER_RESTIC_HOME_DIR \
     DOCKER_RESTIC_DATA_DIR=$DOCKER_RESTIC_DATA_DIR \
     DOCKER_RESTIC_CONFIG_DIR=$DOCKER_RESTIC_CONFIG_DIR \
+    DOCKER_RESTIC_ETC_DIR=$DOCKER_RESTIC_ETC_DIR \
     DOCKER_RESTIC_CACHE_DIR=$DOCKER_RESTIC_CACHE_DIR \
-    DOCKER_RESTIC_TMP_DIR=$DOCKER_RESTIC_TMP_DIR \
     DOCKER_RESTIC_BACKUP_KEEP_DAILY="7" \
     DOCKER_RESTIC_BACKUP_KEEP_WEEKLY="4" \
     DOCKER_RESTIC_BACKUP_KEEP_MONTHLY="12" \
@@ -25,7 +27,7 @@ ENV UID=$UID \
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY docker-restic.sh /usr/local/bin/docker-restic
-COPY docker-restic.conf $DOCKER_RESTIC_CONFIG_DIR/docker-restic.conf
+COPY docker-restic.conf $DOCKER_RESTIC_ETC_DIR/docker-restic.conf
 COPY docker-restic.cron $DOCKER_RESTIC_CONFIG_DIR/docker-restic.cron
 
 RUN apk add --no-cache \
@@ -43,19 +45,21 @@ RUN apk add --no-cache \
     && addgroup -S -g $GID restic \
     && adduser -S -D -s /bin/sh -u $UID -G restic restic \
     && mkdir -p \
+      $DOCKER_RESTIC_HOME_DIR \
       $DOCKER_RESTIC_DATA_DIR \
       $DOCKER_RESTIC_CONFIG_DIR \
+      $DOCKER_RESTIC_ETC_DIR \
       $DOCKER_RESTIC_CACHE_DIR \
-      $DOCKER_RESTIC_TMP_DIR \
     && chown -R restic:restic \
+      $DOCKER_RESTIC_HOME_DIR \
       $DOCKER_RESTIC_DATA_DIR \
       $DOCKER_RESTIC_CONFIG_DIR \
+      $DOCKER_RESTIC_ETC_DIR \
       $DOCKER_RESTIC_CACHE_DIR \
-      $DOCKER_RESTIC_TMP_DIR \
     && chmod +x /usr/local/bin/entrypoint.sh  \
     && chmod +x /usr/local/bin/docker-restic
 
 
-WORKDIR $DOCKER_RESTIC_DATA_DIR
+WORKDIR $DOCKER_RESTIC_HOME_DIR
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["supercronic", "-passthrough-logs", "--no-reap", "./docker-restic.cron"]

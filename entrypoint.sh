@@ -17,7 +17,7 @@ fi
 
 if [ ! "${UID}" = "${default_uid}" ] || [ ! "${GID}" = "${default_gid}" ]; then
   echo "Changing ownership of directories to '${UID}:${GID}'"
-  chown -R restic:restic $DOCKER_RESTIC_DATA_DIR $DOCKER_RESTIC_CONFIG_DIR $DOCKER_RESTIC_CACHE_DIR $DOCKER_RESTIC_TMP_DIR
+  chown -R restic:restic $DOCKER_RESTIC_HOME_DIR $DOCKER_RESTIC_DATA_DIR $DOCKER_RESTIC_CONFIG_DIR $DOCKER_RESTIC_ETC_DIR $DOCKER_RESTIC_CACHE_DIR
 fi
 
 if capsh --has-b=cap_dac_read_search &> /dev/null; then
@@ -45,7 +45,7 @@ EOF
 fi
 
 # Change working directory
-cd "$DOCKER_RESTIC_CONFIG_DIR"
+cd "$DOCKER_RESTIC_ETC_DIR"
 
 echo "Running container as $(id restic)"
 exec su-exec restic "${@}"

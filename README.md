@@ -26,9 +26,8 @@ docker run -d \
   # --cap-add DAC_READ_SEARCH \
 
   # Optional: Mount custom configurations
-  # -v $(pwd)/docker-restic.conf:/etc/docker-restic/docker-restic.conf:ro \
-  # -v $(pwd)/docker-restic.cron:/etc/docker-restic/docker-restic.cron:ro \
-  # -v $(pwd)/rclone.conf:/etc/docker-restic/rclone.conf:ro \
+  # -v $(pwd)/docker-restic.cron:/var/lib/docker-restic/config/docker-restic.cron:ro \
+  # -v $(pwd)/rclone.conf:/var/lib/docker-restic/config/rclone.conf:ro \
 
   # Persist the restic backup data in a named volume
   -v docker-restic-data:/var/lib/docker-restic \
@@ -58,9 +57,8 @@ services:
     # - DAC_READ_SEARCH
     volumes:
       # Optional: Mount custom configurations
-      # - ./docker-restic.conf:/etc/docker-restic/docker-restic.conf:ro
-      # - ./docker-restic.cron:/etc/docker-restic/docker-restic.cron:ro
-      # - ./rclone.conf:/etc/docker-restic/rclone.conf:ro
+      # - ./docker-restic.cron:/var/lib/docker-restic/config/docker-restic.cron:ro
+      # - ./rclone.conf:/var/lib/docker-restic/config/rclone.conf:ro
 
       # Persist the restic backup data in a named volume
       - docker-restic-data:/var/lib/docker-restic
@@ -97,7 +95,7 @@ secrets:
 
 2. **Configure the Docker-Restic Container**
 
-Docker-Restic provides default configurations to help you get started quickly. Optionally it's possible to mount custom configurations. During first launch a Restic repository will be created for you at `/var/lib/docker-restic/repository` as well as an encrypted Rclone configuration at `/etc/docker-restic/rclone.conf`.
+Docker-Restic provides default configurations to help you get started quickly. Optionally it's possible to mount custom configurations. During first launch a Restic repository will be created for you at `/var/lib/docker-restic/data/repository` as well as an encrypted Rclone configuration at `/var/lib/docker-restic/config/rclone.conf`.
 
 You can add additional master keys to a Restic repository using `restic key add`. This lets you grant access without sharing the primary key. Separate keys provide the same access level but can be revoked individually. They also protect the main key and reduce the risk of its exposure.
 
@@ -117,9 +115,8 @@ remote = drive:/backup
 
 The entire backup process is scheduled once a day at 00:00. Depending on your requirements you will need to provide your own configurations or modify the existing ones.
 
-- `docker-restic.conf`: `/etc/docker-restic/docker-restic.conf`
-- `docker-restic.cron`: `/etc/docker-restic/docker-restic.cron`
-- `rclone.conf`: `/etc/docker-restic/rclone.conf`
+- `docker-restic.cron`: `/var/lib/docker-restic/config/docker-restic.cron`
+- `rclone.conf`: `/var/lib/docker-restic/config/rclone.conf`
 
 Do not forget to restart the container.
 
