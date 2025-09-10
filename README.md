@@ -97,7 +97,7 @@ secrets:
 
 Docker-Restic provides default configurations to help you get started quickly. Optionally it's possible to mount custom configurations. During first launch a Restic repository will be created for you at `/var/lib/docker-restic/data/repository` as well as an encrypted Rclone configuration at `/var/lib/docker-restic/config/rclone.conf`.
 
-You can add additional master keys to a Restic repository using `restic key add`. This lets you grant access without sharing the primary key. Separate keys provide the same access level but can be revoked individually. They also protect the main key and reduce the risk of its exposure.
+You can add additional master keys to a Restic repository using `restic key add`. This lets you grant access without sharing the primary key. Make sure to run this command as the intended user, since the key will be owned by that user. Separate keys provide the same access level but can be revoked individually. They also protect the main key and reduce the risk of its exposure.
 
 To add a new remote backup target either run `rclone config` inside the container or mount an existing encrypted configuration. By default all Rclone remotes with names ending in `_default` will automatically be used as backup targets and kept in sync. Since the remote path cannot be known in advance you need to specify it explicitly in your configuration. This can be achieved using aliases. In this example your backups will be synced to the `drive` remote at the path `/backup`.
 
