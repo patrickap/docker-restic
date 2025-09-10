@@ -28,9 +28,9 @@ fi
 
 if [ ! -d "${DOCKER_RESTIC_DATA_DIR}/repository" ] && [ -f /run/secrets/restic-password ]; then
   echo "Initializing Restic"
-  su-exec restic restic init "$(docker-restic --evaluate restic_flags | envsubst)"
+  su-exec restic restic init $(docker-restic --evaluate restic_flags | envsubst)
   # Create directory for exported archives (repository dumps).
-  su-exec mkdir -p "${DOCKER_RESTIC_DATA_DIR}/export"
+  su-exec restic mkdir -p "${DOCKER_RESTIC_DATA_DIR}/export"
 fi
 
 if [ ! -f "${DOCKER_RESTIC_CONFIG_DIR}/rclone.conf" ] && [ -f /run/secrets/rclone-password ]; then
