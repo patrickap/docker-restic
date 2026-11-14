@@ -31,16 +31,16 @@ COPY docker-restic.conf "${DOCKER_RESTIC_ETC_DIR}/docker-restic.conf"
 COPY docker-restic.cron "${DOCKER_RESTIC_CONFIG_DIR}/docker-restic.cron"
 
 RUN apk add --no-cache \
-      docker-cli~=29.5.3 \
+      docker-cli~=29.9.3 \
       restic~=0.18.1 \
-      rclone~=1.74.1 \
+      rclone~=1.75.2 \
       expect~=5.45.4 \
       gnupg~=2.4.9 \
       just~=1.48.1 \
       shadow~=4.18.0 \
       libcap~=2.78 \
       su-exec~=0.3 \
-      supercronic~=0.2.39 \
+      supercronic~=0.2.49 \
       gettext~=1.0 \
     && addgroup -S -g "${GID}" restic \
     && adduser -S -D -s /bin/sh -u "${UID}" -G restic restic \
