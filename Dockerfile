@@ -14,27 +14,17 @@ ENV UID="${UID}" \
     DOCKER_RESTIC_DATA_DIR="${DOCKER_RESTIC_DATA_DIR}" \
     DOCKER_RESTIC_CONFIG_DIR="${DOCKER_RESTIC_CONFIG_DIR}" \
     DOCKER_RESTIC_ETC_DIR="${DOCKER_RESTIC_ETC_DIR}" \
-    DOCKER_RESTIC_CACHE_DIR="${DOCKER_RESTIC_CACHE_DIR}" \
-    DOCKER_RESTIC_BACKUP_KEEP_DAILY="7" \
-    DOCKER_RESTIC_BACKUP_KEEP_WEEKLY="4" \
-    DOCKER_RESTIC_BACKUP_KEEP_MONTHLY="12" \
-    DOCKER_RESTIC_BACKUP_KEEP_YEARLY="2" \
-    DOCKER_RESTIC_DUMP_KEEP_LAST="7" \
-    # set restic cache directory
-    RESTIC_CACHE_DIR="${DOCKER_RESTIC_CACHE_DIR}" \
-    # set rclone config path
-    RCLONE_CONFIG="${DOCKER_RESTIC_CONFIG_DIR}/rclone.conf"
+    DOCKER_RESTIC_CACHE_DIR="${DOCKER_RESTIC_CACHE_DIR}"
 
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY cmd "${DOCKER_RESTIC_ETC_DIR}/cmd"
+COPY profiles.toml "${DOCKER_RESTIC_CONFIG_DIR}/profiles.toml"
+COPY jobs.cron "${DOCKER_RESTIC_CONFIG_DIR}/jobs.cron"
 COPY docker-restic.sh /usr/local/bin/docker-restic
-COPY docker-restic.conf "${DOCKER_RESTIC_ETC_DIR}/docker-restic.conf"
-COPY docker-restic.cron "${DOCKER_RESTIC_CONFIG_DIR}/docker-restic.cron"
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN apk add --no-cache \
       docker-cli~=29.9.3 \
       restic~=0.18.1 \
-      rclone~=1.75.2 \
-      expect~=5.45.4 \
       gnupg~=2.4.9 \
       just~=1.48.1 \
       shadow~=4.18.0 \
@@ -42,6 +32,7 @@ RUN apk add --no-cache \
       su-exec~=0.3 \
       supercronic~=0.2.49 \
       gettext~=1.0 \
+      yq~=4.53.3 \
     && addgroup -S -g "${GID}" restic \
     && adduser -S -D -s /bin/sh -u "${UID}" -G restic restic \
     && mkdir -p \
@@ -56,10 +47,11 @@ RUN apk add --no-cache \
       "${DOCKER_RESTIC_CONFIG_DIR}" \
       "${DOCKER_RESTIC_ETC_DIR}" \
       "${DOCKER_RESTIC_CACHE_DIR}" \
-    && chmod +x /usr/local/bin/entrypoint.sh  \
-    && chmod +x /usr/local/bin/docker-restic
-
+    && chmod +x /usr/local/bin/docker-restic \
+    && chmod +x /usr/local/bin/entrypoint.sh
 
 WORKDIR "${DOCKER_RESTIC_HOME_DIR}"
+
 ENTRYPOINT ["entrypoint.sh"]
-CMD ["supercronic", "-passthrough-logs", "--no-reap", "./docker-restic.cron"]
+
+CMD ["supercronic", "-passthrough-logs", "--no-reap", "./jobs.cron"]

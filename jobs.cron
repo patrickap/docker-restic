@@ -1,0 +1,1 @@
+0 0 * * * for profile in $(docker-restic profile list); do docker-restic --profile "${profile}" exec --suspense backup && docker-restic --profile "${profile}" exec forget && docker-restic --profile "${profile}" exec check; done

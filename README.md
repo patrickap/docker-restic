@@ -27,7 +27,6 @@ docker run -d \
 
   # Optional: Mount custom configurations
   # -v $(pwd)/docker-restic.cron:/var/lib/docker-restic/config/docker-restic.cron:ro \
-  # -v $(pwd)/rclone.conf:/var/lib/docker-restic/config/rclone.conf:ro \
 
   # Persist the restic backup data in a named volume
   -v docker-restic-data:/var/lib/docker-restic \
@@ -41,7 +40,6 @@ docker run -d \
   -v /etc/localtime:/etc/localtime:ro \
   -v /var/run/docker.sock:/var/run/docker.sock:ro \
   --secret restic-password \
-  --secret rclone-password \
   patrickap/docker-restic:latest
 ```
 
@@ -58,7 +56,6 @@ services:
     volumes:
       # Optional: Mount custom configurations
       # - ./docker-restic.cron:/var/lib/docker-restic/config/docker-restic.cron:ro
-      # - ./rclone.conf:/var/lib/docker-restic/config/rclone.conf:ro
 
       # Persist the restic backup data in a named volume
       - docker-restic-data:/var/lib/docker-restic
@@ -73,7 +70,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     secrets:
       - restic-password
-      - rclone-password
 
 volumes:
   restic-data:
@@ -83,8 +79,6 @@ volumes:
 secrets:
   restic-password:
     file: /run/secrets/restic-password.txt
-  rclone-password:
-    file: /run/secrets/rclone-password.txt
 ```
 
 **Notes:**
@@ -95,28 +89,13 @@ secrets:
 
 2. **Configure the Docker-Restic Container**
 
-Docker-Restic provides default configurations to help you get started quickly. Optionally it's possible to mount custom configurations. During first launch a Restic repository will be created for you at `/var/lib/docker-restic/data/repository` as well as an encrypted Rclone configuration at `/var/lib/docker-restic/config/rclone.conf`.
+Docker-Restic provides default configurations to help you get started quickly. Optionally it's possible to mount custom configurations. During first launch a Restic repository will be created for you at `/var/lib/docker-restic/data/repository`.
 
 You can add additional master keys to a Restic repository using `restic key add`. This lets you grant access without sharing the primary key. Make sure to run this command as the intended user, since the key will be owned by that user. Separate keys provide the same access level but can be revoked individually. They also protect the main key and reduce the risk of its exposure.
-
-To add a new remote backup target either run `rclone config` inside the container or mount an existing encrypted configuration. By default all Rclone remotes with names ending in `_default` will automatically be used as backup targets and kept in sync. Since the remote path cannot be known in advance you need to specify it explicitly in your configuration. This can be achieved using aliases. In this example your backups will be synced to the `drive` remote at the path `/backup`.
-
-```ini
-[drive]
-type = drive
-client_id = <client_id>
-client_secret = <client_secret>
-token = <token>
-
-[drive_default]
-type = alias
-remote = drive:/backup
-```
 
 The entire backup process is scheduled once a day at 00:00. Depending on your requirements you will need to provide your own configurations or modify the existing ones.
 
 - `docker-restic.cron`: `/var/lib/docker-restic/config/docker-restic.cron`
-- `rclone.conf`: `/var/lib/docker-restic/config/rclone.conf`
 
 Do not forget to restart the container.
 

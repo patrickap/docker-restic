@@ -26,28 +26,14 @@ if capsh --has-b=cap_dac_read_search &> /dev/null; then
   setcap 'cap_dac_read_search=+ep' /usr/bin/just
 fi
 
-if [ ! -d "${DOCKER_RESTIC_DATA_DIR}/repository" ] && [ -f /run/secrets/restic-password ]; then
-  echo "Initializing Restic"
-  su-exec restic restic init $(docker-restic --evaluate restic_flags | envsubst)
-  # Create directory for exported archives (repository dumps).
-  su-exec restic mkdir -p "${DOCKER_RESTIC_DATA_DIR}/export"
-fi
+for profile in $(docker-restic profile list); do
+  if ! docker-restic --profile "${profile}" exec cat config > /dev/null 2>&1; then
+    echo "Initializing Restic repository (profile=${profile})"
+    docker-restic --profile "${profile}" exec init
+  fi
+done
 
-if [ ! -f "${DOCKER_RESTIC_CONFIG_DIR}/rclone.conf" ] && [ -f /run/secrets/rclone-password ]; then
-  echo "Initializing Rclone"
-  # Rclone does not provide a non-interactive method to encrypt the configuration file via CLI. 
-  # Therefore, the `expect` tool is used to automate the interactive encryption process.
-  su-exec restic expect <<EOF
-set timeout 1
-spawn rclone config encryption set
-expect "password:" { send -- "[exec cat /run/secrets/rclone-password]\r" }
-expect "password:" { send -- "[exec cat /run/secrets/rclone-password]\r" }
-expect eof
-EOF
-fi
-
-# Change working directory
-cd "${DOCKER_RESTIC_CONFIG_DIR}"
+cd "${DOCKER_RESTIC_HOME_DIR}"
 
 echo "Running container as $(id restic)"
 exec su-exec restic "${@}"
