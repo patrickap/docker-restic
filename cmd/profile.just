@@ -15,10 +15,9 @@ expand profile *args:
 
   yq -o=json '.' "{{config_file}}" \
     | jq -r --arg profile "{{profile}}" --arg words "{{args}}" '
-        # scalars skips nested tables, and false is falsy so it is skipped too
         def flags: objects | to_entries[] | select(.value | scalars) | "--\(.key) \(.value)" | rtrimstr(" true");
 
-        (.[$profile] // error("unknown profile: " + $profile)) as $node
+        (.[$profile] // empty) as $node
         | [$node | flags]
           + [foreach ($words | scan("\\S+")) as $word (
               [$node, null];
