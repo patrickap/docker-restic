@@ -33,7 +33,7 @@ for profile in $(docker-restic profile list); do
   fi
 done
 
-cd "${DOCKER_RESTIC_HOME_DIR}"
+cd "${DOCKER_RESTIC_CONFIG_DIR}"
 
 echo "Running container as $(id restic)"
 exec su-exec restic "${@}"
