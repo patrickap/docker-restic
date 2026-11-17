@@ -27,9 +27,9 @@ if capsh --has-b=cap_dac_read_search &> /dev/null; then
 fi
 
 for profile in $(docker-restic profile list); do
-  if ! docker-restic --profile "${profile}" exec cat config > /dev/null 2>&1; then
+  if ! docker-restic exec --profile "${profile}" cat config &> /dev/null; then
     echo "Initializing Restic repository (profile=${profile})"
-    docker-restic --profile "${profile}" exec init
+    docker-restic exec --profile "${profile}" init
   fi
 done
 

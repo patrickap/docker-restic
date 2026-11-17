@@ -26,13 +26,14 @@ RUN apk add --no-cache \
       docker-cli~=29.9.3 \
       restic~=0.18.1 \
       gnupg~=2.4.9 \
-      just~=1.48.1 \
       shadow~=4.18.0 \
       libcap~=2.78 \
       su-exec~=0.3 \
       supercronic~=0.2.49 \
       gettext~=1.0 \
       yq~=4.53.3 \
+    && apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community \
+        just~=1.59.0 \
     && addgroup -S -g "${GID}" restic \
     && adduser -S -D -s /bin/sh -u "${UID}" -G restic restic \
     && mkdir -p \
