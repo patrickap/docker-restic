@@ -1,3 +1,5 @@
+set shell := ["/bin/sh", "-euo", "pipefail", "-uc"]
+
 config_file := "${DOCKER_RESTIC_CONFIG_DIR}/profiles.toml"
 
 [private]
@@ -5,8 +7,7 @@ default:
   @just --list profile
 
 list:
-  @set -euo pipefail \
-    && yq 'keys | .[]' "{{config_file}}"
+  @yq 'keys | .[]' "{{config_file}}"
 
 expand profile *args:
   #!/bin/sh
@@ -28,6 +29,5 @@ expand profile *args:
     | envsubst
 
 get profile path:
-  @set -euo pipefail \
-    && yq '.{{profile}}.{{path}} // ""' "{{config_file}}" \
+  @yq '.{{profile}}.{{path}} // ""' "{{config_file}}" \
     | envsubst

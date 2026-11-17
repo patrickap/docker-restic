@@ -1,6 +1,8 @@
 mod profile
 mod container
 
+set shell := ["/bin/sh", "-euo", "pipefail", "-uc"]
+
 export JUST_JUSTFILE := justfile()
 
 [private]
@@ -11,8 +13,5 @@ default:
 [arg("suspend", long, short, value="true")]
 exec profile suspend="false" *args:
   @{{ if suspend == "true" { "just container stop" } else { "" } }}
-
-  @set -euo pipefail \
-    && restic $(just profile expand {{profile}} {{args}})
-
+  @restic $(just profile expand {{profile}} {{args}})
   @{{ if suspend == "true" { "just container start" } else { "" } }}
