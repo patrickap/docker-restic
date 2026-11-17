@@ -4,10 +4,11 @@ Docker-Restic is a lightweight wrapper around Restic particularly designed to be
 
 ## Key Features
 
-- **CLI**: Simple command-line interface.
-- **Configuration**: Reads settings from files.
+- **CLI**: Simple command-line interface built on Just modules (`exec`, `profile`, `container`).
+- **Profiles**: Restic flags are resolved per profile from a single `profiles.toml`.
 - **Customization**: Supports custom commands.
 - **Automation**: Schedules commands for backups.
+- **Container control**: Stops containers during a backup and runs commands inside containers via labels.
 - **Non-root**: Runs as a non-root container.
 - **Capabilities**: Can read volumes owned by different users.
 
@@ -26,7 +27,8 @@ docker run -d \
   # --cap-add DAC_READ_SEARCH \
 
   # Optional: Mount custom configurations
-  # -v $(pwd)/docker-restic.cron:/var/lib/docker-restic/config/docker-restic.cron:ro \
+  # -v $(pwd)/profiles.toml:/etc/docker-restic/profiles.toml:ro \
+  # -v $(pwd)/jobs.cron:/etc/docker-restic/jobs.cron:ro \
 
   # Persist the restic backup data in a named volume
   -v docker-restic-data:/var/lib/docker-restic \
@@ -37,9 +39,10 @@ docker run -d \
   # Example: Include any container volume in your backup
   # -v app-data:/app/data:ro \
 
+  # The password file of the profile, here the profile `default`
+  -v $(pwd)/restic-password:/run/secrets/default/restic-password:ro \
   -v /etc/localtime:/etc/localtime:ro \
   -v /var/run/docker.sock:/var/run/docker.sock:ro \
-  --secret restic-password \
   patrickap/docker-restic:latest
 ```
 
@@ -55,7 +58,8 @@ services:
     # - DAC_READ_SEARCH
     volumes:
       # Optional: Mount custom configurations
-      # - ./docker-restic.cron:/var/lib/docker-restic/config/docker-restic.cron:ro
+      # - ./profiles.toml:/etc/docker-restic/profiles.toml:ro
+      # - ./jobs.cron:/etc/docker-restic/jobs.cron:ro
 
       # Persist the restic backup data in a named volume
       - docker-restic-data:/var/lib/docker-restic
@@ -66,19 +70,15 @@ services:
       # Example: Include any container volume in your backup
       # - app-data:/app/data:ro
 
+      # The password file of the profile, here the profile `default`
+      - ./restic-password:/run/secrets/default/restic-password:ro
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    secrets:
-      - restic-password
 
 volumes:
-  restic-data:
+  docker-restic-data:
   app-data:
     external: true
-
-secrets:
-  restic-password:
-    file: /run/secrets/restic-password.txt
 ```
 
 **Notes:**
@@ -86,33 +86,108 @@ secrets:
 - For security reasons, it is recommended to mount external volumes for backup as read-only using `:ro`.
 - Ensure to bind mount your container backups to a custom location on the host for accessibility.
 - The `DAC_READ_SEARCH` capability might be required when backing up multiple volumes with different owners or restricted permissions. This capability allows Docker-Restic to read all directories.
+- The container paths are fixed. Change the mounts on the host side, not the paths inside the container.
+
+## Volumes and Environment
+
+| Path | Purpose |
+| --- | --- |
+| `/var/lib/docker-restic` | State, repositories (`/var/lib/docker-restic/<profile>/repository`). This is also the working directory. |
+| `/etc/docker-restic` | Configuration: `profiles.toml` and `jobs.cron`. Can be mounted read-only. |
+| `/var/cache/docker-restic` | Restic cache (`RESTIC_CACHE_DIR`). |
+| `/run/secrets/<profile>/restic-password` | Password file of a profile. |
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `UID` | `1234` | User id of the `restic` user. Ownership of the volumes is adjusted on start if it differs. |
+| `GID` | `1234` | Group id of the `restic` user. |
+
+The repository of a profile is initialized automatically on start if its password file exists and the repository does not.
 
 2. **Configure the Docker-Restic Container**
 
-Docker-Restic provides default configurations to help you get started quickly. Optionally it's possible to mount custom configurations. During first launch a Restic repository will be created for you at `/var/lib/docker-restic/data/repository`.
+Docker-Restic provides default configurations to help you get started quickly. Optionally it's possible to mount custom configurations. During first launch a Restic repository will be created for each profile at `/var/lib/docker-restic/<profile>/repository`.
 
 You can add additional master keys to a Restic repository using `restic key add`. This lets you grant access without sharing the primary key. Make sure to run this command as the intended user, since the key will be owned by that user. Separate keys provide the same access level but can be revoked individually. They also protect the main key and reduce the risk of its exposure.
 
 The entire backup process is scheduled once a day at 00:00. Depending on your requirements you will need to provide your own configurations or modify the existing ones.
 
-- `docker-restic.cron`: `/var/lib/docker-restic/config/docker-restic.cron`
+- `profiles.toml`: `/etc/docker-restic/profiles.toml`
+- `jobs.cron`: `/etc/docker-restic/jobs.cron`
 
 Do not forget to restart the container.
 
+## Profiles
+
+A profile describes how Restic is called for one repository. All profiles live in `profiles.toml`:
+
+```toml
+[default]
+repo = "${DOCKER_RESTIC_DATA_DIR}/default/repository"
+password-file = "/run/secrets/default/restic-password"
+
+[default.forget]
+keep-daily = 7
+keep-weekly = 4
+prune = true
+
+[default.check]
+read-data = true
+```
+
+- A top-level table (`[default]`) is a profile. Its scalar keys are passed as `--flags` to every Restic command, for example `--repo ...`.
+- A nested table (`[default.forget]`) adds flags for that command only. Nested commands such as `cat config` map to `[default.cat.config]`.
+- A value of `true` becomes a bare flag (`--prune`), `false` is omitted.
+- `${...}` is replaced by environment variables, e.g. `${DOCKER_RESTIC_DATA_DIR}`.
+- Add as many profiles as needed. Each profile needs its own password file at `/run/secrets/<profile>/restic-password`.
+
 ## Configuration Reference
 
-Docker-Restic utilizes Just under the hood, which is a powerful command runner. Make sure to checkout the [documentation](https://just.systems/man/en) on how to configure it. The configured commands should be executed using the `docker-restic` alias:
+Docker-Restic utilizes Just under the hood, which is a powerful command runner. Make sure to checkout the [documentation](https://just.systems/man/en) on how to configure it. The commands are executed using the `docker-restic` alias and are grouped into modules:
 
 ```bash
-docker-restic <command-name>
+docker-restic                 # list the available commands
+docker-restic profile         # list the profile commands
+docker-restic container       # list the container commands
+```
+
+| Command | Description |
+| --- | --- |
+| `docker-restic exec --profile <profile> <restic-args>` | Runs Restic with the flags of the profile, e.g. `exec --profile default snapshots`. |
+| `docker-restic exec --profile <profile> --suspend <restic-args>` | Same, but stops the labeled containers before and starts them again afterwards. |
+| `docker-restic profile list` | Lists all profiles. |
+| `docker-restic profile expand <profile> <restic-args>` | Prints the resolved Restic arguments of a profile. |
+| `docker-restic profile get <profile> <key>` | Prints a single value of a profile. |
+| `docker-restic container start` / `stop` | Starts or stops all containers labeled `docker-restic.container.stop=true`. |
+| `docker-restic container exec` | Runs the command of the label `docker-restic.container.exec` inside the labeled containers. |
+
+## Scheduling
+
+Jobs are scheduled with [supercronic](https://github.com/aptible/supercronic) using `/etc/docker-restic/jobs.cron`. By default every profile is backed up daily at 00:00:
+
+```cron
+0 0 * * * for profile in $(docker-restic profile list); do docker-restic exec --profile "${profile}" --suspend backup && docker-restic exec --profile "${profile}" forget && docker-restic exec --profile "${profile}" check; done
+```
+
+## Container Labels
+
+Containers are controlled through labels:
+
+```yml
+labels:
+  # Stopped while a backup with --suspend is running
+  - docker-restic.container.stop=true
+  # Command executed by `docker-restic container exec`
+  - docker-restic.container.exec=<command>
 ```
 
 ## Manual Backups
 
-For manual backups, simply connect to the container. A lot of useful commands are provided by default. Run `docker-restic -l` to list all available commands. It's important to run the commands as the user inside the container (by default `restic`) to prevent the container from writing files as root which the non-root user can't access afterwards. If it happened per accident, run `chown -R restic:restic <directory>` to fix the permissions. The `docker-restic` command handles this automatically.
+For manual backups, simply connect to the container. Run `docker-restic` to list all available commands. The `docker-restic` command runs as the user inside the container (by default `restic`) automatically, which prevents the container from writing files as root which the non-root user can't access afterwards. If it happened per accident, run `chown -R restic:restic <directory>` to fix the permissions.
 
 ```bash
-docker exec -u <user> -it <container_name> /bin/sh
+docker exec -it <container_name> /bin/sh
+docker-restic exec --profile default snapshots
 ```
 
 ## Restore from Backup
