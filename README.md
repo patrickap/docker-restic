@@ -136,7 +136,7 @@ read-data = true
 ```
 
 - A top-level table (`[default]`) is a profile. Its scalar keys are passed as `--flags` to every Restic command, for example `--repo ...`.
-- A nested table (`[default.forget]`) adds flags for that command only. Nested commands such as `cat config` map to `[default.cat.config]`.
+- A nested table (`[default.forget]`) adds flags for that command only. The arguments are matched one after another as a path below the profile: `forget check` looks for `[default.forget.check]`, not `[default.check]`. Words starting with `-` do not change the path.
 - A value of `true` becomes a bare flag (`--prune`), `false` is omitted.
 - `${...}` is replaced by environment variables, e.g. `${DOCKER_RESTIC_DATA_DIR}`.
 - Add as many profiles as needed. Each profile needs its own password file at `/run/secrets/<profile>/restic-password`.

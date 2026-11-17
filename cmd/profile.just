@@ -6,31 +6,29 @@ default:
 
 list:
   @set -euo pipefail \
-    && yq -r 'keys | .[]' "{{config_file}}"
+    && yq 'keys | .[]' "{{config_file}}"
 
 expand profile *args:
   #!/bin/sh
 
   set -euo pipefail
 
-  for command in "{{profile}}" {{args}}; do
-    query="${query:+${query}.}${command}"
+  yq -o=json '.' "{{config_file}}" \
+    | jq -r --arg profile "{{profile}}" --arg words "{{args}}" '
+        # scalars skips nested tables, and false is falsy so it is skipped too
+        def flags: objects | to_entries[] | select(.value | scalars) | "--\(.key) \(.value)" | rtrimstr(" true");
 
-    flags=$(yq -r '
-      .. | select(strenv(query) == (path | join(".")))
-      | select(kind == "map")
-      | to_entries
-      | map(select((.value | kind) == "scalar" and (.value // false))
-        | "--" + .key + ((.value | select(tag != "!!bool") | " " + tostring) // ""))
-      | join(" ")
-    ' "{{config_file}}")
-
-    [ "${query}" = "${command}" ] || printf '%s ' "${command}"
-    printf '%s ' "${flags}"
-  done | envsubst
-  printf '\n'
+        (.[$profile] // error("unknown profile: " + $profile)) as $node
+        | [$node | flags]
+          + [foreach ($words | scan("\\S+")) as $word (
+              [$node, null];
+              ((.[0][$word] | objects) // null) as $child | [$child // .[0], $child];
+              $word, (.[1] | flags))]
+        | join(" ")
+      ' \
+    | envsubst
 
 get profile path:
   @set -euo pipefail \
-    && yq -r '.[strenv({{profile}})][strenv({{path}})] // ""' "{{config_file}}" \
+    && yq '.{{profile}}.{{path}} // ""' "{{config_file}}" \
     | envsubst

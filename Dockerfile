@@ -24,8 +24,9 @@ RUN apk add --no-cache \
         libcap~=2.78 \
         su-exec~=0.3 \
         supercronic~=0.2.49 \
-        gettext~=1.0 \
         yq~=4.53.3 \
+        jq~=1.8.2 \
+        gettext~=1.0 \
     && apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community \
         just~=1.59.0 \
     && addgroup -S -g "${GID}" restic \
