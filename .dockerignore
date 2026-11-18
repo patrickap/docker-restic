@@ -1,6 +1,7 @@
 .git
 .dockerignore
 Dockerfile
+justfile
 LICENSE.txt
-publish.sh
 README.md
+VERSION

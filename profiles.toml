@@ -1,0 +1,19 @@
+[default]
+repo = "${DOCKER_RESTIC_DATA_DIR}/default/repository"
+password-file = "/run/secrets/default/restic-password"
+
+[default.backup]
+
+[default.forget]
+keep-daily = 7
+keep-weekly = 4
+keep-monthly = 12
+keep-yearly = 2
+group-by = "paths"
+prune = true
+
+[default.check]
+read-data = true
+
+[default.dump]
+archive = "tar"

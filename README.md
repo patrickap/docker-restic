@@ -1,169 +1,263 @@
 # Docker-Restic
 
-Docker-Restic is a lightweight wrapper around Restic particularly designed to be used for container backups.
+Docker-Restic is a lightweight wrapper around Restic, specifically designed for container backups.
 
 ## Key Features
 
-- **CLI**: Simple command-line interface.
-- **Configuration**: Reads settings from files.
-- **Customization**: Supports custom commands.
-- **Automation**: Schedules commands for backups.
-- **Non-root**: Runs as a non-root container.
-- **Capabilities**: Can read volumes owned by different users.
+- **CLI**: Simple and intuitive command-line interface.
+- **Profiles**: Flexible profile system for managing multiple Restic repositories.
+- **Automation**: Built-in cron scheduling for recurring backup jobs.
+- **Safety**: Automatic container management during backups via service labels.
+- **Non-root**: Secure operation by running as a non-root user with minimal privileges.
 
 ## Getting Started
 
-To get started with Docker-Restic, follow these steps:
+To get started with Docker-Restic, deploy the container using Docker or Docker Compose.
 
-1. Pull the Docker-Restic image from Docker Hub and run the container with the specified configurations:
+### Docker
 
 ```bash
 docker run -d \
   --name docker-restic \
   --restart always \
-
-  # Optional: Add capabilities to read directories of different owners
+  # Optional: Add capabilities to read directories owned by other users
   # --cap-add DAC_READ_SEARCH \
 
-  # Optional: Mount custom configurations
-  # -v $(pwd)/docker-restic.cron:/var/lib/docker-restic/config/docker-restic.cron:ro \
-  # -v $(pwd)/rclone.conf:/var/lib/docker-restic/config/rclone.conf:ro \
+  # Optional: Mount custom configuration files
+  # -v ./profiles.toml:/etc/docker-restic/profiles.toml:ro \
+  # -v ./jobs.cron:/etc/docker-restic/jobs.cron:ro \
 
-  # Persist the restic backup data in a named volume
-  -v docker-restic-data:/var/lib/docker-restic \
+  # Persist Restic data in a named volume
+  -v data:/var/lib/docker-restic \
 
-  # Optional: Bind mount the restic backups to your host system
-  # -v ~/docker-restic-data:/var/lib/docker-restic \
+  # Optional: Bind mount Restic data to the host
+  # -v ./data:/var/lib/docker-restic \
 
-  # Example: Include any container volume in your backup
+  # Example: Include a container volume in the backup
   # -v app-data:/app/data:ro \
 
+  # Mount the password file for the default profile
+  -v ./restic-password:/run/secrets/default/restic-password:ro \
+
+  # Synchronize the container's local time with the host
   -v /etc/localtime:/etc/localtime:ro \
-  -v /var/run/docker.sock:/var/run/docker.sock:ro \
-  --secret restic-password \
-  --secret rclone-password \
+
+  # Optional: Mount the Docker socket for container management (start|stop|exec)
+  # -v /var/run/docker.sock:/var/run/docker.sock:ro \
   patrickap/docker-restic:latest
 ```
 
-Alternatively, you can use Docker Compose:
+### Docker Compose
 
-```yml
+Alternatively, deploy Docker-Restic using Docker Compose:
+
+```yaml
 services:
   docker-restic:
     image: patrickap/docker-restic:latest
     restart: always
-    # Optional: Add capabilities to read directories of different owners
+    # Optional: Add capabilities to read directories owned by other users
     # cap_add:
-    # - DAC_READ_SEARCH
+    #   - DAC_READ_SEARCH
     volumes:
-      # Optional: Mount custom configurations
-      # - ./docker-restic.cron:/var/lib/docker-restic/config/docker-restic.cron:ro
-      # - ./rclone.conf:/var/lib/docker-restic/config/rclone.conf:ro
+      # Optional: Mount custom configuration files
+      # - ./profiles.toml:/etc/docker-restic/profiles.toml:ro
+      # - ./jobs.cron:/etc/docker-restic/jobs.cron:ro
 
-      # Persist the restic backup data in a named volume
-      - docker-restic-data:/var/lib/docker-restic
+      # Persist Restic data in a named volume
+      - data:/var/lib/docker-restic
 
-      # Optional: Bind mount the restic backups to your host system
-      # - ~/docker-restic-data:/var/lib/docker-restic
+      # Optional: Bind mount Restic data to the host
+      # - ./data:/var/lib/docker-restic
 
-      # Example: Include any container volume in your backup
+      # Example: Include a container volume in the backup
       # - app-data:/app/data:ro
 
+      # Mount the password file for the default profile
+      - ./restic-password:/run/secrets/default/restic-password:ro
+
+      # Synchronize the container's local time with the host
       - /etc/localtime:/etc/localtime:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    secrets:
-      - restic-password
-      - rclone-password
 
-volumes:
-  restic-data:
-  app-data:
-    external: true
-
-secrets:
-  restic-password:
-    file: /run/secrets/restic-password.txt
-  rclone-password:
-    file: /run/secrets/rclone-password.txt
+      # Optional: Mount the Docker socket for container management (start|stop|exec)
+      # - /var/run/docker.sock:/var/run/docker.sock:ro
 ```
 
-**Notes:**
+### Notes
 
-- For security reasons, it is recommended to mount external volumes for backup as read-only using `:ro`.
-- Ensure to bind mount your container backups to a custom location on the host for accessibility.
-- The `DAC_READ_SEARCH` capability might be required when backing up multiple volumes with different owners or restricted permissions. This capability allows Docker-Restic to read all directories.
+- Bind mount Docker-Restic volumes to a dedicated location to ensure data persists across container recreations.
+- The `DAC_READ_SEARCH` capability may be required when backing up volumes owned by different users or with restricted permissions. It allows Docker-Restic to read directories that would otherwise be inaccessible.
+- For security and safety reasons, external volumes included in backups should be mounted as read-only using `:ro`.
+- To enable container management during backups, mount the Docker socket. This allows Docker-Restic to stop and start containers and execute custom backup commands.
 
-2. **Configure the Docker-Restic Container**
+## Configuration
 
-Docker-Restic provides default configurations to help you get started quickly. Optionally it's possible to mount custom configurations. During first launch a Restic repository will be created for you at `/var/lib/docker-restic/data/repository` as well as an encrypted Rclone configuration at `/var/lib/docker-restic/config/rclone.conf`.
+Docker-Restic provides default configurations to simplify the initial setup. On startup, the container:
 
-You can add additional master keys to a Restic repository using `restic key add`. This lets you grant access without sharing the primary key. Make sure to run this command as the intended user, since the key will be owned by that user. Separate keys provide the same access level but can be revoked individually. They also protect the main key and reduce the risk of its exposure.
+1. Checks and corrects potential permission issues.
+2. Initializes a Restic repository for each configured profile if it does not already exist.
+3. Starts the cron process to execute scheduled jobs.
 
-To add a new remote backup target either run `rclone config` inside the container or mount an existing encrypted configuration. By default all Rclone remotes with names ending in `_default` will automatically be used as backup targets and kept in sync. Since the remote path cannot be known in advance you need to specify it explicitly in your configuration. This can be achieved using aliases. In this example your backups will be synced to the `drive` remote at the path `/backup`.
+The following configuration files are provided with default configurations:
 
-```ini
-[drive]
-type = drive
-client_id = <client_id>
-client_secret = <client_secret>
-token = <token>
+| File | Location |
+| --- | --- |
+| `profiles.toml` | `/etc/docker-restic/profiles.toml` |
+| `jobs.cron` | `/etc/docker-restic/jobs.cron` |
 
-[drive_default]
-type = alias
-remote = drive:/backup
+Custom configuration files can optionally be mounted into the container. After changing the configuration, restart the container to apply the changes.
+
+### Environment Variables
+
+The following environment variables can be set:
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `UID` | `1234` | User ID of the `restic` user. |
+| `GID` | `1234` | Group ID of the `restic` user. |
+| `DOCKER_RESTIC_DATA_DIR` | `/var/lib/docker-restic` | Directory for application state and data. |
+| `DOCKER_RESTIC_CONFIG_DIR` | `/etc/docker-restic` | Directory containing configuration files, such as `profiles.toml` and `jobs.cron`. |
+| `RESTIC_CACHE_DIR` | `/var/cache/restic` | Directory used by Restic to store its cache. |
+
+### Profiles
+
+A profile defines how Restic is invoked for a specific repository. All profiles are configured in `profiles.toml`. All Restic-specific flags are supported. A `default` profile is preconfigured out of the box.
+
+Example:
+
+```toml
+[default]
+repo = "${DOCKER_RESTIC_DATA_DIR}/default/repository"
+password-file = "/run/secrets/default/restic-password"
+
+[default.forget]
+keep-daily = 7
+...
 ```
 
-The entire backup process is scheduled once a day at 00:00. Depending on your requirements you will need to provide your own configurations or modify the existing ones.
+The following rules apply to profile configuration:
 
-- `docker-restic.cron`: `/var/lib/docker-restic/config/docker-restic.cron`
-- `rclone.conf`: `/var/lib/docker-restic/config/rclone.conf`
+- A top-level table (e.g. `[default]`) defines a profile. Its scalar values are passed as flags to every Restic command.
+- A nested table (e.g. `[default.forget]`) defines additional flags that are passed only to the corresponding Restic command.
+- Arguments are matched sequentially against the configured paths.
+- Custom flags and commands inserted between arguments are preserved and do not affect path matching.
+- All values are converted to strings. A value of `false` is omitted, while `true` is retained as a boolean flag.
+- Environment variables referenced in the configuration file are automatically substituted.
+- Any number of profiles can be configured. Each profile requires its own configuration.
 
-Do not forget to restart the container.
+### Scheduling
 
-## Configuration Reference
+Backup jobs are defined in `jobs.cron` and executed automatically according to their cron schedules. By default, every configured profile is backed up daily at `00:00`.
 
-Docker-Restic utilizes Just under the hood, which is a powerful command runner. Make sure to checkout the [documentation](https://just.systems/man/en) on how to configure it. The configured commands should be executed using the `docker-restic` alias:
+Example:
+
+```cron
+0 0 * * * for profile in $(docker-restic profile list); do docker-restic exec --profile "${profile}" --container-stop backup ...; done
+```
+
+### Container Labels
+
+Docker-Restic uses Docker labels to control container behavior during backups and execute commands inside containers.
+
+The following labels are supported:
+
+```yaml
+labels:
+  # Stop the container during a backup and restart it afterwards
+  - docker-restic.container.stop=true
+
+  # Execute a custom command inside the container during a backup
+  - docker-restic.container.exec=<command>
+```
+
+### Master Keys
+
+Additional master keys can be added to a Restic repository using:
 
 ```bash
-docker-restic <command-name>
+docker-restic exec --profile <profile> key add
 ```
 
-## Manual Backups
+This allows you to grant repository access without sharing the primary key.
 
-For manual backups, simply connect to the container. A lot of useful commands are provided by default. Run `docker-restic -l` to list all available commands. It's important to run the commands as the user inside the container (by default `restic`) to prevent the container from writing files as root which the non-root user can't access afterwards. If it happened per accident, run `chown -R restic:restic <directory>` to fix the permissions. The `docker-restic` command handles this automatically.
+Make sure to execute this command as the intended user, as the resulting key will be owned by that user.
+
+Each key provides the same level of access and can be revoked individually. Using separate keys also helps protect the primary key and reduces the risk of exposing it.
+
+## CLI Reference
+
+All Restic-related commands should be executed through the `docker-restic` CLI.
+
+To list the available commands:
 
 ```bash
-docker exec -u <user> -it <container_name> /bin/sh
+docker-restic --list
 ```
+
+### Commands
+
+| Command | Description |
+| --- | --- |
+| `docker-restic exec --profile <profile> <restic_args>` | Executes Restic using the configuration of the specified profile. |
+| `docker-restic profile list` | Lists all configured profiles. |
+| `docker-restic profile expand <profile> <restic_args>` | Prints the resolved Restic arguments for the specified profile. |
+| `docker-restic profile get <profile> <path>` | Prints a single configuration value from the specified profile. |
+| `docker-restic container start` / `stop` | Starts or stops all containers labeled `docker-restic.container.stop=true`. |
+| `docker-restic container exec` | Executes the command defined by the `docker-restic.container.exec` label inside labeled containers. |
+
+## Manual Backups and Dumps
+
+For manual backups or other operations, connect to the Docker-Restic container using a shell:
+
+```bash
+docker exec -it <container_name> /bin/sh
+```
+
+You can then execute the available `docker-restic` commands directly.
 
 ## Restore from Backup
 
-To restore a backup, a new Docker volume with the correct name must be created including the contents of the backup. After restarting the containers, the data should be mounted and restored:
+To restore a backup, create a Docker volume with the appropriate name and copy the restored data into it.
+
+The following example demonstrates how to restore a backup:
 
 ```bash
-# check restic repository
-restic -r /path/to/repository check --read-data
+# List all snapshots
+docker-restic exec --profile <profile> snapshots
 
-# dump restic backup
-restic -r /path/to/repository dump latest / > backup.tar
+# Check the Restic repository
+docker-restic exec --profile <profile> check --read-data
 
-# untar the backup
+# Export the latest backup
+docker-restic exec --profile <profile> dump latest / > backup.tar
+
+# Extract the backup
 tar -xvf backup.tar -C /tmp/backup
 
-# stop the containers
+# Stop the containers
 docker stop <container_name>
 
-# use a temporary container to create the volume and copy the backup
+# Create a Docker volume
 docker volume create <volume_name>
-docker run --rm -it -v <volume_name>:/to -v <path_to_backup>:/from alpine /bin/sh -c 'cp -av /from/. /to'
 
-# restart the containers
+# Copy the restored data into the volume using a temporary container
+docker run --rm -it \
+  -v <volume_name>:/to \
+  -v <path_to_backup>:/from \
+  alpine /bin/sh -c 'cp -av /from/. /to'
+
+# Restart the containers
 docker restart <container_name>
 ```
 
-**Warning:**
-If you're using Google Drive they may add back file extensions to encrypted files during the download or compression process which can result in a corrupted `restic` repository. To avoid this ensure to remove any added extensions inside the `repository/data` directory. An example of this would be a file at `respository/data/3f/3f0e4a8c5b71a0b9c7d38e29a87d5a1b23f69b08a5c06f1d2b539c846ee2a070b` being downloaded as `respository/data/3f/3f0e4a8c5b71a0b9c7d38e29a87d5a1b23f69b08a5c06f1d2b539c846ee2a070b.mp3`. In this example it is required to remove the automatically added extension `.mp3` to avoid repository corruption and be able to read the backup.
-
 ## Contributing
 
-To run Docker-Restic locally, you have two options: either build the Docker image from the provided Dockerfile and execute it, or use `docker compose`. To publish a release, use the command `just release <patch|minor|major>`. This command will automatically increment the semantic version accordingly.
+To run Docker-Restic locally, you can either build and run the Docker image using the provided Dockerfile or use Docker Compose.
+
+To publish a new release, run:
+
+```bash
+just release <patch|minor|major>
+```
+
+This command automatically increments the semantic version according to the specified release type.
