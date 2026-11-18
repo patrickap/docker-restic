@@ -10,8 +10,10 @@ default:
   @just --list
 
 [arg("profile", long, short)]
-[arg("suspend", long, short, value="true")]
-exec profile suspend="false" *args:
-  @{{ if suspend == "true" { "just container stop" } else { "" } }}
+[arg("container_stop", long="container-stop", short="stop", value="true")]
+[arg("container_exec", long="container-exec", short="exec", value="true")]
+exec profile container_exec="false" container_stop="false" *args:
+  @{{ if container_exec == "true" { "just container exec" } else { "" } }}
+  @{{ if container_stop == "true" { "just container stop" } else { "" } }}
   @restic $(just profile expand {{profile}} {{args}})
-  @{{ if suspend == "true" { "just container start" } else { "" } }}
+  @{{ if container_stop == "true" { "just container start" } else { "" } }}
