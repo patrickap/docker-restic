@@ -9,11 +9,15 @@ export JUST_JUSTFILE := justfile()
 default:
   @just --list
 
-[arg("profile", long, short)]
-[arg("container_stop", long="container-stop", short="stop", value="true")]
-[arg("container_exec", long="container-exec", short="exec", value="true")]
+[arg("profile", long="profile", short="p")]
+[arg("container_stop", long="container-stop", short="s", value="true")]
+[arg("container_exec", long="container-exec", short="x", value="true")]
 exec profile container_exec="false" container_stop="false" *args:
   @{{ if container_exec == "true" { "just container exec" } else { "" } }}
   @{{ if container_stop == "true" { "just container stop" } else { "" } }}
-  @restic $(just profile expand {{profile}} {{args}})
+  
+  @set -- $(just profile expand {{profile}} {{args}}); \
+    log info "Executing Restic" "profile={{profile}}" "command=restic $*"; \
+    restic "$@"
+
   @{{ if container_stop == "true" { "just container start" } else { "" } }}

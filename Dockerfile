@@ -13,6 +13,7 @@ COPY profiles.toml "${DOCKER_RESTIC_CONFIG_DIR}/profiles.toml"
 COPY jobs.cron "${DOCKER_RESTIC_CONFIG_DIR}/jobs.cron"
 
 COPY cmd /usr/local/lib/docker-restic/cmd
+COPY log.sh /usr/local/bin/log
 COPY docker-restic.sh /usr/local/bin/docker-restic
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 
@@ -39,6 +40,7 @@ RUN apk add --no-cache \
         "${DOCKER_RESTIC_CONFIG_DIR}" \
         "${RESTIC_CACHE_DIR}" \
     && chmod +x \
+        /usr/local/bin/log \
         /usr/local/bin/docker-restic \
         /usr/local/bin/entrypoint.sh
 
