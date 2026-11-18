@@ -52,6 +52,9 @@ get profile path:
   with open(os.path.expandvars("{{config_file}}"), "rb") as f:
     config = tomllib.load(f)
 
-  value = reduce(lambda node, key: node.get(key, {}), "{{profile}}.{{path}}".split("."), config)
+  def get(node, key):
+    return node.get(key, {})
+
+  value = reduce(get, "{{profile}}.{{path}}".split("."), config)
 
   print(os.path.expandvars(str(value) if isinstance(value, (str, int, float)) else str(value).lower() if isinstance(value, bool) else ""))
