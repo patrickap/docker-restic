@@ -17,15 +17,15 @@ COPY docker-restic.sh /usr/local/bin/docker-restic
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN apk add --no-cache \
-        docker-cli~=29.9.3 \
-        restic~=0.18.1 \
-        gnupg~=2.4.9 \
-        shadow~=4.18.0 \
-        libcap~=2.78 \
-        su-exec~=0.3 \
-        supercronic~=0.2.49 \
-        gettext~=1.0 \
-        python3 \
+      docker-cli~=29.9.3 \
+      restic~=0.18.1 \
+      gnupg~=2.4.9 \
+      shadow~=4.18.0 \
+      libcap~=2.78 \
+      su-exec~=0.3 \
+      supercronic~=0.2.49 \
+      gettext~=1.0 \
+      python3 \
     && apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community \
         just~=1.59.0 \
     && addgroup -S -g "${GID}" restic \
