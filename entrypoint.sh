@@ -31,7 +31,7 @@ fi
 
 for profile in $(docker-restic profile list); do
   if ! docker-restic exec --profile "${profile}" cat config &> /dev/null; then
-    echo "Initializing Restic repository (profile=${profile})"
+    echo "Initializing Restic repository for profile=${profile}"
     docker-restic exec --profile "${profile}" init
   fi
 done

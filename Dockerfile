@@ -24,9 +24,8 @@ RUN apk add --no-cache \
         libcap~=2.78 \
         su-exec~=0.3 \
         supercronic~=0.2.49 \
-        yq~=4.53.3 \
-        jq~=1.8.2 \
         gettext~=1.0 \
+        python3 \
     && apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community \
         just~=1.59.0 \
     && addgroup -S -g "${GID}" restic \
@@ -42,6 +41,7 @@ RUN apk add --no-cache \
     && chmod +x \
         /usr/local/bin/docker-restic \
         /usr/local/bin/entrypoint.sh
+
 WORKDIR "${DOCKER_RESTIC_DATA_DIR}"
 
 ENTRYPOINT ["entrypoint.sh"]
