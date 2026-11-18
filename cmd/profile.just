@@ -35,13 +35,14 @@ expand profile *args:
       result + [word] + [
         f"--{k}" if v is True else f"--{k} {v}"
         for k, v in child.items()
-        if isinstance(v, (str, int, float, bool))
+        if k != "env" and isinstance(v, (str, int, float, bool))
       ]
     )
 
   _, args = reduce(expand, "{{profile}} {{args}}".split(), (config, []))
-
-  print(os.path.expandvars(" ".join(args[1:])))
+  result = os.path.expandvars(" ".join(args[1:]))
+  
+  print(result)
 
 get profile path:
   #!/usr/bin/env python3
@@ -55,6 +56,36 @@ get profile path:
   def get(node, key):
     return node.get(key, {})
 
-  value = reduce(get, "{{profile}}.{{path}}".split("."), config)
+  def render(value, key=""):
+    if isinstance(value, dict):
+      for k, v in value.items():
+        render(v, f"{key}.{k}" if key else k)
+    elif isinstance(value, list):
+      for v in value:
+        render(v, key)
+    else:
+      return f"{key}={value}" if key else value
 
-  print(os.path.expandvars(str(value) if isinstance(value, (str, int, float)) else str(value).lower() if isinstance(value, bool) else ""))
+  value = reduce(get, "{{profile}}.{{path}}".split("."), config)
+  result = render(value)
+  
+  print(result)
+
+env profile:
+  #!/usr/bin/env python3
+
+  import os, tomllib, shlex
+
+  with open(os.path.expandvars("{{config_file}}"), "rb") as f:
+    config = tomllib.load(f)
+
+  def env(value):
+    return " ".join(
+      f"{k}={os.path.expandvars(str(v))}"
+      for k, v in value.items()
+    )
+
+  value = config["{{profile}}"].get("env", {})
+  result = env(value)
+
+  print(result)

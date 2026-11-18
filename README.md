@@ -130,6 +130,10 @@ Example:
 repo = "${DOCKER_RESTIC_DATA_DIR}/default/repository"
 password-file = "/run/secrets/default/restic-password"
 
+[default.env]
+AWS_ACCESS_KEY_ID = ""
+AWS_SECRET_ACCESS_KEY = ""
+
 [default.forget]
 keep-daily = 7
 ...
@@ -138,7 +142,8 @@ keep-daily = 7
 The following rules apply to profile configuration:
 
 - A top-level table (e.g. `[default]`) defines a profile. Its scalar values are passed as flags to every Restic command.
-- A nested table (e.g. `[default.forget]`) defines additional flags that are passed only to the corresponding Restic command.
+- Environment variables defined in a profile (e.g. `[default.env]`) table are exported to the environment of every Restic command executed through that profile. They are ignored when processing command flags and arguments.
+- Every other nested table (e.g. `[default.forget]`) defines additional flags that are appended to the corresponding Restic command.
 - Arguments are matched sequentially against the configured paths.
 - Custom flags and commands inserted between arguments are preserved and do not affect path matching.
 - All values are converted to strings. A value of `false` is omitted, while `true` is retained as a boolean flag.

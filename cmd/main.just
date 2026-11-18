@@ -16,8 +16,9 @@ exec profile container_exec="false" container_stop="false" *args:
   @{{ if container_exec == "true" { "just container exec" } else { "" } }}
   @{{ if container_stop == "true" { "just container stop" } else { "" } }}
   
-  @set -- $(just profile expand {{profile}} {{args}}); \
-    log info "Executing Restic" "profile={{profile}}" "command=restic $*"; \
-    restic "$@"
+  @export $(just profile env {{profile}}); \
+  set -- $(just profile expand {{profile}} {{args}}); \
+  log info "Executing Restic" "profile={{profile}}" "command=restic $*"; \
+  restic "$@"
 
   @{{ if container_stop == "true" { "just container start" } else { "" } }}

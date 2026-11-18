@@ -2,6 +2,10 @@
 repo = "${DOCKER_RESTIC_DATA_DIR}/default/repository"
 password-file = "/run/secrets/default/restic-password"
 
+[default.env]
+AWS_ACCESS_KEY_ID = ""
+AWS_SECRET_ACCESS_KEY = ""
+
 [default.backup]
 
 [default.forget]
