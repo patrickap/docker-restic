@@ -88,7 +88,7 @@ services:
 - Bind mount Docker-Restic volumes to a dedicated location to ensure data persists across container recreations.
 - The `DAC_READ_SEARCH` capability may be required when backing up volumes owned by different users or with restricted permissions. It allows Docker-Restic to read directories that would otherwise be inaccessible.
 - For security and safety reasons, external volumes included in backups should be mounted as read-only using `:ro`.
-- To enable container management during backups, mount the Docker socket. This allows Docker-Restic to stop and start containers and execute custom backup commands.
+- To enable container management during backups, mount the Docker socket as volume or set `DOCKER_HOST`. This allows Docker-Restic to stop and start containers and execute custom backup commands.
 
 ## Configuration
 
