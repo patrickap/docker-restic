@@ -23,14 +23,14 @@ if [ ! "${UID}" = "${default_uid}" ] || [ ! "${GID}" = "${default_gid}" ]; then
     "${RESTIC_CACHE_DIR}"
 fi
 
-if capsh --has-b=cap_dac_read_search &> /dev/null; then
+if capsh --has-b=cap_dac_read_search > /dev/null 2>&1; then
   log info "Applying capability to Restic" "capability=cap_dac_read_search"
   setcap 'cap_dac_read_search=+ep' /usr/bin/restic
   setcap 'cap_dac_read_search=+ep' /usr/bin/just
 fi
 
 for profile in $(docker-restic profile list); do
-  if ! docker-restic exec --profile "${profile}" cat config &> /dev/null; then
+  if ! docker-restic exec --profile "${profile}" cat config > /dev/null 2>&1; then
     log info "Initializing Restic" "profile=${profile}"
     docker-restic exec --profile "${profile}" init
   fi
