@@ -123,16 +123,19 @@ The following environment variables can be set:
 
 A profile defines how Restic is invoked for a specific repository. All profiles are configured in `profiles.toml`. All Restic-specific flags are supported. A `default` profile is preconfigured out of the box.
 
+To pass specific environment variables to a Restic profile, use the `[default._meta]` section. Currently only `env-file` is supported.
+
+In general, entries that are not intended to be processed by Restic and are reserved for internal use must start with `_`.
+
 Example:
 
 ```toml
+[default._meta]
+env-file = "/run/secrets/default/.env"
+
 [default]
 repo = "${DOCKER_RESTIC_DATA_DIR}/default/repository"
 password-file = "/run/secrets/default/restic-password"
-
-[default.env]
-AWS_ACCESS_KEY_ID = ""
-AWS_SECRET_ACCESS_KEY = ""
 
 [default.forget]
 keep-daily = 7
@@ -142,7 +145,7 @@ keep-daily = 7
 The following rules apply to profile configuration:
 
 - A top-level table (e.g. `[default]`) defines a profile. Its scalar values are passed as flags to every Restic command.
-- Environment variables defined in a profile (e.g. `[default.env]`) table are exported to the environment of every Restic command executed through that profile. They are ignored when processing command flags and arguments.
+- Keys starting with `_` (e.g. `[default._meta]`) are ignored when processing command-line flags and arguments.
 - Every other nested table (e.g. `[default.forget]`) defines additional flags that are appended to the corresponding Restic command.
 - Arguments are matched sequentially against the configured paths.
 - Custom flags and commands inserted between arguments are preserved and do not affect path matching.
