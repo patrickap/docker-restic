@@ -123,7 +123,7 @@ The following environment variables can be set:
 
 A profile defines how Restic is invoked for a specific repository. All profiles are configured in `profiles.toml`. All Restic-specific flags are supported. A `default` profile is preconfigured out of the box.
 
-To pass specific environment variables to a Restic profile, use the `[default._meta]` section. Currently only `env-file` is supported.
+To pass specific environment variables to a Restic profile, use the `[default._meta]` section. Currently only `env-file` is supported. The specified environment file is loaded every time `docker-restic exec` is run with the provided profile.
 
 In general, entries that are not intended to be processed by Restic and are reserved for internal use must start with `_`.
 
