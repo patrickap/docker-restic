@@ -54,7 +54,9 @@ exec profile container_exec="false" container_stop="false" *args:
   env_file="$(just profile get {{profile}} _meta.env-file)"
   if [ -f "${env_file}" ]; then
     log info "Loading Restic environment" "profile={{profile}}" "file=${env_file}"
+    set -a
     . "${env_file}"
+    set +a
   fi
   
   # Expand the profile arguments into positional parameters
