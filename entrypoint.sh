@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -euo pipefail
+
 log info "Starting container"
 
 default_uid="$(id restic -u)"
@@ -30,8 +32,12 @@ if capsh --has-b=cap_dac_read_search > /dev/null 2>&1; then
 fi
 
 for profile in $(docker-restic profile list); do
-  if ! docker-restic exec --profile "${profile}" cat config > /dev/null 2>&1; then
-    log info "Initializing Restic" "profile=${profile}"
+  log info "Checking Restic status" "profile=${profile}"
+
+  if docker-restic exec --profile "${profile}" cat config > /dev/null 2>&1; then
+    log "Restic repository accessible" "profile=${profile}"
+  else
+    log warn "Restic repository not accessible" "profile=${profile}"
     docker-restic exec --profile "${profile}" init
   fi
 done

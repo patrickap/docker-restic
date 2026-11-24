@@ -21,7 +21,7 @@ RUN apk add --no-cache \
       docker-cli~=29.9.3 \
       restic~=0.18.1 \
       gnupg~=2.4.9 \
-      shadow~=4.18.0 \
+      shadow~=4.20.4 \
       libcap~=2.78 \
       su-exec~=0.3 \
       supercronic~=0.2.49 \
