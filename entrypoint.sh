@@ -35,7 +35,7 @@ for profile in $(docker-restic profile list); do
   log info "Checking Restic status" "profile=${profile}"
 
   if docker-restic exec --profile "${profile}" cat config > /dev/null 2>&1; then
-    log "Restic repository accessible" "profile=${profile}"
+    log info "Restic repository accessible" "profile=${profile}"
   else
     log warn "Restic repository not accessible" "profile=${profile}"
     docker-restic exec --profile "${profile}" init
